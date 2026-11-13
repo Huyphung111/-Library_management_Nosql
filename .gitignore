@@ -1,0 +1,19 @@
+# Build
+bin/
+obj/
+out/
+
+# Visual Studio / VS Code / Rider
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Cau hinh rieng tung may
+appsettings.Development.json
+appsettings.Local.json
+
+# He dieu hanh
+Thumbs.db
+.DS_Store
