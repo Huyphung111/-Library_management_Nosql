@@ -1,0 +1,120 @@
+@model LibraryManagement.Web.ViewModels.Reports.DashboardVM
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section PageActions {
+    <a asp-controller="Loans" asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-journal-plus"></i> Lập phiếu mượn
+    </a>
+    <a asp-controller="Loans" asp-action="Return" class="btn btn-outline-primary">
+        <i class="bi bi-journal-arrow-down"></i> Nhận trả sách
+    </a>
+}
+
+@* 4 thẻ số liệu tổng quan *@
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.TotalBookTitles <span class="fs-6 fw-normal text-muted">/ @Model.TotalBookCopies cuốn</span></div>
+                <div class="stat-label">Đầu sách trong thư viện</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.ActiveReaders</div>
+                <div class="stat-label">Độc giả đang hoạt động</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon accent">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.BorrowingLoans</div>
+                <div class="stat-label">Phiếu đang mượn</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon danger">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div>
+                <div class="stat-value text-danger">@Model.OverdueLoans</div>
+                <div class="stat-label">Phiếu mượn quá hạn</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Khung việc cần xử lý *@
+<div class="content-card">
+    <h2><i class="bi bi-list-check me-2 text-primary"></i>Việc cần xử lý</h2>
+
+    <div class="list-group list-group-flush">
+        <a asp-controller="Renewals" asp-action="Index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+                <i class="bi bi-calendar-plus text-primary me-2"></i>
+                <strong>Yêu cầu gia hạn online</strong>
+                <div class="text-muted small">Các phiếu mượn do độc giả gửi yêu cầu xin gia hạn thêm ngày</div>
+            </div>
+            @if (Model.PendingRenewals > 0)
+            {
+                <span class="badge bg-warning text-dark rounded-pill fs-6 px-3">@Model.PendingRenewals chờ duyệt</span>
+            }
+            else
+            {
+                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+            }
+        </a>
+
+        <a asp-controller="Reservations" asp-action="Index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+                <i class="bi bi-bookmark-star text-primary me-2"></i>
+                <strong>Yêu cầu đặt trước sách</strong>
+                <div class="text-muted small">Độc giả đăng ký chờ khi sách trong thư viện đang hết</div>
+            </div>
+            @if (Model.PendingReservations > 0)
+            {
+                <span class="badge bg-warning text-dark rounded-pill fs-6 px-3">@Model.PendingReservations chờ duyệt</span>
+            }
+            else
+            {
+                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+            }
+        </a>
+
+        <a asp-controller="Reservations" asp-action="Index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+                <i class="bi bi-telephone-outbound text-success me-2"></i>
+                <strong>Sách đặt trước đã về kho</strong>
+                <div class="text-muted small">Yêu cầu đã duyệt và sách đã có sẵn, cần liên hệ độc giả đến mượn</div>
+            </div>
+            @if (Model.ReadyReservations > 0)
+            {
+                <span class="badge bg-success rounded-pill fs-6 px-3">@Model.ReadyReservations cần liên hệ</span>
+            }
+            else
+            {
+                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+            }
+        </a>
+    </div>
+</div>
+

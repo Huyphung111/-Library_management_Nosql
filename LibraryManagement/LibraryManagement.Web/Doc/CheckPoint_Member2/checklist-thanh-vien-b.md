@@ -39,11 +39,11 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 ## Đợt 1: Danh mục và tìm sách
 
 ### Dashboard (đề xuất làm sớm, vì sau đăng nhập Thủ thư đang bị 404)
-- [ ] `DashboardController.Index` với `[Authorize(Roles = "Librarian")]`
-- [ ] `ReportService.GetDashboardAsync()`: chỉ đọc dữ liệu, trả về các con số bên dưới
-- [ ] 4 thẻ `stat-card`: Đầu sách (số đầu sách / tổng số cuốn), Độc giả đang hoạt động, Phiếu đang mượn, Phiếu quá hạn (thẻ màu đỏ, tính khi truy vấn)
-- [ ] Khung "Việc cần xử lý", mỗi dòng có link: gia hạn chờ duyệt (→ `Renewals`), đặt trước chờ duyệt (→ `Reservations`), đặt trước đã duyệt có sách về cần liên hệ (→ `Reservations`)
-- [ ] Nút nhanh "Lập phiếu mượn" (→ `Loans/Create`), "Nhận trả sách" (→ `Loans/Return`) đặt trong `@section PageActions`
+- [x] `DashboardController.Index` với `[Authorize(Roles = "Librarian")]` (22/11/2026)
+- [x] `ReportService.GetDashboardAsync()`: chỉ đọc dữ liệu, trả về các con số bên dưới (22/11/2026)
+- [x] 4 thẻ `stat-card`: Đầu sách (số đầu sách / tổng số cuốn), Độc giả đang hoạt động, Phiếu đang mượn, Phiếu quá hạn (thẻ màu đỏ, tính khi truy vấn) (22/11/2026)
+- [x] Khung "Việc cần xử lý", mỗi dòng có link: gia hạn chờ duyệt (→ `Renewals`), đặt trước chờ duyệt (→ `Reservations`), đặt trước đã duyệt có sách về cần liên hệ (→ `Reservations`) (22/11/2026)
+- [x] Nút nhanh "Lập phiếu mượn" (→ `Loans/Create`), "Nhận trả sách" (→ `Loans/Return`) đặt trong `@section PageActions` (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC05 Quản lý thể loại (nhánh `uc05-the-loai`)
