@@ -115,3 +115,4 @@ public class FineDetailVM
     public long FineAmount { get; set; }
     public string FineType { get; set; } = string.Empty;
 }
+

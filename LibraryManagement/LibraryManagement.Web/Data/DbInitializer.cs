@@ -17,10 +17,11 @@ public static class DbInitializer
         var db = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
 
         await CreateIndexesAsync(db);
-        await SeedAsync(
-            db,
-            scope.ServiceProvider.GetRequiredService<CounterService>(),
-            scope.ServiceProvider.GetRequiredService<IOptions<LibraryRules>>().Value);
+        var counterService = scope.ServiceProvider.GetRequiredService<CounterService>();
+        var rules = scope.ServiceProvider.GetRequiredService<IOptions<LibraryRules>>().Value;
+
+        await SeedAsync(db, counterService, rules);
+        await EnsureRichLoansAsync(db, counterService, rules);
     }
 
     // ---------------------------------------------------------------- Index (mục 5.4)
@@ -341,5 +342,161 @@ public static class DbInitializer
         };
 
         await db.Reservations.InsertManyAsync(new[] { res1, res2 });
+    }
+
+    /// <summary>
+    /// Đảm bảo hệ thống có đủ dữ liệu phiếu mượn phong phú (các tháng khác nhau, có phạt trễ hạn, phạt hư hỏng, phạt mất sách)
+    /// để các trang báo cáo thống kê Aggregation (UC12) và Dashboard hiển thị trực quan, sinh động.
+    /// </summary>
+    private static async Task EnsureRichLoansAsync(MongoDbContext db, CounterService counters, LibraryRules rules)
+    {
+        // Nếu đã có phiếu mượn có tiền phạt rồi thì không cần chèn thêm
+        if (await db.Loans.Find(l => l.TotalFine > 0).AnyAsync()) return;
+
+        var readers = await db.Readers.Find(_ => true).Limit(6).ToListAsync();
+        var books = await db.Books.Find(_ => true).Limit(10).ToListAsync();
+        var admin = await db.Users.Find(u => u.Role == Role.Librarian).FirstOrDefaultAsync();
+        if (readers.Count < 4 || books.Count < 5 || admin == null) return;
+
+        var todayVn = DateHelper.TodayVn();
+        var year = todayVn.Year;
+
+        // 1. Phiếu phạt trả muộn (Tháng 6): Trả trễ 5 ngày -> Phạt 25.000đ
+        var b1 = books[0];
+        var borrowDate1 = new DateTime(year, 6, 1, 8, 0, 0, DateTimeKind.Unspecified);
+        var dueDate1 = borrowDate1.AddDays(rules.LoanDays);
+        var returnDate1 = dueDate1.AddDays(5);
+        var fineOverdue = 5 * rules.FinePerDay;
+
+        var loanOverdue = new Loan
+        {
+            LoanCode = await counters.NextLoanCodeAsync(),
+            Reader = new LoanReader { ReaderId = readers[0].Id!, CardNumber = readers[0].CardNumber, FullName = readers[0].FullName },
+            LibrarianId = admin.Id,
+            BorrowDate = DateHelper.VnDateToUtc(borrowDate1),
+            DueDate = DateHelper.VnDateToUtc(dueDate1),
+            Status = LoanStatus.Returned,
+            TotalFine = fineOverdue,
+            Items = new List<LoanItem>
+            {
+                new()
+                {
+                    BookId = b1.Id!,
+                    Title = b1.Title,
+                    CategoryIds = b1.CategoryIds,
+                    ReturnDate = DateHelper.VnDateToUtc(returnDate1),
+                    Condition = BookCondition.Normal,
+                    Fine = fineOverdue
+                }
+            }
+        };
+
+        // 2. Phiếu phạt sách hư hỏng (Tháng 7): Hư hỏng nhẹ -> Phạt 50.000đ
+        var b2 = books[1];
+        var borrowDate2 = new DateTime(year, 7, 5, 9, 0, 0, DateTimeKind.Unspecified);
+        var dueDate2 = borrowDate2.AddDays(rules.LoanDays);
+        var returnDate2 = dueDate2;
+        var fineDamage = 50000;
+
+        var loanDamage = new Loan
+        {
+            LoanCode = await counters.NextLoanCodeAsync(),
+            Reader = new LoanReader { ReaderId = readers[1].Id!, CardNumber = readers[1].CardNumber, FullName = readers[1].FullName },
+            LibrarianId = admin.Id,
+            BorrowDate = DateHelper.VnDateToUtc(borrowDate2),
+            DueDate = DateHelper.VnDateToUtc(dueDate2),
+            Status = LoanStatus.Returned,
+            TotalFine = fineDamage,
+            Items = new List<LoanItem>
+            {
+                new()
+                {
+                    BookId = b2.Id!,
+                    Title = b2.Title,
+                    CategoryIds = b2.CategoryIds,
+                    ReturnDate = DateHelper.VnDateToUtc(returnDate2),
+                    Condition = BookCondition.Damaged,
+                    Fine = fineDamage
+                }
+            }
+        };
+
+        // 3. Phiếu phạt làm mất sách (Tháng 8): Đền 100% giá sách
+        var b3 = books[2];
+        var borrowDate3 = new DateTime(year, 8, 10, 10, 0, 0, DateTimeKind.Unspecified);
+        var dueDate3 = borrowDate3.AddDays(rules.LoanDays);
+        var returnDate3 = dueDate3;
+        var fineLost = b3.Price;
+
+        var loanLost = new Loan
+        {
+            LoanCode = await counters.NextLoanCodeAsync(),
+            Reader = new LoanReader { ReaderId = readers[2].Id!, CardNumber = readers[2].CardNumber, FullName = readers[2].FullName },
+            LibrarianId = admin.Id,
+            BorrowDate = DateHelper.VnDateToUtc(borrowDate3),
+            DueDate = DateHelper.VnDateToUtc(dueDate3),
+            Status = LoanStatus.Returned,
+            TotalFine = fineLost,
+            Items = new List<LoanItem>
+            {
+                new()
+                {
+                    BookId = b3.Id!,
+                    Title = b3.Title,
+                    CategoryIds = b3.CategoryIds,
+                    ReturnDate = DateHelper.VnDateToUtc(returnDate3),
+                    Condition = BookCondition.Lost,
+                    Fine = fineLost
+                }
+            }
+        };
+
+        // 4. Phiếu mượn tháng 9 (mượn 2 cuốn trả đúng hạn bình thường)
+        var b4 = books[3];
+        var b5 = books[0];
+        var borrowDate4 = new DateTime(year, 9, 12, 14, 0, 0, DateTimeKind.Unspecified);
+        var dueDate4 = borrowDate4.AddDays(rules.LoanDays);
+        var returnDate4 = dueDate4.AddDays(-2);
+
+        var loanSept = new Loan
+        {
+            LoanCode = await counters.NextLoanCodeAsync(),
+            Reader = new LoanReader { ReaderId = readers[3].Id!, CardNumber = readers[3].CardNumber, FullName = readers[3].FullName },
+            LibrarianId = admin.Id,
+            BorrowDate = DateHelper.VnDateToUtc(borrowDate4),
+            DueDate = DateHelper.VnDateToUtc(dueDate4),
+            Status = LoanStatus.Returned,
+            TotalFine = 0,
+            Items = new List<LoanItem>
+            {
+                new() { BookId = b4.Id!, Title = b4.Title, CategoryIds = b4.CategoryIds, ReturnDate = DateHelper.VnDateToUtc(returnDate4), Condition = BookCondition.Normal, Fine = 0 },
+                new() { BookId = b5.Id!, Title = b5.Title, CategoryIds = b5.CategoryIds, ReturnDate = DateHelper.VnDateToUtc(returnDate4), Condition = BookCondition.Normal, Fine = 0 }
+            }
+        };
+
+        // 5. Phiếu mượn tháng 10 (mượn 2 cuốn trả đúng hạn bình thường)
+        var b6 = books[1];
+        var b7 = books[4];
+        var borrowDate5 = new DateTime(year, 10, 5, 11, 0, 0, DateTimeKind.Unspecified);
+        var dueDate5 = borrowDate5.AddDays(rules.LoanDays);
+        var returnDate5 = dueDate5.AddDays(-1);
+
+        var loanOct = new Loan
+        {
+            LoanCode = await counters.NextLoanCodeAsync(),
+            Reader = new LoanReader { ReaderId = readers[0].Id!, CardNumber = readers[0].CardNumber, FullName = readers[0].FullName },
+            LibrarianId = admin.Id,
+            BorrowDate = DateHelper.VnDateToUtc(borrowDate5),
+            DueDate = DateHelper.VnDateToUtc(dueDate5),
+            Status = LoanStatus.Returned,
+            TotalFine = 0,
+            Items = new List<LoanItem>
+            {
+                new() { BookId = b6.Id!, Title = b6.Title, CategoryIds = b6.CategoryIds, ReturnDate = DateHelper.VnDateToUtc(returnDate5), Condition = BookCondition.Normal, Fine = 0 },
+                new() { BookId = b7.Id!, Title = b7.Title, CategoryIds = b7.CategoryIds, ReturnDate = DateHelper.VnDateToUtc(returnDate5), Condition = BookCondition.Normal, Fine = 0 }
+            }
+        };
+
+        await db.Loans.InsertManyAsync(new[] { loanOverdue, loanDamage, loanLost, loanSept, loanOct });
     }
 }

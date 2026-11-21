@@ -107,7 +107,7 @@ public class ReportService
                 dateFilter.Add("$gte", BsonDateTime.Create(DateHelper.VnDateToUtc(fromDate.Value)));
             if (toDate.HasValue)
                 dateFilter.Add("$lte", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1).AddSeconds(-1))));
-            matchFilter.Add("BorrowDate", dateFilter);
+            matchFilter.Add("borrowDate", dateFilter);
         }
 
         if (matchFilter.ElementCount > 0)
@@ -116,14 +116,14 @@ public class ReportService
         }
 
         // 2. $unwind items
-        pipeline.Add(new BsonDocument("$unwind", "$Items"));
+        pipeline.Add(new BsonDocument("$unwind", "$items"));
 
-        // 3. $group theo Items.BookId
+        // 3. $group theo items.bookId
         pipeline.Add(new BsonDocument("$group", new BsonDocument
         {
-            { "_id", "$Items.BookId" },
+            { "_id", "$items.bookId" },
             { "count", new BsonDocument("$sum", 1) },
-            { "title", new BsonDocument("$first", "$Items.Title") }
+            { "title", new BsonDocument("$first", "$items.title") }
         }));
 
         // 4. $sort giảm dần và $limit 10
@@ -233,7 +233,7 @@ public class ReportService
         var pipeline = new List<BsonDocument>
         {
             // 1. $match các phiếu trong năm
-            new BsonDocument("$match", new BsonDocument("BorrowDate", new BsonDocument
+            new BsonDocument("$match", new BsonDocument("borrowDate", new BsonDocument
             {
                 { "$gte", BsonDateTime.Create(startOfYearUtc) },
                 { "$lte", BsonDateTime.Create(endOfYearUtc) }
@@ -244,11 +244,11 @@ public class ReportService
             {
                 { "_id", new BsonDocument("$month", new BsonDocument
                 {
-                    { "date", "$BorrowDate" },
+                    { "date", "$borrowDate" },
                     { "timezone", "Asia/Ho_Chi_Minh" }
                 }) },
                 { "loanCount", new BsonDocument("$sum", 1) },
-                { "bookCount", new BsonDocument("$sum", new BsonDocument("$size", "$Items")) }
+                { "bookCount", new BsonDocument("$sum", new BsonDocument("$size", "$items")) }
             }),
 
             // 3. $sort theo tháng
@@ -304,17 +304,17 @@ public class ReportService
                 dateFilter.Add("$gte", BsonDateTime.Create(DateHelper.VnDateToUtc(fromDate.Value)));
             if (toDate.HasValue)
                 dateFilter.Add("$lte", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1).AddSeconds(-1))));
-            pipeline.Add(new BsonDocument("$match", new BsonDocument("BorrowDate", dateFilter)));
+            pipeline.Add(new BsonDocument("$match", new BsonDocument("borrowDate", dateFilter)));
         }
 
-        // 2. $unwind Items và CategoryIds
-        pipeline.Add(new BsonDocument("$unwind", "$Items"));
-        pipeline.Add(new BsonDocument("$unwind", "$Items.CategoryIds"));
+        // 2. $unwind items và categoryIds
+        pipeline.Add(new BsonDocument("$unwind", "$items"));
+        pipeline.Add(new BsonDocument("$unwind", "$items.categoryIds"));
 
-        // 3. $group theo CategoryId
+        // 3. $group theo categoryIds
         pipeline.Add(new BsonDocument("$group", new BsonDocument
         {
-            { "_id", "$Items.CategoryIds" },
+            { "_id", "$items.categoryIds" },
             { "borrowCount", new BsonDocument("$sum", 1) }
         }));
 
