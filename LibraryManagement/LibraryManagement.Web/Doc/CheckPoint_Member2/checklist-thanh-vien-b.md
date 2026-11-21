@@ -47,21 +47,21 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 - [ ] Gộp vào `dev`
 
 ### UC05 Quản lý thể loại (nhánh `uc05-the-loai`)
-- [ ] `CategoryService`: danh sách kèm **số đầu sách** của mỗi thể loại, thêm, sửa, xóa
-- [ ] Tên không trống, không trùng. Index `name` unique có collation `vi` strength 2 nên "văn học" trùng "Văn học": bắt lỗi trùng khóa và báo đúng ô tên (`ServiceResult.Fail(..., "Name")`)
-- [ ] Xóa chỉ khi không còn sách thuộc thể loại (QĐ09); nếu còn thì báo số sách còn thuộc thể loại
-- [ ] `CategoriesController`: `Index`, `Create`, `Edit`, `Delete` (POST, hỏi xác nhận trước)
-- [ ] ViewModel form thể loại, views danh sách và form
+- [x] `CategoryService`: danh sách kèm **số đầu sách** của mỗi thể loại, thêm, sửa, xóa (22/11/2026)
+- [x] Tên không trống, không trùng. Index `name` unique có collation `vi` strength 2 nên "văn học" trùng "Văn học": bắt lỗi trùng khóa và báo đúng ô tên (`ServiceResult.Fail(..., "Name")`) (22/11/2026)
+- [x] Xóa chỉ khi không còn sách thuộc thể loại (QĐ09); nếu còn thì báo số sách còn thuộc thể loại (22/11/2026)
+- [x] `CategoriesController`: `Index`, `Create`, `Edit`, `Delete` (POST, hỏi xác nhận trước) (22/11/2026)
+- [x] ViewModel form thể loại, views danh sách và form (22/11/2026)
 - [ ] Kiểm thử: tên trống, tên trùng kể cả khác hoa thường (6a); sửa (3a); xóa thể loại còn sách (3b); xóa thành công
 - [ ] Gộp vào `dev`
 
 ### UC04 Quản lý sách (nhánh `uc04-quan-ly-sach`)
-- [ ] `BookService`: danh sách (tên, tác giả, thể loại, số lượng tổng, số còn lại), thêm, sửa, xóa
-- [ ] Thêm: tên không trống, ít nhất 1 tác giả và 1 thể loại, giá và số lượng tổng là số dương; `availableQuantity` = `totalQuantity`
-- [ ] Sửa (3a): số lượng tổng mới không nhỏ hơn số đang cho mượn (`total - available`), số còn lại đổi theo mức chênh lệch. Dùng update có điều kiện để không lệch khi đang có người mượn cùng lúc
-- [ ] Xóa (3b): gọi `LoanService.HasOpenLoanForBookAsync(bookId)`; có phiếu mở thì báo không thể xóa (QĐ09)
-- [ ] `BooksController`: `Index`, `Create`, `Edit`, `Delete`; thể loại chọn từ danh mục có sẵn
-- [ ] `ViewModels/Books`: `BookFormVM`, `BookListVM`
+- [x] `BookService`: danh sách (tên, tác giả, thể loại, số lượng tổng, số còn lại), thêm, sửa, xóa (22/11/2026)
+- [x] Thêm: tên không trống, ít nhất 1 tác giả và 1 thể loại, giá và số lượng tổng là số dương; `availableQuantity` = `totalQuantity` (22/11/2026)
+- [x] Sửa (3a): số lượng tổng mới không nhỏ hơn số đang cho mượn (`total - available`), số còn lại đổi theo mức chênh lệch. Dùng update có điều kiện để không lệch khi đang có người mượn cùng lúc (22/11/2026)
+- [x] Xóa (3b): gọi `LoanService.HasOpenLoanForBookAsync(bookId)`; có phiếu mở thì báo không thể xóa (QĐ09) (22/11/2026)
+- [x] `BooksController`: `Index`, `Create`, `Edit`, `Delete`; thể loại chọn từ danh mục có sẵn (22/11/2026)
+- [x] `ViewModels/Books`: `BookFormVM`, `BookListVM` (22/11/2026)
 - [ ] Kiểm thử: dữ liệu không hợp lệ (6a); giảm số lượng tổng dưới số đang cho mượn; xóa sách đang có phiếu mở (3b); xóa thành công. **Lưu ý:** `HasOpenLoanForBookAsync` của A đang tạm trả `false`, thử lại test xóa sau khi A viết thật
 - [ ] Gộp vào `dev`
 

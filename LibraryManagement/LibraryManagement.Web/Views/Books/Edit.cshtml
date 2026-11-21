@@ -1,0 +1,94 @@
+@model LibraryManagement.Web.ViewModels.Books.BookFormVM
+@{
+    ViewData["Title"] = "Chỉnh sửa sách";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="content-card">
+            <h2><i class="bi bi-pencil-square me-2 text-primary"></i>Cập nhật thông tin sách</h2>
+
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label"></label> <span class="text-danger">*</span>
+                    <input asp-for="Title" class="form-control" autofocus />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AuthorsString" class="form-label"></label> <span class="text-danger">*</span>
+                    <input asp-for="AuthorsString" class="form-control" />
+                    <span asp-validation-for="AuthorsString" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label asp-for="Publisher" class="form-label"></label>
+                        <input asp-for="Publisher" class="form-control" />
+                        <span asp-validation-for="Publisher" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="PublishYear" class="form-label"></label>
+                        <input asp-for="PublishYear" type="number" class="form-control" />
+                        <span asp-validation-for="PublishYear" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Price" class="form-label"></label> <span class="text-danger">*</span>
+                        <div class="input-group">
+                            <input asp-for="Price" type="number" step="1000" class="form-control" />
+                            <span class="input-group-text">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="TotalQuantity" class="form-label"></label> <span class="text-danger">*</span>
+                        <input asp-for="TotalQuantity" type="number" min="1" class="form-control" />
+                        <div class="form-text small text-muted">
+                            Đang cho mượn: <strong>@Model.CurrentBorrowedQuantity cuốn</strong>. Tổng số cuốn không được nhỏ hơn con số này.
+                        </div>
+                        <span asp-validation-for="TotalQuantity" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Thể loại</label> <span class="text-danger">*</span>
+                    <div class="border rounded p-3 bg-light" style="max-height: 160px; overflow-y: auto;">
+                        <div class="row g-2">
+                            @foreach (var cat in Model.CategoryOptions)
+                            {
+                                <div class="col-sm-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="SelectedCategoryIds" value="@cat.Value" id="edit_cat_@cat.Value"
+                                               @(Model.SelectedCategoryIds.Contains(cat.Value) ? "checked" : "") />
+                                        <label class="form-check-label" for="edit_cat_@cat.Value">@cat.Text</label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <span asp-validation-for="SelectedCategoryIds" class="text-danger small"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Cập nhật
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -375,3 +375,26 @@ body {
   .topbar, .card-notice { padding-left: 1rem; padding-right: 1rem; }
   .topbar-role { display: none; }
 }
+
+/* ===== Toast thông báo nổi ở góc dưới bên phải màn hình ===== */
+.alert-floating {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1080;
+  min-width: 320px;
+  max-width: 450px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  border-radius: var(--lib-radius);
+  animation: slideInUp 0.3s ease-out;
+}
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

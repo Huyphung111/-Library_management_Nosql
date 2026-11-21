@@ -1,0 +1,109 @@
+@model List<LibraryManagement.Web.ViewModels.Books.BookListVM>
+@{
+    ViewData["Title"] = "Quản lý sách";
+    var categories = ViewBag.Categories as List<SelectListItem> ?? new();
+}
+
+@section PageActions {
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Thêm sách mới
+    </a>
+}
+
+<div class="content-card">
+    @* Thanh tìm kiếm & lọc *@
+    <form method="get" class="toolbar">
+        <div class="input-group" style="min-width: 280px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo tên sách hoặc tác giả..." />
+        </div>
+
+        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Tất cả thể loại --</option>
+            @foreach (var c in categories)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-funnel"></i> Lọc
+        </button>
+
+        @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.CategoryId))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+        }
+    </form>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-book"></i>
+            <p>Không tìm thấy cuốn sách nào phù hợp.</p>
+            <a asp-action="Create" class="btn btn-outline-primary btn-sm">Thêm sách mới</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Tên sách</th>
+                        <th style="width: 18%;">Tác giả</th>
+                        <th>Thể loại</th>
+                        <th style="width: 12%;" class="text-end">Giá bìa</th>
+                        <th style="width: 14%;" class="text-center">Tồn kho (Còn / Tổng)</th>
+                        <th style="width: 14%;" class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-primary">@item.Title</div>
+                                <div class="small text-muted">@item.Publisher @(item.PublishYear.HasValue ? $"({item.PublishYear})" : "")</div>
+                            </td>
+                            <td>@item.Authors</td>
+                            <td>
+                                @foreach (var cat in item.CategoryNames)
+                                {
+                                    <span class="badge bg-light text-dark border me-1 mb-1">@cat</span>
+                                }
+                            </td>
+                            <td class="text-end font-monospace">@item.Price.ToString("#,##0") đ</td>
+                            <td class="text-center">
+                                @if (item.AvailableQuantity > 0)
+                                {
+                                    <span class="badge bg-success px-2 py-1 fs-7">
+                                        @item.AvailableQuantity / @item.TotalQuantity cuốn
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-2 py-1 fs-7">
+                                        Hết sách (0/@item.TotalQuantity)
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Sửa thông tin">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa cuốn sách &quot;@item.Title&quot;?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa sách">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+

@@ -1,0 +1,43 @@
+@model LibraryManagement.Web.ViewModels.Categories.CategoryFormVM
+@{
+    ViewData["Title"] = "Chỉnh sửa thể loại";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <div class="content-card">
+            <h2><i class="bi bi-pencil-square me-2 text-primary"></i>Cập nhật thể loại</h2>
+
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label> <span class="text-danger">*</span>
+                    <input asp-for="Name" class="form-control" autofocus />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Cập nhật
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
