@@ -5,21 +5,17 @@
     ViewData["Title"] = "Đặt trước của tôi";
 }
 
-<div class="content-card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="mb-1"><i class="bi bi-bookmark-star me-2 text-primary"></i>Danh sách sách đã đặt trước</h2>
-            <p class="text-muted small mb-0">Theo dõi các yêu cầu đặt trước khi sách trong thư viện đang được mượn hết</p>
-        </div>
-        <a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-primary">
-            <i class="bi bi-search me-1"></i>Tìm sách khác
-        </a>
-    </div>
+@section PageActions {
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-primary">
+        <i class="bi bi-search me-1"></i>Khám phá thêm sách
+    </a>
+}
 
+<div class="content-card">
     @* Thông báo nguyên tắc hoạt động QĐ08 *@
-    <div class="alert alert-info d-flex align-items-center mb-3 py-2" role="alert">
-        <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
-        <div class="small">
+    <div class="alert alert-info d-flex align-items-center mb-3 p-3" role="alert">
+        <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0 text-primary"></i>
+        <div style="font-size: 0.95rem;">
             <strong>Quy định thư viện (QĐ08):</strong> Hệ thống không giữ sách riêng. Khi có sách được trả về kho, thư viện sẽ liên hệ với độc giả đăng ký sớm nhất để đến mượn.
         </div>
     </div>

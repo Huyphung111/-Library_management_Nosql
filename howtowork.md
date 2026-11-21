@@ -107,3 +107,4 @@
 | **`DG000002`** | `123456` | Độc giả | Hoạt động | Đang có 1 cuốn sách mượn quá hạn |
 | **`DG000009`** | `123456` | Độc giả | Bị khóa | Làm mất sách chưa đền bù (báo cảnh báo, chặn mượn/đặt) |
 | **`DG000010`** | `123456` | Độc giả | Hết hạn | Thẻ quá hạn sử dụng (báo cảnh báo, chặn mượn/đặt) |
+

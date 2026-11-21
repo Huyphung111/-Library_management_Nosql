@@ -91,3 +91,4 @@ public class ReservationActionVM
     [StringLength(200, ErrorMessage = "Lý do không quá 200 ký tự.")]
     public string Reason { get; set; } = string.Empty;
 }
+
