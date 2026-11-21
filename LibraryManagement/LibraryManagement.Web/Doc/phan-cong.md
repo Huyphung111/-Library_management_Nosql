@@ -6,7 +6,7 @@ Nguyên tắc: **mỗi file chỉ có một người sửa**. Người A lo ph�
 
 ## 1. Bước 0: Dựng nền (A làm, xong mới tách nhánh)
 
-Các file này cả hai đều dùng. A làm một lần, đẩy lên `main`, rồi B mới bắt đầu.
+Các file này cả hai đều dùng. A làm một lần, đẩy lên `dev`, rồi B mới bắt đầu. (Đã đẩy lên `dev` ngày 21/11/2026, commit `39bc567`.)
 
 - Solution, `Program.cs` (đăng ký sẵn **tất cả** service), `appsettings.json`
 - Toàn bộ `Data/`, `Models/`, `Options/`, `ServiceResult`, `CounterService`
@@ -56,8 +56,20 @@ Hai service gọi lẫn nhau nên tránh vòng phụ thuộc: `ReservationServic
 
 ## 5. Quy tắc tránh xung đột
 
-- Mỗi UC một nhánh Git (ví dụ `uc07-lap-phieu-muon`). Xong UC nào gộp vào `main` ngay UC đó.
+**Nhánh Git**
+
+| Nhánh | Dùng để | Ai đẩy lên |
+|---|---|---|
+| `main` | Bản ổn định để nộp. Chỉ gộp từ `dev` khi cả nhóm đã kiểm thử xong một mốc | Cả nhóm thống nhất rồi mới gộp |
+| `dev` | Nhánh tích hợp: nơi gộp các UC đã xong. Luôn phải build và chạy được | A và B gộp UC đã xong của mình vào |
+| `member1` | Nhánh làm việc của A, tạo từ `dev` | A |
+| `member2` | Nhánh làm việc của B, tạo từ `dev` | B |
+
+- Tạo nhánh làm việc lần đầu: `git fetch origin` rồi `git switch -c member2 origin/dev` (A dùng `member1`). Nếu muốn tách riêng từng UC thì tạo nhánh UC từ nhánh làm việc, ví dụ `uc07-lap-phieu-muon`.
+- Xong UC nào (code chạy được, test case của UC đó đã thử) thì gộp vào `dev` ngay UC đó, rồi `git push origin dev`.
+- Không commit thẳng lên `main`.
 - File dùng chung chỉ A sửa: `Program.cs`, `Models/`, `appsettings.json`, layout, menu. B cần thêm field hay link thì nhắn A.
 - `DbInitializer`: A viết phần index ở bước 0, sau đó giao hẳn cho B viết seed.
 - Đổi nghiệp vụ hoặc schema: sửa tài liệu trong `Doc/` trước, báo người kia, rồi mới sửa code.
-- Trước khi bắt đầu làm mỗi ngày: `git pull` nhánh `main` về rồi gộp vào nhánh đang làm.
+- Trước khi bắt đầu làm mỗi ngày: `git fetch origin` rồi `git merge origin/dev` vào nhánh đang làm, để có phần mới của người kia.
+- Dữ liệu mẫu dùng chung nằm trong `Data/MongoData/` (xem `README.md` trong đó). Nhập bằng `import.js` để hai máy có cùng dữ liệu; ai đổi dữ liệu mẫu thì xuất lại bằng `export.js` và commit.

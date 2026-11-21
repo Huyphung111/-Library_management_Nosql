@@ -30,6 +30,7 @@ Get-Process LibraryManagement.Web | Stop-Process -Force   # dừng app đang ch�
   `$env:Path = [Environment]::GetEnvironmentVariable('Path','User') + ';' + [Environment]::GetEnvironmentVariable('Path','Machine')`.
   Chuỗi kết nối: `mongodb://localhost:27017/library_management?replicaSet=rs0`. Khi đối số `--eval` có dấu ngoặc kép, viết script ra file rồi chạy `mongosh --file`.
 - Khi khởi động, `DbInitializer` tạo index (chạy lại không lỗi) và **chỉ seed khi collection `users` rỗng**. Muốn seed lại thì xóa database `library_management`.
+- Dữ liệu mẫu dùng chung (giữ nguyên `_id` giữa các máy) ở `Data/MongoData/`: chạy `mongosh "<chuỗi kết nối>" --file import.js` trong thư mục đó để nhập (xóa dữ liệu cũ của collection trước khi nhập), `--file export.js` để xuất lại. Không có MongoDB Database Tools trên máy nên dùng mongosh thay cho `mongoexport` / `mongoimport`.
 - Tài khoản seed: Thủ thư `admin` / `admin123`; độc giả `DG000001`, `DG000002` với mật khẩu `LibraryRules.DefaultPassword`.
 
 ## Tài liệu (nguồn sự thật)
@@ -43,6 +44,7 @@ Nằm trong thư mục `LibraryManagement/LibraryManagement.Web/Doc/`:
 | `thiet-ke-ky-thuat.md` | Công nghệ, cấu trúc thư mục, ánh xạ UC → Controller, schema MongoDB, index, claim (6.3), quy ước ngày giờ (6.4), giao diện dùng chung (6.5), transaction, aggregation, thứ tự triển khai |
 | `phan-cong.md` | Phân công 2 người (A, B), file nào ai sửa, 5 hàm giao kèo giữa `LoanService` và `ReservationService`, quy tắc Git |
 | `CheckPoint_Member1/checklist-thanh-vien-a.md` | Checklist tiến độ của thành viên A (người dùng đang làm phần A). Làm xong mục nào thì đánh `[x]` kèm ngày |
+| `TestCase/` | Test case thủ công từng UC của A (mã `TCxx-yy`), kèm kết quả thử. Thử xong thì cập nhật cột trạng thái và bảng tổng ở `README.md` |
 
 Ảnh mẫu bảng đặc tả use case (`Ảnh chụp màn hình 2026-11-13 160147.png`) nằm ở thư mục gốc.
 
@@ -63,7 +65,8 @@ Một project MVC, chia lớp bằng thư mục: Controller → Service → `Mon
 ## Phân công và Git
 
 - Mỗi file chỉ một người sửa (xem `phan-cong.md`). File dùng chung (`Program.cs`, `Models/`, `Data/`, `appsettings.json`, `ServiceResult`, layout, menu, `site.css`) chỉ A sửa. A và B chỉ gọi nhau qua 5 hàm giao kèo.
-- Mỗi UC làm trên một nhánh riêng (ví dụ `uc07-lap-phieu-muon`), xong UC nào gộp vào `main` ngay. Chỉ commit hoặc push khi người dùng yêu cầu.
+- Nhánh (mục 5 `phan-cong.md`): `main` là bản ổn định để nộp, **không commit hay gộp vào `main`** khi người dùng chưa yêu cầu rõ. `dev` là nhánh tích hợp, phải luôn build và chạy được. `member1` (A, người dùng) và `member2` (B) là nhánh làm việc, tạo từ `dev`. Xong UC nào thì gộp vào `dev`.
+- Chỉ commit hoặc push khi người dùng yêu cầu.
 
 ## Các quyết định đã chốt
 
