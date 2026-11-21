@@ -108,11 +108,11 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 - [ ] Gộp vào `dev`
 
 ### UC12 Thống kê (nhánh `uc12-thong-ke`)
-- [ ] Thử 5 pipeline ở mục 7.4 thiết kế kỹ thuật trong tab Aggregations của Compass trước
-- [ ] `ReportService`: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, theo thể loại, tổng tiền phạt
-- [ ] Ngày lưu là 00:00 giờ VN quy ra UTC (17:00 hôm trước): khi `$group` theo `$month` / `$dateToString` phải truyền `timezone: "Asia/Ho_Chi_Minh"`, nếu không số liệu bị lệch sang tháng trước. Phiếu quá hạn so với `DateHelper.StartOfTodayVnUtc()`
-- [ ] `ReportsController`: `TopBooks`, `Overdue`, `ByMonth`, `ByCategory`, `Fines`; `ViewModels/Reports`
-- [ ] Biểu đồ Chart.js: nhúng trong `@section Scripts` của từng view (không sửa layout)
+- [x] Thử 5 pipeline ở mục 7.4 thiết kế kỹ thuật trong tab Aggregations của Compass trước (22/11/2026)
+- [x] `ReportService`: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, theo thể loại, tổng tiền phạt (22/11/2026)
+- [x] Ngày lưu là 00:00 giờ VN quy ra UTC (17:00 hôm trước): khi `$group` theo `$month` / `$dateToString` phải truyền `timezone: "Asia/Ho_Chi_Minh"`, nếu không số liệu bị lệch sang tháng trước. Phiếu quá hạn so với `DateHelper.StartOfTodayVnUtc()` (22/11/2026)
+- [x] `ReportsController`: `TopBooks`, `Overdue`, `ByMonth`, `ByCategory`, `Fines`; `ViewModels/Reports` (22/11/2026)
+- [x] Biểu đồ Chart.js: nhúng trong `@section Scripts` của từng view (không sửa layout) (22/11/2026)
 - [ ] Kiểm thử: ngày bắt đầu sau ngày kết thúc (3a); khoảng thời gian không có dữ liệu (4a); số liệu khớp với đếm tay trong Compass
 - [ ] Gộp vào `dev`
 

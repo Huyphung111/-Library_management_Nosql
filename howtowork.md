@@ -93,6 +93,14 @@
   3. *Tra cứu Phiếu mượn* (`type=loan`): Tìm kiếm theo Mã phiếu (`PM...`), mã thẻ, tên độc giả; lọc theo trạng thái (*Đang mượn*, *Đã trả*, *Quá hạn* tính theo thời gian thực); lọc theo khoảng ngày mượn (`FromDate` đến `ToDate`).
 * **Trải nghiệm UI/UX**: Chuyển đổi tab nhanh, giữ trạng thái tìm kiếm, định dạng thẻ badge tinh tế, không làm rối mắt.
 
+### 3.9. Báo cáo Thống kê & Biểu đồ - UC12 (`/Reports`)
+* **5 báo cáo chuyên sâu sử dụng MongoDB Aggregation Pipeline**:
+  1. *Top sách mượn nhiều nhất* (`/Reports/TopBooks`): Pipeline `$unwind: "$Items"` $\rightarrow$ `$group` theo `BookId` $\rightarrow$ `$sort` giảm dần $\rightarrow$ `$limit 10`.
+  2. *Phiếu mượn quá hạn* (`/Reports/Overdue`): Lọc phiếu `Borrowing` có hạn trả nhỏ hơn ngày hiện tại, tính số ngày quá hạn và tiền phạt tạm tính theo QĐ05 (5.000đ/ngày/cuốn).
+  3. *Lượt mượn theo tháng* (`/Reports/ByMonth`): Aggregation `$group` theo `$month` có xử lý múi giờ `Asia/Ho_Chi_Minh` để bảo đảm chính xác ngày giờ lưu trữ UTC. Trực quan hóa bằng **Biểu đồ đường (Line chart)** của Chart.js.
+  4. *Lượt mượn theo thể loại* (`/Reports/ByCategory`): Pipeline `$unwind` 2 cấp (Items và CategoryIds) $\rightarrow$ `$group` tính tỷ lệ phần trăm thị phần. Trực quan hóa bằng **Biểu đồ tròn (Doughnut chart)** của Chart.js.
+  5. *Thống kê tiền phạt* (`/Reports/Fines`): Tổng hợp toàn bộ nguồn thu phạt (trễ hạn, làm mất, làm hư hỏng) theo khoảng thời gian tùy chọn.
+
 ---
 
 ## 4. Trải nghiệm người dùng và UI/UX

@@ -1,0 +1,150 @@
+@model LibraryManagement.Web.ViewModels.Reports.BorrowByCategoryReportVM
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Thống kê lượt mượn theo thể loại";
+    var catNamesJson = JsonSerializer.Serialize(Model.Categories.Select(c => c.CategoryName));
+    var catCountsJson = JsonSerializer.Serialize(Model.Categories.Select(c => c.BorrowCount));
+}
+
+<div class="content-card">
+    @* Bộ lọc khoảng thời gian *@
+    <form method="get" class="row g-2 align-items-center mb-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white small">Từ ngày</span>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+                <span class="input-group-text bg-white small">Đến ngày</span>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-filter me-1"></i>Lọc báo cáo
+            </button>
+            @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+            {
+                <a asp-action="ByCategory" class="btn btn-outline-secondary ms-1">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </a>
+            }
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger py-2 small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>@Model.ErrorMessage
+        </div>
+    }
+
+    @if (Model.Categories.Count == 0)
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-pie-chart text-muted" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Không có dữ liệu mượn sách theo thể loại trong khoảng thời gian này.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4 mb-4">
+            @* Biểu đồ tròn Doughnut *@
+            <div class="col-lg-5">
+                <div class="card border rounded-3 p-3 h-100">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Tỷ lệ mượn theo thể loại
+                    </h5>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            @* Bảng số liệu chi tiết *@
+            <div class="col-lg-7">
+                <div class="card border rounded-3 p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-table me-2 text-primary"></i>Bảng thống kê chi tiết
+                        </h5>
+                        <span class="badge bg-light text-dark border">Tổng: @Model.TotalBorrowCount cuốn</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Thể loại</th>
+                                    <th style="width: 120px;" class="text-center">Số lượt mượn</th>
+                                    <th style="width: 160px;">Tỷ lệ (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@cat.CategoryName</td>
+                                        <td class="text-center font-monospace">@cat.BorrowCount</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: @cat.Percentage%;"></div>
+                                                </div>
+                                                <span class="small font-monospace text-muted">@cat.Percentage%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chartElem = document.getElementById("categoryChart");
+            if (!chartElem) return;
+
+            const ctx = chartElem.getContext("2d");
+            const labels = @Html.Raw(catNamesJson);
+            const data = @Html.Raw(catCountsJson);
+
+            // Bảng màu trang nhã, hài hòa
+            const palette = [
+                "#1e3a5f", "#c8963e", "#2a9d8f", "#e76f51", 
+                "#457b9d", "#6a4c93", "#8338ec", "#3a86ff"
+            ];
+
+            new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: palette.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: "#ffffff"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 12,
+                                font: { family: "system-ui", size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

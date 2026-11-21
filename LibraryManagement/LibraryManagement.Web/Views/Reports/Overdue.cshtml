@@ -1,0 +1,102 @@
+@model LibraryManagement.Web.ViewModels.Reports.OverdueReportVM
+@using LibraryManagement.Web.Services
+@{
+    ViewData["Title"] = "Báo cáo phiếu mượn quá hạn";
+}
+
+<div class="content-card">
+    @* Thẻ tổng quan số liệu quá hạn *@
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+            <div class="stat-card border-0 bg-light p-3 rounded-3 d-flex align-items-center">
+                <div class="stat-icon danger me-3">
+                    <i class="bi bi-alarm fs-2"></i>
+                </div>
+                <div>
+                    <div class="stat-value text-danger fs-3 fw-bold">@Model.TotalOverdueLoans</div>
+                    <div class="stat-label text-muted small">Phiếu mượn đang quá hạn</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="stat-card border-0 bg-light p-3 rounded-3 d-flex align-items-center">
+                <div class="stat-icon accent me-3">
+                    <i class="bi bi-cash-coin fs-2"></i>
+                </div>
+                <div>
+                    <div class="stat-value text-primary fs-3 fw-bold">@Model.TotalEstimatedFine.ToString("#,##0") đ</div>
+                    <div class="stat-label text-muted small">Tổng tiền phạt tạm tính (5.000đ/ngày/cuốn)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Hiện tại không có phiếu mượn nào bị quá hạn!</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 45px;">#</th>
+                        <th style="width: 120px;">Mã phiếu</th>
+                        <th>Độc giả & Liên hệ</th>
+                        <th>Sách chưa trả</th>
+                        <th style="width: 130px;">Hạn trả</th>
+                        <th style="width: 140px;" class="text-center">Số ngày quá hạn</th>
+                        <th style="width: 150px;" class="text-end">Tiền phạt tạm tính</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        <tr>
+                            <td class="text-muted">@(i + 1)</td>
+                            <td>
+                                <span class="badge bg-light text-dark border font-monospace fs-6">@item.LoanCode</span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@item.ReaderName</div>
+                                <div class="small text-muted">
+                                    <span>@item.CardNumber</span>
+                                    @if (!string.IsNullOrEmpty(item.ReaderPhone))
+                                    {
+                                        <span class="ms-2"><i class="bi bi-telephone me-1"></i>@item.ReaderPhone</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small">
+                                    @foreach (var title in item.BookTitles)
+                                    {
+                                        <div><i class="bi bi-book me-1 text-muted"></i>@title</div>
+                                    }
+                                </div>
+                                <small class="text-muted">(@item.OverdueBooksCount cuốn chưa trả)</small>
+                            </td>
+                            <td>
+                                <div>@DateHelper.ToVnDate(item.DueDate).ToString("dd/MM/yyyy")</div>
+                                <small class="text-muted">Mượn: @DateHelper.ToVnDate(item.BorrowDate).ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge status-overdue font-monospace fs-6">
+                                    +@item.OverdueDays ngày
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold text-danger">
+                                @item.EstimatedFine.ToString("#,##0") đ
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

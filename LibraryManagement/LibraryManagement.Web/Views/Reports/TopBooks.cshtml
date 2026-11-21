@@ -1,0 +1,112 @@
+@model LibraryManagement.Web.ViewModels.Reports.TopBooksReportVM
+@{
+    ViewData["Title"] = "Top sách mượn nhiều nhất";
+}
+
+<div class="content-card">
+    @* Bộ lọc khoảng thời gian *@
+    <form method="get" class="row g-2 align-items-center mb-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white small">Từ ngày</span>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+                <span class="input-group-text bg-white small">Đến ngày</span>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-filter me-1"></i>Lọc báo cáo
+            </button>
+            @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+            {
+                <a asp-action="TopBooks" class="btn btn-outline-secondary ms-1">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </a>
+            }
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger py-2 small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>@Model.ErrorMessage
+        </div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-trophy text-muted" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Chưa có lượt mượn sách nào trong khoảng thời gian này.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;" class="text-center">Hạng</th>
+                        <th>Tên sách</th>
+                        <th>Tác giả</th>
+                        <th>Thể loại</th>
+                        <th style="width: 140px;" class="text-center">Số lượt mượn</th>
+                        <th style="width: 140px;" class="text-center">Tồn kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        <tr>
+                            <td class="text-center">
+                                @if (i == 0)
+                                {
+                                    <span class="badge bg-warning text-dark rounded-circle px-2 py-1 fs-6"><i class="bi bi-trophy-fill"></i> 1</span>
+                                }
+                                else if (i == 1)
+                                {
+                                    <span class="badge bg-secondary rounded-circle px-2 py-1 fs-6">2</span>
+                                }
+                                else if (i == 2)
+                                {
+                                    <span class="badge bg-light text-dark border rounded-circle px-2 py-1 fs-6">3</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fw-semibold">@(i + 1)</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@item.BookTitle</div>
+                            </td>
+                            <td>@item.Authors</td>
+                            <td>
+                                @foreach (var cat in item.CategoryNames)
+                                {
+                                    <span class="badge bg-light text-dark border me-1">@cat</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-primary border font-monospace fs-6 px-3">
+                                    <strong>@item.BorrowCount</strong> lượt
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.AvailableQuantity > 0)
+                                {
+                                    <span class="badge bg-light text-dark border">@item.AvailableQuantity / @item.TotalQuantity cuốn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge status-overdue">Hết sách (0/@item.TotalQuantity)</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
