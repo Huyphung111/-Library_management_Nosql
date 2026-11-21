@@ -123,7 +123,7 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 - [x] Phiếu mượn trải đều 6 tháng gần nhất: đã trả, đang mượn, quá hạn, có tiền phạt; đúng cấu trúc `Loan` (`items`, `renewalRequests`) và dùng `CounterService` để sinh mã `PM...` (22/11/2026)
 - [x] Vài yêu cầu đặt trước và gia hạn ở đủ các trạng thái (22/11/2026)
 - [ ] Seed chỉ chạy khi `users` rỗng: xóa database rồi chạy lại để thử
-- [ ] Xuất lại dữ liệu mẫu bằng `Data/MongoData/export.js`, cập nhật bảng trong `Data/MongoData/README.md`, commit
+- [x] Xuất lại dữ liệu mẫu bằng `Data/MongoData/export.js`, cập nhật bảng trong `Data/MongoData/README.md`, commit (22/11/2026)
 - [ ] Gộp vào `dev`, báo A nhập lại dữ liệu
 
 ### Kiểm thử chéo phần của A (dùng các file trong `Doc/TestCase/`)

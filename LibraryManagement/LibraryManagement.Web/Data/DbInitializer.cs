@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using LibraryManagement.Web.Models;
 using LibraryManagement.Web.Options;
@@ -22,6 +24,12 @@ public static class DbInitializer
 
         await SeedAsync(db, counterService, rules);
         await EnsureRichLoansAsync(db, counterService, rules);
+
+        var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
+        if (env != null)
+        {
+            await ExportMongoDataAsync(db, env);
+        }
     }
 
     // ---------------------------------------------------------------- Index (mục 5.4)
@@ -498,5 +506,37 @@ public static class DbInitializer
         };
 
         await db.Loans.InsertManyAsync(new[] { loanOverdue, loanDamage, loanLost, loanSept, loanOct });
+    }
+
+    /// <summary>
+    /// Tự động xuất database ra file JSON Extended Canonical trong Data/MongoData để đồng bộ giữa các thành viên.
+    /// </summary>
+    public static async Task ExportMongoDataAsync(MongoDbContext db, IWebHostEnvironment env)
+    {
+        try
+        {
+            var outDir = Path.Combine(env.ContentRootPath, "Data", "MongoData");
+            if (!Directory.Exists(outDir)) return;
+
+            var jsonSettings = new MongoDB.Bson.IO.JsonWriterSettings
+            {
+                OutputMode = MongoDB.Bson.IO.JsonOutputMode.CanonicalExtendedJson
+            };
+
+            var collections = new[] { "books", "categories", "counters", "loans", "readers", "reservations", "users" };
+
+            foreach (var colName in collections)
+            {
+                var col = db.Database.GetCollection<BsonDocument>(colName);
+                var docs = await col.Find(_ => true).Sort(new BsonDocument("_id", 1)).ToListAsync();
+                var lines = docs.Select(d => d.ToJson(jsonSettings)).ToList();
+                var filePath = Path.Combine(outDir, $"{colName}.json");
+                await File.WriteAllTextAsync(filePath, string.Join("\n", lines) + (lines.Count > 0 ? "\n" : ""), System.Text.Encoding.UTF8);
+            }
+        }
+        catch
+        {
+            // Bỏ qua nếu môi trường không cho phép ghi file
+        }
     }
 }
