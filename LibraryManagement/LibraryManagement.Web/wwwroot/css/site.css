@@ -266,6 +266,66 @@ body {
 }
 .pager-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; color: var(--lib-muted); }
 
+/* ===== Lưới thẻ sách (UC13 Tìm sách, chốt với B ngày 21/11/2026) =====
+   <div class="book-grid">
+     <div class="book-card">
+       <div class="book-cover [alt]"><i class="bi bi-book"></i></div>
+       <div class="book-body">
+         <span class="cat-tag">Văn học</span>
+         <div class="book-title">...</div>
+         <div class="book-meta">Tác giả<br />NXB · năm</div>
+         <div class="book-foot"><span class="stock in|out">...</span> nút</div>
+       </div>
+     </div>
+   </div> */
+.result-info { color: var(--lib-muted); margin-bottom: 0.75rem; }
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--lib-surface);
+  border: 1px solid var(--lib-border);
+  border-radius: var(--lib-radius);
+  box-shadow: var(--lib-shadow);
+}
+.book-cover {
+  display: grid;
+  place-items: center;
+  height: 120px;
+  font-size: 2.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, var(--lib-primary), #33557f);
+}
+.book-cover.alt { background: linear-gradient(135deg, #8a6424, var(--lib-accent)); }
+.book-body { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; padding: 0.9rem 1rem; }
+.book-title { font-weight: 600; line-height: 1.3; color: var(--lib-primary); }
+.book-meta { font-size: 0.85rem; color: var(--lib-muted); }
+.book-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+.cat-tag {
+  align-self: flex-start;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: rgba(var(--lib-primary-rgb), 0.08);
+  color: var(--lib-primary);
+}
+.stock { font-size: 0.85rem; font-weight: 500; }
+.stock.in  { color: #14532d; }
+.stock.out { color: #7f1d1d; }
+
 /* ===== Badge trạng thái dùng chung =====
    Dùng: <span class="badge status-active">@reader.CardStatus.ToVn()</span>
    Tên class = "status-" + giá trị enum viết thường. Quá hạn và thẻ hết hạn tính khi truy vấn:

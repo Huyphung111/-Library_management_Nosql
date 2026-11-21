@@ -44,6 +44,7 @@ Nằm trong thư mục `LibraryManagement/LibraryManagement.Web/Doc/`:
 | `thiet-ke-ky-thuat.md` | Công nghệ, cấu trúc thư mục, ánh xạ UC → Controller, schema MongoDB, index, claim (6.3), quy ước ngày giờ (6.4), giao diện dùng chung (6.5), transaction, aggregation, thứ tự triển khai |
 | `phan-cong.md` | Phân công 2 người (A, B), file nào ai sửa, 5 hàm giao kèo giữa `LoanService` và `ReservationService`, quy tắc Git |
 | `CheckPoint_Member1/checklist-thanh-vien-a.md` | Checklist tiến độ của thành viên A (người dùng đang làm phần A). Làm xong mục nào thì đánh `[x]` kèm ngày |
+| `CheckPoint_Member2/checklist-thanh-vien-b.md` | Checklist tiến độ của thành viên B, cùng cách ghi như của A. Các điểm A và B đã chốt (kiểu `WaitingReader` của `GetWaitingListAsync`, lưới thẻ sách trong `site.css`, nội dung Dashboard) ghi ở `phan-cong.md` mục 3 |
 | `TestCase/` | Test case thủ công từng UC của A (mã `TCxx-yy`), kèm kết quả thử. Thử xong thì cập nhật cột trạng thái và bảng tổng ở `README.md` |
 
 Ảnh mẫu bảng đặc tả use case (`Ảnh chụp màn hình 2026-11-13 160147.png`) nằm ở thư mục gốc.

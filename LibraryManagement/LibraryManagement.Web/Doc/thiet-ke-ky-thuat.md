@@ -392,6 +392,7 @@ Bố cục tham khảo trang quản trị của đồ án cũ Shop-Flower (`_Adm
 | Tiêu đề trang | Lấy từ `ViewData["Title"]`. Nút hành động bên phải tiêu đề đặt trong `@section PageActions { ... }` |
 | Khung nội dung | `<div class="content-card">` cho bảng, form, khung thông tin |
 | Thẻ số liệu | `.stat-card` gồm ô icon màu, con số, chú thích (Dashboard, khung kiểm tra độc giả ở UC07) |
+| Lưới thẻ sách (UC13) | `<div class="book-grid">` chứa các `<div class="book-card">`: `book-cover` (thêm `alt` để đổi màu vàng đồng, xen kẽ) → `book-body` gồm `cat-tag` (thể loại), `book-title`, `book-meta` (tác giả, NXB · năm), `book-foot` gồm `<span class="stock in">Còn x/y</span>` hoặc `<span class="stock out">Đã hết</span>` và nút. Dòng "Tìm thấy N đầu sách" dùng `result-info` |
 | Badge trạng thái | `<span class="badge status-{giá trị enum viết thường}">@x.ToVn()</span>`. Hai trạng thái tính khi truy vấn dùng `status-overdue` (Quá hạn) và `status-expired` (Thẻ hết hạn) |
 | Hiển thị | Ngày `dd/MM/yyyy`, tiền `15.000đ`. Thao tác khóa, xóa, từ chối phải hỏi xác nhận |
 

@@ -97,7 +97,7 @@ Test case chi tiết của từng UC và kết quả thử nằm trong thư mụ
 ### UC08 Nhận trả sách (nhánh `uc08-nhan-tra-sach`)
 - [ ] `LoanService.ReturnAsync`: tính phạt quá hạn theo ngày giờ Việt Nam, hư hỏng theo mức nhập, mất bằng giá sách
 - [ ] Trong transaction: cập nhật từng item bằng `arrayFilters`; sách không mất thì `availableQuantity +1`, sách mất thì `totalQuantity -1`; cập nhật `totalFine`; chuyển `Returned` khi trả hết
-- [ ] Sau transaction: gọi `GetWaitingListAsync` để hiện danh sách người chờ
+- [ ] Sau transaction: gọi `GetWaitingListAsync`, nhận `List<WaitingReader>` (đã có họ tên, SĐT, email, sắp người đặt sớm nhất lên đầu) và hiện danh sách người chờ
 - [ ] `LoansController`: `Return` (GET, POST)
 - [ ] `ViewModels/Loans`: `ReturnLoanVM`
 - [ ] View: tìm theo mã thẻ hoặc mã phiếu, bảng sách chưa trả có chọn tình trạng và cột tiền phạt, tổng phạt

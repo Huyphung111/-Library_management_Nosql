@@ -36,12 +36,20 @@ Mượn trả và đặt trước dính nhau ở vài chỗ. Chốt tên hàm t�
 | Hàm | Kiểu trả về | Người viết | Người gọi |
 |---|---|---|---|
 | `ReservationService.CompleteForLoanAsync(IClientSessionHandle session, string readerId, IEnumerable<string> bookIds, string loanId)` | `Task<long>` (số yêu cầu đã chuyển *Hoàn tất*) | B | A, trong UC07 |
-| `ReservationService.GetWaitingListAsync(IEnumerable<string> bookIds)` | `Task<List<Reservation>>` (yêu cầu `Approved`, sắp theo `reservedAt`) | B | A, trong UC08 |
+| `ReservationService.GetWaitingListAsync(IEnumerable<string> bookIds)` | `Task<List<WaitingReader>>` (yêu cầu `Approved`, sắp theo `reservedAt` tăng dần, có sẵn họ tên, SĐT, email người chờ) | B | A, trong UC08 |
 | `ReservationService.HasWaitingAsync(IEnumerable<string> bookIds)` | `Task<bool>` | B | A, trong UC09 và UC15 |
 | `LoanService.IsBorrowingAsync(string readerId, string bookId)` | `Task<bool>` | A | B, trong UC16 |
 | `LoanService.HasOpenLoanForBookAsync(string bookId)` | `Task<bool>` | A | B, khi xóa sách ở UC04 |
 
 Từ bước 0, các hàm này đã có trong code và tạm trả giá trị giả (`0`, danh sách rỗng, `false`). Người viết thật thì chỉ thay phần thân, **không đổi chữ ký**.
+
+**Các điểm A và B đã chốt (21/11/2026)**
+
+| Điểm | Quyết định |
+|---|---|
+| Kiểu trả về `GetWaitingListAsync` | Đổi từ `List<Reservation>` sang `List<WaitingReader>` (khai báo trong `Services/ReservationService.cs`): `ReservationId`, `BookId`, `BookTitle`, `ReaderId`, `CardNumber`, `FullName`, `Phone`, `Email`, `ReservedAt`. B ghép họ tên, SĐT, email từ `readers`; A chỉ hiển thị (UC08 bước 7a). B dùng lại cho UC10 bước 3a. Đổi lúc B chưa bắt đầu, nên chữ ký mới này là chữ ký chính thức |
+| Giao diện trang Tìm sách (UC13) | Lưới thẻ sách. A đã thêm class `book-grid`, `book-card`... vào `site.css` (mục 6.5 thiết kế kỹ thuật) |
+| Nội dung Dashboard | 4 thẻ số liệu: đầu sách (đầu sách / tổng cuốn), độc giả đang hoạt động, phiếu đang mượn, phiếu quá hạn. Khung "Việc cần xử lý": gia hạn chờ duyệt, đặt trước chờ duyệt, đặt trước đã duyệt có sách về cần liên hệ (mỗi dòng có link). Nút nhanh "Lập phiếu mượn", "Nhận trả sách". Số liệu lấy qua `ReportService.GetDashboardAsync()` do B viết, chỉ đọc dữ liệu |
 
 Hai service gọi lẫn nhau nên tránh vòng phụ thuộc: `ReservationService` inject `LoanService` trực tiếp, còn `LoanService` nhận `Lazy<ReservationService>` (đã đăng ký trong `Program.cs`) và gọi qua `_reservations.Value`. Đừng đổi constructor của hai class này.
 
