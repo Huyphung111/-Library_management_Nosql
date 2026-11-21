@@ -108,7 +108,7 @@
 * **Bảng màu chủ đạo**: Navy `#1e3a5f` (chuyên nghiệp, tri thức) và Vàng đồng `#c8963e` (điểm nhấn).
 * **Tối ưu Form Chỉnh sửa**: Tự động đưa con trỏ chuột về cuối chuỗi văn bản (`setSelectionRange(len, len)`) khi mở form chỉnh sửa Sách/Thể loại, hỗ trợ thao tác gõ tiếp nhanh chóng mà không cần di chuột.
 * **Cột Tồn kho tinh giản**: Nhãn hiển thị trực quan `X / Y cuốn` dùng gam màu trung tính nhẹ nhàng (`badge bg-light text-dark border`), tránh lạm dụng màu xanh/đỏ chói mắt.
-* **Bảng xếp hạng tinh giản**: Hạng 1 hiển thị nhãn nhẹ nhàng viền mảnh kết hợp biểu tượng cúp vàng đồng thanh nhã (`badge bg-light text-dark border`), các thứ hạng còn lại đồng bộ số tinh gọn, tránh màu mè lộn xộn.
+* **Bảng xếp hạng trực quan**: Top 3 thứ hạng đầu hiển thị 3 chiếc cúp Vàng - Bạc - Đồng vector sắc nét với số 1, 2, 3 lồng bên trong cúp; các thứ hạng từ 4 trở đi hiển thị số tự nhiên thanh thoát, gọn gàng.
 * **Toast Notification Thông minh**:
   - Toàn bộ thông báo `TempData["Success"]` và `TempData["Error"]` hiển thị dưới dạng **Toast Floating** ở góc dưới bên phải màn hình.
   - Không làm trồi sụt hay xê dịch giao diện (Zero Layout Shift).
