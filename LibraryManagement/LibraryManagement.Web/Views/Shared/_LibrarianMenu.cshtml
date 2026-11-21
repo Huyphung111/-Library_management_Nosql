@@ -1,0 +1,79 @@
+@* Menu Thủ thư. Tạo sẵn TẤT CẢ link, kể cả phần của B. Controller chưa có thì link tạm 404 cho đến khi được làm.
+   Mục đang mở được tô sáng khi khớp controller, và khớp cả action / type nếu có truyền vào. *@
+@{
+    var route = ViewContext.RouteData.Values;
+    var currentController = route["controller"]?.ToString();
+    var currentAction = route["action"]?.ToString();
+    var currentType = Context.Request.Query["type"].ToString();
+
+    string Active(string controller, string? action = null, string? type = null)
+    {
+        var match = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            && (action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase))
+            && (type == null || string.Equals(currentType, type, StringComparison.OrdinalIgnoreCase));
+        return match ? "active" : "";
+    }
+
+    // Trong LoansController, mọi action trừ Return thuộc mục "Lập phiếu mượn"
+    var onReturn = string.Equals(currentController, "Loans", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Return", StringComparison.OrdinalIgnoreCase);
+}
+<nav class="sidebar-nav">
+    <div class="nav-heading">Tổng quan</div>
+    <a class="nav-link @Active("Dashboard")" asp-controller="Dashboard" asp-action="Index">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <div class="nav-heading">Mượn trả</div>
+    <a class="nav-link @(onReturn ? "" : Active("Loans"))" asp-controller="Loans" asp-action="Create">
+        <i class="bi bi-journal-plus"></i> Lập phiếu mượn
+    </a>
+    <a class="nav-link @Active("Loans", "Return")" asp-controller="Loans" asp-action="Return">
+        <i class="bi bi-journal-arrow-down"></i> Nhận trả sách
+    </a>
+    <a class="nav-link @Active("Renewals")" asp-controller="Renewals" asp-action="Index">
+        <i class="bi bi-calendar-plus"></i> Gia hạn
+    </a>
+    <a class="nav-link @Active("Reservations")" asp-controller="Reservations" asp-action="Index">
+        <i class="bi bi-bookmark-star"></i> Đặt trước
+    </a>
+
+    <div class="nav-heading">Danh mục</div>
+    <a class="nav-link @Active("Books")" asp-controller="Books" asp-action="Index">
+        <i class="bi bi-book"></i> Sách
+    </a>
+    <a class="nav-link @Active("Categories")" asp-controller="Categories" asp-action="Index">
+        <i class="bi bi-tags"></i> Thể loại
+    </a>
+    <a class="nav-link @Active("Readers")" asp-controller="Readers" asp-action="Index">
+        <i class="bi bi-people"></i> Độc giả
+    </a>
+
+    <div class="nav-heading">Tra cứu</div>
+    <a class="nav-link @Active("Search", type: "book")" asp-controller="Search" asp-action="Index" asp-route-type="book">
+        <i class="bi bi-search"></i> Tìm sách
+    </a>
+    <a class="nav-link @Active("Search", type: "reader")" asp-controller="Search" asp-action="Index" asp-route-type="reader">
+        <i class="bi bi-person-vcard"></i> Tìm độc giả
+    </a>
+    <a class="nav-link @Active("Search", type: "loan")" asp-controller="Search" asp-action="Index" asp-route-type="loan">
+        <i class="bi bi-receipt"></i> Tìm phiếu mượn
+    </a>
+
+    <div class="nav-heading">Thống kê</div>
+    <a class="nav-link @Active("Reports", "TopBooks")" asp-controller="Reports" asp-action="TopBooks">
+        <i class="bi bi-trophy"></i> Sách mượn nhiều
+    </a>
+    <a class="nav-link @Active("Reports", "Overdue")" asp-controller="Reports" asp-action="Overdue">
+        <i class="bi bi-alarm"></i> Phiếu quá hạn
+    </a>
+    <a class="nav-link @Active("Reports", "ByMonth")" asp-controller="Reports" asp-action="ByMonth">
+        <i class="bi bi-bar-chart-line"></i> Lượt mượn theo tháng
+    </a>
+    <a class="nav-link @Active("Reports", "ByCategory")" asp-controller="Reports" asp-action="ByCategory">
+        <i class="bi bi-pie-chart"></i> Lượt mượn theo thể loại
+    </a>
+    <a class="nav-link @Active("Reports", "Fines")" asp-controller="Reports" asp-action="Fines">
+        <i class="bi bi-cash-coin"></i> Tiền phạt
+    </a>
+</nav>

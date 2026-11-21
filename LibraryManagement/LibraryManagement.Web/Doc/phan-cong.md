@@ -33,13 +33,17 @@ A giữ phần khó nhất (UC07, UC08 có transaction). B có nhiều màn hìn
 
 Mượn trả và đặt trước dính nhau ở vài chỗ. Chốt tên hàm từ bước 0, sau đó chỉ gọi hàm của nhau, không sửa file của nhau.
 
-| Hàm | Người viết | Người gọi |
-|---|---|---|
-| `ReservationService.CompleteForLoanAsync(session, readerId, bookIds, loanId)` | B | A, trong UC07 |
-| `ReservationService.GetWaitingListAsync(bookIds)` | B | A, trong UC08 |
-| `ReservationService.HasWaitingAsync(bookIds)` | B | A, trong UC09 và UC15 |
-| `LoanService.IsBorrowingAsync(readerId, bookId)` | A | B, trong UC16 |
-| `LoanService.HasOpenLoanForBookAsync(bookId)` | A | B, khi xóa sách ở UC04 |
+| Hàm | Kiểu trả về | Người viết | Người gọi |
+|---|---|---|---|
+| `ReservationService.CompleteForLoanAsync(IClientSessionHandle session, string readerId, IEnumerable<string> bookIds, string loanId)` | `Task<long>` (số yêu cầu đã chuyển *Hoàn tất*) | B | A, trong UC07 |
+| `ReservationService.GetWaitingListAsync(IEnumerable<string> bookIds)` | `Task<List<Reservation>>` (yêu cầu `Approved`, sắp theo `reservedAt`) | B | A, trong UC08 |
+| `ReservationService.HasWaitingAsync(IEnumerable<string> bookIds)` | `Task<bool>` | B | A, trong UC09 và UC15 |
+| `LoanService.IsBorrowingAsync(string readerId, string bookId)` | `Task<bool>` | A | B, trong UC16 |
+| `LoanService.HasOpenLoanForBookAsync(string bookId)` | `Task<bool>` | A | B, khi xóa sách ở UC04 |
+
+Từ bước 0, các hàm này đã có trong code và tạm trả giá trị giả (`0`, danh sách rỗng, `false`). Người viết thật thì chỉ thay phần thân, **không đổi chữ ký**.
+
+Hai service gọi lẫn nhau nên tránh vòng phụ thuộc: `ReservationService` inject `LoanService` trực tiếp, còn `LoanService` nhận `Lazy<ReservationService>` (đã đăng ký trong `Program.cs`) và gọi qua `_reservations.Value`. Đừng đổi constructor của hai class này.
 
 ## 4. Thứ tự làm song song
 

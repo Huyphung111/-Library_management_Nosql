@@ -1,0 +1,119 @@
+﻿@* Layout dùng chung cho cả hai vai trò (mục 6.5 thiết kế kỹ thuật).
+   Đã đăng nhập: sidebar + thanh trên + nội dung. Chưa đăng nhập: một khung trắng giữa nền navy. *@
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isLibrarian = User.IsInRole(nameof(Role.Librarian));
+    var cardNotice = User.FindFirst("CardNotice")?.Value;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Thư viện</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="@(isAuthenticated ? "app-body" : "auth-body")">
+@if (isAuthenticated)
+{
+    <aside id="sidebar" class="sidebar">
+        <a class="sidebar-brand" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-book-half"></i>
+            <span>THƯ VIỆN</span>
+        </a>
+        @if (isLibrarian)
+        {
+            <partial name="_LibrarianMenu" />
+        }
+        else
+        {
+            <partial name="_ReaderMenu" />
+        }
+    </aside>
+    <div class="sidebar-backdrop" data-sidebar-toggle></div>
+
+    <div class="app-main">
+        <header class="topbar">
+            <button class="btn btn-light btn-sm topbar-toggle" type="button" data-sidebar-toggle
+                    aria-controls="sidebar" aria-label="Thu gọn / mở menu">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <div class="dropdown ms-auto">
+                <button class="btn btn-light btn-sm dropdown-toggle topbar-user" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="topbar-name">@User.Identity!.Name</span>
+                    <span class="topbar-role">@(isLibrarian ? "Thủ thư" : "Độc giả")</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                            <i class="bi bi-key"></i> Đổi mật khẩu
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+        @if (!string.IsNullOrEmpty(cardNotice))
+        {
+            @* UC01 bước 5a: thẻ bị khóa hoặc hết hạn, chỉ được xem thông tin *@
+            <div class="card-notice" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>@cardNotice</span>
+            </div>
+        }
+
+        <main role="main" class="app-content">
+            <partial name="_Alert" />
+
+            <div class="page-header">
+                <h1 class="page-title">@ViewData["Title"]</h1>
+                @if (IsSectionDefined("PageActions"))
+                {
+                    <div class="page-actions">@RenderSection("PageActions")</div>
+                }
+            </div>
+
+            @RenderBody()
+        </main>
+    </div>
+}
+else
+{
+    <main role="main" class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <i class="bi bi-book-half"></i>
+                <div>
+                    <div class="auth-brand-name">THƯ VIỆN</div>
+                    <div class="auth-brand-sub">Hệ thống quản lý mượn trả sách</div>
+                </div>
+            </div>
+            <partial name="_Alert" />
+            @RenderBody()
+        </div>
+    </main>
+    if (IsSectionDefined("PageActions"))
+    {
+        IgnoreSection("PageActions");
+    }
+}
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

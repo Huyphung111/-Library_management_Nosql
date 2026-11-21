@@ -11,7 +11,7 @@ Tài liệu này dùng khi code. Nghiệp vụ và đặc tả use case nằm tr
 | Thư viện kết nối | **MongoDB.Driver** (NuGet, bản 3.x) | Driver chính thức của MongoDB cho C# |
 | Băm mật khẩu | **BCrypt.Net-Next** (NuGet) | Không lưu mật khẩu dạng chữ thường |
 | Xác thực, phân quyền | **Cookie Authentication** có sẵn trong ASP.NET Core | Phân quyền theo role `Librarian`, `Reader` |
-| Giao diện | Razor Views, **Bootstrap 5** (có sẵn trong template) | |
+| Giao diện | Razor Views, **Bootstrap 5** (có sẵn trong template), **Bootstrap Icons** | Icons nhúng qua CDN jsDelivr. Quy ước giao diện ở mục 6.5 |
 | Biểu đồ thống kê | **Chart.js** | Nhúng qua CDN hoặc LibMan |
 | Công cụ | Visual Studio 2026 hoặc VS Code + C# Dev Kit, **MongoDB Compass**, mongosh | Compass dùng để xem dữ liệu và thử aggregation |
 
@@ -32,7 +32,7 @@ dotnet add package BCrypt.Net-Next
 
 ```
 LibraryManagement/
-├── LibraryManagement.sln
+├── LibraryManagement.slnx              # .NET 10 tạo định dạng .slnx thay cho .sln
 └── LibraryManagement.Web/
     ├── Program.cs                      # Đăng ký DI, MongoDB, cookie auth, route
     ├── appsettings.json                # Chuỗi kết nối + quy định nghiệp vụ
@@ -364,9 +364,36 @@ ConventionRegistry.Register("LibraryConventions", pack, _ => true);
 
 Khi đăng nhập thành công, lưu vào cookie các claim `NameIdentifier` (userId), `Name` (fullName), `Role`, và với độc giả thêm claim `ReaderId`. Các controller của độc giả (`Catalog`, `MyLoans`, `MyReservations`) lấy `ReaderId` từ claim, không nhận từ form, để độc giả không xem được dữ liệu của người khác.
 
+Nếu thẻ của độc giả đang bị khóa hoặc đã hết hạn lúc đăng nhập (UC01, bước 5a), thêm claim `CardNotice` chứa câu thông báo, ví dụ "Thẻ của bạn đã hết hạn ngày 01/10/2026...". `_Layout` hiện câu này thành thanh cảnh báo dưới thanh trên cùng. Claim chỉ để hiển thị; điều kiện mượn, gia hạn, đặt trước vẫn kiểm tra lại trong Service.
+
 ### 6.4. Thời gian
 
 Lưu mọi ngày giờ dạng **UTC**. Khi tính số ngày quá hạn và so sánh hạn trả, quy về **ngày theo giờ Việt Nam** (`SE Asia Standard Time` trên Windows). Viết hàm tính ngày ở một chỗ duy nhất, ví dụ `DateHelper.TodayVn()`.
+
+Quy ước lưu (đã cài trong `Services/DateHelper.cs`):
+- Các field kiểu **ngày** (`borrowDate`, `dueDate`, `issuedDate`, `expiryDate`, `dateOfBirth`) lưu là thời điểm **00:00 giờ Việt Nam** của ngày đó, quy ra UTC (tức 17:00 UTC của ngày hôm trước). Dùng `DateHelper.VnDateToUtc(ngày)` để lưu, `DateHelper.ToVnDate(utc)` để đọc.
+- Các field kiểu **thời điểm** (`createdAt`, `requestedAt`, `reservedAt`, `processedAt`, `returnDate`) lưu `DateTime.UtcNow`.
+- Phiếu quá hạn: `status = Borrowing` và `dueDate < DateHelper.StartOfTodayVnUtc()`. Số ngày quá hạn: `DateHelper.DaysOverdue(dueDate)`.
+- Thẻ hết hạn: `expiryDate < DateHelper.StartOfTodayVnUtc()`.
+
+Các quy ước kiểu dữ liệu khác:
+- **Id** trong C# là `string` kèm `[BsonRepresentation(BsonType.ObjectId)]`, nên trong MongoDB vẫn là `ObjectId` và model binding, claim dùng được trực tiếp. Riêng `counters` có `_id` là chuỗi tên bộ đếm.
+- **Tiền** (`price`, `fine`, `totalFine`, `FinePerDay`) là `long`, đơn vị đồng, không có phần lẻ.
+
+### 6.5. Giao diện dùng chung
+
+Bố cục tham khảo trang quản trị của đồ án cũ Shop-Flower (`_AdminLayout`), đổi màu cho hợp thư viện. Toàn bộ màu nằm trong biến CSS ở đầu `wwwroot/css/site.css`.
+
+| Thành phần | Quy ước |
+|---|---|
+| Bảng màu | Chính xanh navy `#1e3a5f`, nhấn vàng đồng `#c8963e`, nền `#f5f6fa`, khung nội dung màu trắng |
+| `_Layout` (đã đăng nhập) | Sidebar trái 250px nạp `_LibrarianMenu` hoặc `_ReaderMenu` theo role; thanh trên có nút thu gọn sidebar và dropdown tài khoản (Đổi mật khẩu, Đăng xuất); thanh cảnh báo `CardNotice` cho độc giả (mục 6.3); `_Alert`; tiêu đề trang |
+| `_Layout` (chưa đăng nhập) | Không có sidebar. Nền navy, một khung trắng ở giữa có logo; view chỉ viết phần form |
+| Tiêu đề trang | Lấy từ `ViewData["Title"]`. Nút hành động bên phải tiêu đề đặt trong `@section PageActions { ... }` |
+| Khung nội dung | `<div class="content-card">` cho bảng, form, khung thông tin |
+| Thẻ số liệu | `.stat-card` gồm ô icon màu, con số, chú thích (Dashboard, khung kiểm tra độc giả ở UC07) |
+| Badge trạng thái | `<span class="badge status-{giá trị enum viết thường}">@x.ToVn()</span>`. Hai trạng thái tính khi truy vấn dùng `status-overdue` (Quá hạn) và `status-expired` (Thẻ hết hạn) |
+| Hiển thị | Ngày `dd/MM/yyyy`, tiền `15.000đ`. Thao tác khóa, xóa, từ chối phải hỏi xác nhận |
 
 ## 7. Các xử lý quan trọng với MongoDB
 

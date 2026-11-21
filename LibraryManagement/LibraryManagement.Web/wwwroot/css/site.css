@@ -1,0 +1,317 @@
+/* Giao diện dùng chung (mục 6.5 thiết kế kỹ thuật).
+   Bố cục tham khảo _AdminLayout của Shop-Flower, đổi màu cho hợp thư viện. Đổi màu chỉ cần sửa biến ở :root. */
+
+/* ===== Bảng màu ===== */
+:root {
+  --lib-primary: #1e3a5f;        /* xanh navy: sidebar, nút chính, tiêu đề */
+  --lib-primary-dark: #152a45;
+  --lib-primary-rgb: 30, 58, 95;
+  --lib-accent: #c8963e;         /* vàng đồng: mục đang chọn, logo */
+  --lib-bg: #f5f6fa;             /* nền vùng nội dung */
+  --lib-surface: #ffffff;        /* khung trắng */
+  --lib-border: #e3e6ee;
+  --lib-text: #1f2a37;
+  --lib-muted: #6b7280;
+  --lib-sidebar-text: #c9d4e3;
+  --lib-sidebar-heading: #7f93ad;
+  --lib-sidebar-width: 250px;
+  --lib-radius: 8px;
+  --lib-shadow: 0 2px 8px rgba(17, 24, 39, 0.06);
+
+  --bs-primary: var(--lib-primary);
+  --bs-primary-rgb: var(--lib-primary-rgb);
+  --bs-link-color: var(--lib-primary);
+  --bs-link-color-rgb: var(--lib-primary-rgb);
+  --bs-link-hover-color: var(--lib-primary-dark);
+}
+
+html { font-size: 15px; }
+
+body {
+  background: var(--lib-bg);
+  color: var(--lib-text);
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1040;
+  width: var(--lib-sidebar-width);
+  overflow-y: auto;
+  background: var(--lib-primary);
+  color: var(--lib-sidebar-text);
+  transition: transform 0.25s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sidebar-brand i { color: var(--lib-accent); font-size: 1.5rem; }
+.sidebar-brand:hover { color: #fff; }
+
+.sidebar-nav { padding: 0.5rem 0 1.5rem; }
+
+.sidebar-nav .nav-heading {
+  padding: 1rem 1.25rem 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lib-sidebar-heading);
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 1.25rem;
+  color: var(--lib-sidebar-text);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+}
+.sidebar-nav .nav-link i { font-size: 1.05rem; width: 1.2rem; text-align: center; }
+.sidebar-nav .nav-link:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.sidebar-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: var(--lib-accent);
+  color: #fff;
+  font-weight: 500;
+}
+.sidebar-nav .nav-link.active i { color: var(--lib-accent); }
+
+.sidebar-backdrop { display: none; }
+
+/* ===== Vùng chính ===== */
+.app-main {
+  margin-left: var(--lib-sidebar-width);
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.25s ease;
+}
+
+/* Nút ☰ trên máy tính: ẩn sidebar, nội dung tràn toàn màn hình */
+.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+.sidebar-collapsed .app-main { margin-left: 0; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--lib-surface);
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.08);
+}
+.topbar-toggle i { font-size: 1.25rem; line-height: 1; }
+.topbar-user { display: flex; align-items: center; gap: 0.4rem; }
+.topbar-user i { font-size: 1.2rem; color: var(--lib-primary); }
+.topbar-name { font-weight: 500; }
+.topbar-role {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(var(--lib-primary-rgb), 0.08);
+  color: var(--lib-primary);
+  font-size: 0.75rem;
+}
+.dropdown-item i { width: 1.2rem; }
+
+/* Thanh cảnh báo thẻ khóa / hết hạn (UC01 bước 5a) */
+.card-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.5rem;
+  background: #fff4dc;
+  color: #7a4b00;
+  border-bottom: 1px solid #f1d9a3;
+}
+.card-notice i { color: var(--lib-accent); }
+
+.app-content { padding: 1.5rem; flex: 1; min-width: 0; }
+
+/* ===== Tiêu đề trang ===== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.page-title { margin: 0; font-size: 1.4rem; font-weight: 600; color: var(--lib-primary); }
+.page-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ===== Khung nội dung ===== */
+.content-card {
+  background: var(--lib-surface);
+  border: 1px solid var(--lib-border);
+  border-radius: var(--lib-radius);
+  box-shadow: var(--lib-shadow);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.content-card > h2, .content-card > .card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--lib-border);
+}
+.content-card > .table-responsive:last-child,
+.content-card > .table:last-child { margin-bottom: 0; }
+
+/* Thanh tìm kiếm và lọc trên bảng danh sách */
+.toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.toolbar .form-control, .toolbar .form-select { width: auto; min-width: 220px; }
+
+/* Thông tin dạng hai cột (chi tiết phiếu, nhận trả sách) */
+.info-list { display: grid; grid-template-columns: 150px 1fr; gap: 0.4rem 1rem; margin: 0; }
+.info-list dt { font-weight: 500; color: var(--lib-muted); }
+.info-list dd { margin: 0; }
+
+/* Trang trống: "Bạn chưa mượn sách nào"... */
+.empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--lib-muted); }
+.empty-state i { display: block; font-size: 2.5rem; margin-bottom: 0.5rem; color: #c3cad6; }
+
+/* ===== Thẻ số liệu (Dashboard, khung kiểm tra độc giả ở UC07) ===== */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--lib-surface);
+  border: 1px solid var(--lib-border);
+  border-radius: var(--lib-radius);
+  box-shadow: var(--lib-shadow);
+}
+.stat-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--lib-radius);
+  font-size: 1.4rem;
+  color: #fff;
+  background: var(--lib-primary);
+}
+.stat-icon.accent  { background: var(--lib-accent); }
+.stat-icon.success { background: #2e8b57; }
+.stat-icon.danger  { background: #c0392b; }
+.stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
+.stat-label { font-size: 0.85rem; color: var(--lib-muted); }
+
+/* ===== Nút và form ===== */
+.btn-primary {
+  --bs-btn-bg: var(--lib-primary);
+  --bs-btn-border-color: var(--lib-primary);
+  --bs-btn-hover-bg: var(--lib-primary-dark);
+  --bs-btn-hover-border-color: var(--lib-primary-dark);
+  --bs-btn-active-bg: var(--lib-primary-dark);
+  --bs-btn-active-border-color: var(--lib-primary-dark);
+  --bs-btn-disabled-bg: var(--lib-primary);
+  --bs-btn-disabled-border-color: var(--lib-primary);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--lib-primary);
+  --bs-btn-border-color: var(--lib-primary);
+  --bs-btn-hover-bg: var(--lib-primary);
+  --bs-btn-hover-border-color: var(--lib-primary);
+  --bs-btn-active-bg: var(--lib-primary-dark);
+  --bs-btn-active-border-color: var(--lib-primary-dark);
+}
+.btn:focus-visible, .form-control:focus, .form-select:focus, .form-check-input:focus {
+  border-color: rgba(var(--lib-primary-rgb), 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(var(--lib-primary-rgb), 0.2);
+}
+.form-label { font-weight: 500; }
+.form-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+
+/* ===== Bảng ===== */
+.table > :not(caption) > * > * { vertical-align: middle; }
+.table thead th {
+  background: #eef1f6;
+  color: var(--lib-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.table .actions { white-space: nowrap; text-align: right; }
+.table .actions form { display: inline; }
+
+/* Phân trang */
+.pagination {
+  --bs-pagination-color: var(--lib-primary);
+  --bs-pagination-hover-color: var(--lib-primary-dark);
+  --bs-pagination-active-bg: var(--lib-primary);
+  --bs-pagination-active-border-color: var(--lib-primary);
+  --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(var(--lib-primary-rgb), 0.2);
+  margin: 0;
+}
+.pager-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; color: var(--lib-muted); }
+
+/* ===== Badge trạng thái dùng chung =====
+   Dùng: <span class="badge status-active">@reader.CardStatus.ToVn()</span>
+   Tên class = "status-" + giá trị enum viết thường. Quá hạn và thẻ hết hạn tính khi truy vấn:
+   dùng status-overdue và status-expired. */
+.badge[class*="status-"] { font-weight: 500; padding: 0.4em 0.7em; border-radius: 999px; }
+
+.status-active,   .status-returned, .status-approved, .status-normal  { background: #d7f0e1; color: #14532d; } /* xanh lá */
+.status-borrowing, .status-completed                                   { background: #dbe7f7; color: #1e3a5f; } /* xanh dương */
+.status-pending,  .status-damaged                                      { background: #fdf0d2; color: #7a4b00; } /* vàng */
+.status-locked,   .status-overdue,  .status-rejected, .status-lost    { background: #f9dcdc; color: #7f1d1d; } /* đỏ */
+.status-expired,  .status-cancelled                                    { background: #e5e7eb; color: #374151; } /* xám */
+
+/* ===== Trang chưa đăng nhập ===== */
+.auth-body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--lib-primary) 0%, var(--lib-primary-dark) 100%);
+}
+.auth-wrap { display: grid; place-items: center; min-height: 100vh; padding: 1rem; }
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background: var(--lib-surface);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+.auth-brand { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+.auth-brand i { font-size: 2.4rem; color: var(--lib-accent); }
+.auth-brand-name { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; color: var(--lib-primary); }
+.auth-brand-sub { font-size: 0.85rem; color: var(--lib-muted); }
+
+/* ===== Màn hình nhỏ: sidebar trượt ra đè lên nội dung ===== */
+@media (max-width: 991.98px) {
+  .sidebar { transform: translateX(-100%); }
+  .app-main, .sidebar-collapsed .app-main { margin-left: 0; }
+
+  .sidebar-open .sidebar { transform: translateX(0); }
+  .sidebar-open .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1035;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .app-content { padding: 1rem; }
+  .topbar, .card-notice { padding-left: 1rem; padding-right: 1rem; }
+  .topbar-role { display: none; }
+}

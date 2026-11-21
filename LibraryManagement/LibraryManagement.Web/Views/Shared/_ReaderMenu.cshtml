@@ -1,0 +1,34 @@
+@* Menu Độc giả: Catalog, MyLoans, MyReservations. Mục đang mở khớp theo controller và action. *@
+@{
+    var route = ViewContext.RouteData.Values;
+    var currentController = route["controller"]?.ToString();
+    var currentAction = route["action"]?.ToString();
+
+    string Active(string controller, string? action = null)
+    {
+        var match = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            && (action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase));
+        return match ? "active" : "";
+    }
+
+    // Trong MyLoansController, mọi action trừ History thuộc mục "Sách đang mượn"
+    var onHistory = string.Equals(currentController, "MyLoans", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "History", StringComparison.OrdinalIgnoreCase);
+}
+<nav class="sidebar-nav">
+    <div class="nav-heading">Thư viện</div>
+    <a class="nav-link @Active("Catalog")" asp-controller="Catalog" asp-action="Index">
+        <i class="bi bi-search"></i> Tìm sách
+    </a>
+
+    <div class="nav-heading">Của tôi</div>
+    <a class="nav-link @(onHistory ? "" : Active("MyLoans"))" asp-controller="MyLoans" asp-action="Index">
+        <i class="bi bi-journal-bookmark"></i> Sách đang mượn
+    </a>
+    <a class="nav-link @Active("MyLoans", "History")" asp-controller="MyLoans" asp-action="History">
+        <i class="bi bi-clock-history"></i> Lịch sử mượn
+    </a>
+    <a class="nav-link @Active("MyReservations")" asp-controller="MyReservations" asp-action="Index">
+        <i class="bi bi-bookmark-star"></i> Đặt trước của tôi
+    </a>
+</nav>
