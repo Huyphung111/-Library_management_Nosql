@@ -101,9 +101,9 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 ## Đợt 3: Tra cứu và thống kê
 
 ### UC11 Tìm kiếm (nhánh `uc11-tim-kiem`)
-- [ ] `SearchController.Index` với tham số `type` = `book` / `reader` / `loan` (menu đã có sẵn 3 link)
-- [ ] Sách: tên, tác giả, thể loại. Độc giả: mã thẻ, họ tên, SĐT, CCCD. Phiếu mượn: mã phiếu, mã thẻ, trạng thái (kể cả *Quá hạn* tính khi truy vấn), khoảng ngày mượn
-- [ ] Chọn một kết quả thì mở trang chi tiết có sẵn (chốt với A link tới trang độc giả, phiếu mượn của A)
+- [x] `SearchController.Index` với tham số `type` = `book` / `reader` / `loan` (menu đã có sẵn 3 link) (22/11/2026)
+- [x] Sách: tên, tác giả, thể loại. Độc giả: mã thẻ, họ tên, SĐT, CCCD. Phiếu mượn: mã phiếu, mã thẻ, trạng thái (kể cả *Quá hạn* tính khi truy vấn), khoảng ngày mượn (22/11/2026)
+- [x] Chọn một kết quả thì mở trang chi tiết có sẵn (chốt với A link tới trang độc giả, phiếu mượn của A) (22/11/2026)
 - [ ] Kiểm thử: không có kết quả (5a); từng loại đối tượng và bộ lọc
 - [ ] Gộp vào `dev`
 

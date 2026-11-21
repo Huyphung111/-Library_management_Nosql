@@ -86,6 +86,13 @@
 3. `HasWaitingAsync(bookIds)`:
    - Kiểm tra nhanh xem sách có người đang chờ hay không để Thủ thư/Độc giả có căn cứ từ chối gia hạn theo quy định QĐ04.
 
+### 3.8. Tra cứu Đa năng phía Thủ thư - UC11 (`/Search`)
+* **3 chế độ tra cứu tích hợp**:
+  1. *Tra cứu Sách* (`type=book`): Tìm theo từ khóa (tiêu đề, tác giả) kết hợp bộ lọc dropdown Thể loại.
+  2. *Tra cứu Độc giả* (`type=reader`): Tìm kiếm đa năng bằng Regex không phân biệt hoa/thường trên 4 trường: Mã thẻ (`DG...`), Họ tên, Số điện thoại, Số CCCD. Hiển thị tình trạng thẻ và cảnh báo nếu thẻ bị khóa hoặc hết hạn.
+  3. *Tra cứu Phiếu mượn* (`type=loan`): Tìm kiếm theo Mã phiếu (`PM...`), mã thẻ, tên độc giả; lọc theo trạng thái (*Đang mượn*, *Đã trả*, *Quá hạn* tính theo thời gian thực); lọc theo khoảng ngày mượn (`FromDate` đến `ToDate`).
+* **Trải nghiệm UI/UX**: Chuyển đổi tab nhanh, giữ trạng thái tìm kiếm, định dạng thẻ badge tinh tế, không làm rối mắt.
+
 ---
 
 ## 4. Trải nghiệm người dùng và UI/UX
