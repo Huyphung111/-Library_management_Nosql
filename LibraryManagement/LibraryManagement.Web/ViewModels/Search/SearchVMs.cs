@@ -95,3 +95,4 @@ public class SearchIndexVM
         _ => Books.Count
     };
 }
+

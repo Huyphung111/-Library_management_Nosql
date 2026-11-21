@@ -72,3 +72,4 @@ public class SearchController : Controller
         return View(vm);
     }
 }
+
