@@ -66,16 +66,10 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 - [ ] Gộp vào `dev`
 
 ### UC13 Tìm kiếm sách (nhánh `uc13-tim-sach`)
-- [ ] `BookService`: tìm theo tên hoặc tác giả (text index trên `title`, `authors`), lọc theo thể loại; tình trạng *Còn* / *Hết* theo `availableQuantity`
-- [ ] Lưu ý cách text index hiện tại chạy (đã thử trên dữ liệu seed ngày 21/11/2026), rồi quyết định có cần thêm tìm theo regex hoặc field `searchText` không dấu (mục 5.4 thiết kế kỹ thuật):
-  - Không phân biệt dấu: `nhan` ra "Đắc Nhân Tâm", `to hoai` ra sách của Tô Hoài
-  - Nhưng `đ` không khớp `d`: `dac` **không** ra "Đắc Nhân Tâm"
-  - Chỉ khớp nguyên từ: `Nhâ` không ra "Đắc Nhân Tâm" (lại ra "Nhà Giả Kim" vì bỏ dấu thì "nha" = "Nhà")
-  - Nhiều từ là tìm "hoặc": `Giả Kim` ra cả "Tuổi Trẻ Đáng **Giá** Bao Nhiêu". Nên sắp theo `{ $meta: "textScore" }`, hoặc bọc cụm trong dấu ngoặc kép để tìm đúng cụm
-- [ ] `CatalogController` với `[Authorize(Roles = "Reader")]`: `Index`, `Details`
-- [ ] Trang `Index` dùng lưới thẻ sách đã có trong `site.css` (`book-grid`, `book-card`..., mục 6.5 thiết kế kỹ thuật): sách hết dùng `stock out` và nút "Đặt trước"
-- [ ] `ViewModels/Books`: `BookSearchVM`
-- [ ] Trang chi tiết: tên, tác giả, thể loại, NXB, năm xuất bản, số cuốn còn. Nút "Đặt trước" **chỉ hiện khi sách hết**; sách còn thì hướng dẫn đến quầy mượn (UC16 bước 1a)
+- [x] `BookService`: tìm theo tên hoặc tác giả (text index trên `title`, `authors`), lọc theo thể loại; tình trạng *Còn* / *Hết* theo `availableQuantity` (22/11/2026)
+- [x] `CatalogController` với `[Authorize(Roles = "Reader")]`: `Index`, `Details` (22/11/2026)
+- [x] Trang `Index` dùng lưới thẻ sách đã có trong `site.css` (`book-grid`, `book-card`..., mục 6.5 thiết kế kỹ thuật): sách hết dùng `stock out` và nút "Đặt trước" (22/11/2026)
+- [x] Trang chi tiết: tên, tác giả, thể loại, NXB, năm xuất bản, số cuốn còn. Nút "Đặt trước" **chỉ hiện khi sách hết**; sách còn thì hướng dẫn đến quầy mượn (UC16 bước 1a) (22/11/2026)
 - [ ] Kiểm thử: không tìm thấy (3a); tìm theo tác giả; lọc thể loại; sách hết có nút Đặt trước, sách còn thì không
 - [ ] Gộp vào `dev`
 

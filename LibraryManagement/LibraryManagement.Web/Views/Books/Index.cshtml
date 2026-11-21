@@ -11,28 +11,35 @@
 }
 
 <div class="content-card">
-    @* Thanh tìm kiếm & lọc *@
-    <form method="get" class="toolbar">
-        <div class="input-group" style="min-width: 280px;">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo tên sách hoặc tác giả..." />
+    @* Thanh tìm kiếm & lọc thể loại: 1 hàng ngang, nút tìm kiếm gắn liền với ô nhập *@
+    <form method="get" class="row g-2 align-items-center mb-3">
+        <div class="col-md-6 col-lg-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo tên sách hoặc tác giả..." />
+                <button type="submit" class="btn btn-primary">
+                    Tìm kiếm
+                </button>
+            </div>
         </div>
 
-        <select name="categoryId" class="form-select" onchange="this.form.submit()">
-            <option value="">-- Tất cả thể loại --</option>
-            @foreach (var c in categories)
-            {
-                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
-            }
-        </select>
-
-        <button type="submit" class="btn btn-outline-primary">
-            <i class="bi bi-funnel"></i> Lọc
-        </button>
+        <div class="col-md-4 col-lg-3">
+            <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tất cả thể loại --</option>
+                @foreach (var c in categories)
+                {
+                    <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+                }
+            </select>
+        </div>
 
         @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.CategoryId))
         {
-            <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </a>
+            </div>
         }
     </form>
 
