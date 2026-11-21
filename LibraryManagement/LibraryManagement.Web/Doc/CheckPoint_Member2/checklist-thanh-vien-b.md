@@ -125,9 +125,9 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 ## Đợt 4: Seed đầy đủ và kiểm thử chéo
 
 ### Seed đầy đủ (mục 8 thiết kế kỹ thuật)
-- [ ] Thay seed tối thiểu trong `DbInitializer.SeedAsync`: 1 thủ thư, 5–6 thể loại, khoảng 30 đầu sách, 10 độc giả (1 thẻ khóa, 1 thẻ hết hạn)
-- [ ] Phiếu mượn trải đều 6 tháng gần nhất: đã trả, đang mượn, quá hạn, có tiền phạt; đúng cấu trúc `Loan` (`items`, `renewalRequests`) và dùng `CounterService` để sinh mã `PM...`
-- [ ] Vài yêu cầu đặt trước và gia hạn ở đủ các trạng thái
+- [x] Thay seed tối thiểu trong `DbInitializer.SeedAsync`: 1 thủ thư, 5–6 thể loại, khoảng 30 đầu sách, 10 độc giả (1 thẻ khóa, 1 thẻ hết hạn) (22/11/2026)
+- [x] Phiếu mượn trải đều 6 tháng gần nhất: đã trả, đang mượn, quá hạn, có tiền phạt; đúng cấu trúc `Loan` (`items`, `renewalRequests`) và dùng `CounterService` để sinh mã `PM...` (22/11/2026)
+- [x] Vài yêu cầu đặt trước và gia hạn ở đủ các trạng thái (22/11/2026)
 - [ ] Seed chỉ chạy khi `users` rỗng: xóa database rồi chạy lại để thử
 - [ ] Xuất lại dữ liệu mẫu bằng `Data/MongoData/export.js`, cập nhật bảng trong `Data/MongoData/README.md`, commit
 - [ ] Gộp vào `dev`, báo A nhập lại dữ liệu
