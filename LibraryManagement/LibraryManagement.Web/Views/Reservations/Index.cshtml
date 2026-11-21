@@ -6,139 +6,113 @@
 }
 
 <div class="content-card">
-    @* Cảnh báo sách đã về kho cần gọi độc giả *@
-    @if (Model.ReadyCount > 0)
-    {
-        <div class="alert alert-success d-flex align-items-center mb-3 py-2 shadow-sm" role="alert">
-            <i class="bi bi-telephone-outbound-fill fs-4 me-3 flex-shrink-0 text-success"></i>
-            <div>
-                <strong>Có @Model.ReadyCount yêu cầu đặt trước đã duyệt và sách hiện đã có trong kho!</strong><br />
-                <span class="small">Vui lòng kiểm tra tab <strong>"Sách đã về kho"</strong> để lấy số điện thoại liên hệ độc giả đến nhận sách sớm nhất.</span>
-            </div>
-            <a asp-action="Index" asp-route-tab="ready" class="btn btn-sm btn-success ms-auto text-nowrap">
-                <i class="bi bi-list-check me-1"></i>Xem danh sách gọi
-            </a>
-        </div>
-    }
-
-    @* Tabs phân loại *@
-    <ul class="nav nav-pills mb-3 border-bottom pb-2">
+    @* Thanh tabs điều hướng: thiết kế phẳng, thanh lịch, màu sắc trung tính trang nhã *@
+    <ul class="nav nav-pills mb-3 border-bottom pb-3 gap-1">
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "all" ? "active" : "")" asp-action="Index" asp-route-tab="all">
-                Tất cả <span class="badge bg-secondary ms-1">@Model.TotalCount</span>
+            <a class="nav-link @(Model.CurrentTab == "all" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="all">
+                Tất cả <span class="badge rounded-pill @(Model.CurrentTab == "all" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.TotalCount</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "pending" ? "active" : "")" asp-action="Index" asp-route-tab="pending">
+            <a class="nav-link @(Model.CurrentTab == "pending" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="pending">
                 Chờ duyệt
-                @if (Model.PendingCount > 0)
-                {
-                    <span class="badge bg-warning text-dark ms-1">@Model.PendingCount</span>
-                }
+                <span class="badge rounded-pill @(Model.CurrentTab == "pending" ? "bg-white text-primary" : (Model.PendingCount > 0 ? "bg-warning text-dark" : "bg-light text-secondary border")) ms-1">@Model.PendingCount</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "ready" ? "active" : "")" asp-action="Index" asp-route-tab="ready">
-                <i class="bi bi-bell-fill text-danger me-1"></i>Sách đã về kho
-                @if (Model.ReadyCount > 0)
-                {
-                    <span class="badge bg-danger ms-1">@Model.ReadyCount</span>
-                }
+            <a class="nav-link @(Model.CurrentTab == "ready" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="ready">
+                Sách đã về kho
+                <span class="badge rounded-pill @(Model.CurrentTab == "ready" ? "bg-white text-primary" : (Model.ReadyCount > 0 ? "bg-success text-white" : "bg-light text-secondary border")) ms-1">@Model.ReadyCount</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "approved" ? "active" : "")" asp-action="Index" asp-route-tab="approved">
-                Đã duyệt <span class="badge bg-light text-dark ms-1">@Model.ApprovedCount</span>
+            <a class="nav-link @(Model.CurrentTab == "approved" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="approved">
+                Đã duyệt <span class="badge rounded-pill @(Model.CurrentTab == "approved" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.ApprovedCount</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "completed" ? "active" : "")" asp-action="Index" asp-route-tab="completed">
-                Hoàn tất <span class="badge bg-light text-dark ms-1">@Model.CompletedCount</span>
+            <a class="nav-link @(Model.CurrentTab == "completed" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="completed">
+                Hoàn tất <span class="badge rounded-pill @(Model.CurrentTab == "completed" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.CompletedCount</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(Model.CurrentTab == "cancelled" ? "active" : "")" asp-action="Index" asp-route-tab="cancelled">
-                Từ chối / Đã hủy <span class="badge bg-light text-dark ms-1">@Model.CancelledCount</span>
+            <a class="nav-link @(Model.CurrentTab == "cancelled" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="cancelled">
+                Từ chối / Đã hủy <span class="badge rounded-pill @(Model.CurrentTab == "cancelled" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.CancelledCount</span>
             </a>
         </li>
     </ul>
 
     @if (Model.Items.Count == 0)
     {
-        <div class="empty-state">
-            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-            <p class="fs-5 mt-2">Không có yêu cầu đặt trước nào trong mục này.</p>
+        <div class="empty-state py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Không có yêu cầu đặt trước nào trong mục này.</p>
         </div>
     }
     else
     {
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 40px;">#</th>
+                        <th style="width: 45px;">#</th>
                         <th>Độc giả & Liên hệ</th>
                         <th>Cuốn sách</th>
-                        <th style="width: 140px;">Kho sách</th>
-                        <th style="width: 150px;">Ngày đăng ký</th>
-                        <th style="width: 130px;">Trạng thái</th>
-                        <th>Ghi chú / Xử lý</th>
-                        <th class="actions" style="width: 160px;">Thao tác</th>
+                        <th style="width: 130px;">Tồn kho</th>
+                        <th style="width: 140px;">Ngày đăng ký</th>
+                        <th style="width: 120px;">Trạng thái</th>
+                        <th>Ghi chú</th>
+                        <th class="actions" style="width: 150px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @for (int i = 0; i < Model.Items.Count; i++)
                     {
                         var item = Model.Items[i];
-                        <tr class="@(item.IsReadyForPickup ? "table-success" : "")">
-                            <td>@(i + 1)</td>
+                        <tr>
+                            <td class="text-muted">@(i + 1)</td>
                             <td>
-                                <div class="fw-bold">@item.ReaderName</div>
-                                <div class="small text-muted">
-                                    <span class="badge bg-light text-dark border">@item.CardNumber</span>
+                                <div class="fw-semibold text-dark">@item.ReaderName</div>
+                                <div class="text-muted small">
+                                    <span>@item.CardNumber</span>
+                                    @* Chỉ hiện cảnh báo khi thẻ BỊ KHÓA hoặc HẾT HẠN *@
                                     @if (item.CardStatus == CardStatus.Locked)
                                     {
                                         <span class="badge status-locked ms-1"><i class="bi bi-lock-fill me-1"></i>Thẻ bị khóa</span>
                                     }
                                     else if (item.IsCardExpired)
                                     {
-                                        <span class="badge status-expired ms-1"><i class="bi bi-calendar-x me-1"></i>Hết hạn</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge status-active ms-1">Thẻ hợp lệ</span>
+                                        <span class="badge status-expired ms-1"><i class="bi bi-calendar-x me-1"></i>Thẻ hết hạn</span>
                                     }
                                 </div>
                                 @if (!string.IsNullOrEmpty(item.ReaderPhone) || !string.IsNullOrEmpty(item.ReaderEmail))
                                 {
-                                    <div class="small mt-1">
+                                    <div class="small text-muted mt-1">
                                         @if (!string.IsNullOrEmpty(item.ReaderPhone))
                                         {
-                                            <a href="tel:@item.ReaderPhone" class="text-decoration-none text-success fw-semibold me-2">
-                                                <i class="bi bi-telephone-fill me-1"></i>@item.ReaderPhone
-                                            </a>
+                                            <span class="me-2"><i class="bi bi-telephone me-1"></i>@item.ReaderPhone</span>
                                         }
                                         @if (!string.IsNullOrEmpty(item.ReaderEmail))
                                         {
-                                            <span class="text-muted"><i class="bi bi-envelope me-1"></i>@item.ReaderEmail</span>
+                                            <span><i class="bi bi-envelope me-1"></i>@item.ReaderEmail</span>
                                         }
                                     </div>
                                 }
                             </td>
                             <td>
-                                <div class="fw-semibold">@item.BookTitle</div>
+                                <div class="fw-semibold text-dark">@item.BookTitle</div>
                             </td>
                             <td>
                                 @if (item.AvailableQuantity > 0)
                                 {
-                                    <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
-                                        <i class="bi bi-check-circle me-1"></i>Có sẵn @item.AvailableQuantity cuốn
+                                    <span class="badge bg-light text-dark border">
+                                        Có sẵn @item.AvailableQuantity cuốn
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-light text-secondary border px-2 py-1">
-                                        <i class="bi bi-dash-circle me-1"></i>Hết sách (0)
+                                    <span class="text-muted small">
+                                        Hết sách (0)
                                     </span>
                                 }
                             </td>
@@ -154,18 +128,18 @@
                             <td>
                                 @if (item.IsReadyForPickup)
                                 {
-                                    <div class="text-success fw-bold small">
-                                        <i class="bi bi-megaphone-fill me-1"></i>Sách đã về kho! Gọi độc giả đến quầy.
-                                    </div>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                        <i class="bi bi-telephone-outbound me-1"></i>Sách đã về - Có thể gọi
+                                    </span>
                                 }
                                 @if (!string.IsNullOrEmpty(item.Reason))
                                 {
-                                    <div class="small text-muted"><i class="bi bi-chat-left-text me-1"></i>@item.Reason</div>
+                                    <div class="small text-muted mt-1">@item.Reason</div>
                                 }
                                 @if (item.CardStatus == CardStatus.Locked || item.IsCardExpired)
                                 {
                                     <div class="small text-danger mt-1">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Cảnh báo: Thẻ độc giả không hợp lệ!
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Thẻ độc giả không hợp lệ
                                     </div>
                                 }
                             </td>
@@ -177,20 +151,20 @@
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <input type="hidden" name="returnTab" value="@Model.CurrentTab" />
                                         <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Duyệt yêu cầu">
-                                            <i class="bi bi-check-lg"></i> Duyệt
+                                            <i class="bi bi-check-lg me-1"></i>Duyệt
                                         </button>
                                     </form>
 
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="openRejectModal('@item.Id', '@item.ReaderName', '@item.BookTitle')" title="Từ chối">
-                                        <i class="bi bi-x-lg"></i> Từ chối
+                                        <i class="bi bi-x-lg me-1"></i>Từ chối
                                     </button>
                                 }
                                 else if (item.Status == ReservationStatus.Approved)
                                 {
                                     <button type="button" class="btn btn-sm btn-outline-secondary" 
                                             onclick="openCancelModal('@item.Id', '@item.ReaderName', '@item.BookTitle')" title="Hủy yêu cầu">
-                                        <i class="bi bi-dash-circle"></i> Hủy
+                                        <i class="bi bi-x-circle me-1"></i>Hủy
                                     </button>
                                 }
                                 else
@@ -243,7 +217,7 @@
                 <input type="hidden" id="cancelId" name="Id" />
                 <input type="hidden" name="returnTab" value="@Model.CurrentTab" />
                 <div class="modal-header">
-                    <h5 class="modal-title text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Hủy yêu cầu đặt trước</h5>
+                    <h5 class="modal-title text-secondary"><i class="bi bi-exclamation-triangle me-2"></i>Hủy yêu cầu đặt trước</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -255,7 +229,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-warning">Xác nhận hủy</button>
+                    <button type="submit" class="btn btn-secondary">Xác nhận hủy</button>
                 </div>
             </form>
         </div>
@@ -279,4 +253,3 @@
         }
     </script>
 }
-
