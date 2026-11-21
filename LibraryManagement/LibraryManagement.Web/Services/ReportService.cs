@@ -16,6 +16,14 @@ public class ReportService
 
     public ReportService(MongoDbContext db) => _db = db;
 
+    private static string BsonIdToString(BsonValue val)
+    {
+        if (val == null || val.IsBsonNull) return string.Empty;
+        if (val.IsObjectId) return val.AsObjectId.ToString();
+        if (val.IsString) return val.AsString;
+        return val.ToString() ?? string.Empty;
+    }
+
     #region Dashboard
 
     /// <summary>
@@ -133,7 +141,7 @@ public class ReportService
         var aggResults = await _db.Loans.Aggregate<BsonDocument>(pipeline).ToListAsync();
         if (aggResults.Count == 0) return vm;
 
-        var bookIds = aggResults.Select(d => d["_id"].AsString).ToList();
+        var bookIds = aggResults.Select(d => BsonIdToString(d["_id"])).ToList();
         var books = await _db.Books.Find(b => bookIds.Contains(b.Id!)).ToListAsync();
         var bookMap = books.ToDictionary(b => b.Id!);
 
@@ -142,8 +150,8 @@ public class ReportService
 
         foreach (var doc in aggResults)
         {
-            var bookId = doc["_id"].AsString;
-            var count = doc["count"].AsInt32;
+            var bookId = BsonIdToString(doc["_id"]);
+            var count = doc["count"].ToInt32();
             var fallbackTitle = doc.Contains("title") && !doc["title"].IsBsonNull ? doc["title"].AsString : "Sách không xác định";
 
             bookMap.TryGetValue(bookId, out var book);
@@ -257,8 +265,8 @@ public class ReportService
 
         var results = await _db.Loans.Aggregate<BsonDocument>(pipeline).ToListAsync();
         var resultMap = results.ToDictionary(
-            d => d["_id"].AsInt32,
-            d => (LoanCount: d["loanCount"].AsInt32, BookCount: d["bookCount"].AsInt32)
+            d => d["_id"].ToInt32(),
+            d => (LoanCount: d["loanCount"].ToInt32(), BookCount: d["bookCount"].ToInt32())
         );
 
         // Khởi tạo đầy đủ 12 tháng để biểu đồ liền mạch
@@ -323,16 +331,16 @@ public class ReportService
         var results = await _db.Loans.Aggregate<BsonDocument>(pipeline).ToListAsync();
         if (results.Count == 0) return vm;
 
-        var catIds = results.Select(d => d["_id"].AsString).ToList();
+        var catIds = results.Select(d => BsonIdToString(d["_id"])).ToList();
         var categories = await _db.Categories.Find(c => catIds.Contains(c.Id!)).ToListAsync();
         var catMap = categories.ToDictionary(c => c.Id!, c => c.Name);
 
-        var total = results.Sum(d => d["borrowCount"].AsInt32);
+        var total = results.Sum(d => d["borrowCount"].ToInt32());
 
         foreach (var doc in results)
         {
-            var catId = doc["_id"].AsString;
-            var count = doc["borrowCount"].AsInt32;
+            var catId = BsonIdToString(doc["_id"]);
+            var count = doc["borrowCount"].ToInt32();
             catMap.TryGetValue(catId, out var name);
 
             vm.Categories.Add(new CategoryStatVM
