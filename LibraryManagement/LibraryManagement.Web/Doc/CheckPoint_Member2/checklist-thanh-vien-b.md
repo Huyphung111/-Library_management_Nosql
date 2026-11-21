@@ -76,26 +76,26 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 ## Đợt 2: Đặt trước và hàm giao kèo
 
 ### UC16 Đặt trước sách (nhánh `uc16-dat-truoc`)
-- [ ] `ReservationService`: kiểm tra `availableQuantity == 0`, thẻ *Hoạt động* (và chưa hết hạn, khớp thông báo `CardNotice` của UC01), chưa có yêu cầu *Chờ duyệt* / *Đã duyệt* cho sách này (QĐ08), không đang mượn sách này (gọi `LoanService.IsBorrowingAsync`)
-- [ ] Tạo yêu cầu: `reservedAt` = bây giờ (UTC), *Chờ duyệt*, lưu bản sao `bookTitle`
-- [ ] Hủy (1b): yêu cầu *Chờ duyệt* hoặc *Đã duyệt* của chính mình chuyển *Đã hủy*
-- [ ] `MyReservationsController` với `[Authorize(Roles = "Reader")]`: `Index`, `Create` (POST), `Cancel` (POST). `ReaderId` lấy từ claim, không nhận từ form
-- [ ] View xác nhận: thông tin sách và lưu ý "thư viện sẽ liên hệ khi có sách, sách không được giữ riêng"
+- [x] `ReservationService`: kiểm tra `availableQuantity == 0`, thẻ *Hoạt động* (và chưa hết hạn, khớp thông báo `CardNotice` của UC01), chưa có yêu cầu *Chờ duyệt* / *Đã duyệt* cho sách này (QĐ08), không đang mượn sách này (gọi `LoanService.IsBorrowingAsync`) (22/11/2026)
+- [x] Tạo yêu cầu: `reservedAt` = bây giờ (UTC), *Chờ duyệt*, lưu bản sao `bookTitle` (22/11/2026)
+- [x] Hủy (1b): yêu cầu *Chờ duyệt* hoặc *Đã duyệt* của chính mình chuyển *Đã hủy* (22/11/2026)
+- [x] `MyReservationsController` với `[Authorize(Roles = "Reader")]`: `Index`, `Create` (POST), `Cancel` (POST). `ReaderId` lấy từ claim, không nhận từ form (22/11/2026)
+- [x] View xác nhận: thông tin sách và lưu ý "thư viện sẽ liên hệ khi có sách, sách không được giữ riêng" (22/11/2026)
 - [ ] Kiểm thử: sách còn thì không có nút (1a); hủy (1b); thẻ khóa / hết hạn, đã có yêu cầu, đang mượn sách này (2a); không hủy được yêu cầu của người khác. **Lưu ý:** `IsBorrowingAsync` của A đang tạm trả `false`
 - [ ] Gộp vào `dev`
 
 ### UC10 Xử lý đặt trước (nhánh `uc10-xu-ly-dat-truoc`)
-- [ ] `ReservationService`: danh sách theo trạng thái; `$lookup` sang `books` để đánh dấu yêu cầu *Đã duyệt* có sách đã về kho (`availableQuantity > 0`)
-- [ ] Chi tiết yêu cầu: độc giả, SĐT, tình trạng thẻ, sách, ngày đặt, số còn lại; cảnh báo khi thẻ khóa hoặc hết hạn (4a); yêu cầu *Đã duyệt* có sách về thì hiện SĐT và email để liên hệ (3a, dùng lại `WaitingReader`)
-- [ ] Duyệt, Từ chối (kèm lý do, 5a), Hủy yêu cầu *Đã duyệt* (kèm lý do, 3b): đổi `status`, lưu `reason`, `processedBy`
-- [ ] `ReservationsController` với `[Authorize(Roles = "Librarian")]`: `Index`, `Approve`, `Reject`, `Cancel`
+- [x] `ReservationService`: danh sách theo trạng thái; `$lookup` sang `books` để đánh dấu yêu cầu *Đã duyệt* có sách đã về kho (`availableQuantity > 0`) (22/11/2026)
+- [x] Chi tiết yêu cầu: độc giả, SĐT, tình trạng thẻ, sách, ngày đặt, số còn lại; cảnh báo khi thẻ khóa hoặc hết hạn (4a); yêu cầu *Đã duyệt* có sách về thì hiện SĐT và email để liên hệ (3a, dùng lại `WaitingReader`) (22/11/2026)
+- [x] Duyệt, Từ chối (kèm lý do, 5a), Hủy yêu cầu *Đã duyệt* (kèm lý do, 3b): đổi `status`, lưu `reason`, `processedBy` (22/11/2026)
+- [x] `ReservationsController` với `[Authorize(Roles = "Librarian")]`: `Index`, `Approve`, `Reject`, `Cancel` (22/11/2026)
 - [ ] Kiểm thử: duyệt; từ chối kèm lý do; hủy yêu cầu đã duyệt; cảnh báo thẻ khóa; đánh dấu sách đã về
 - [ ] Gộp vào `dev`
 
 ### 3 hàm giao kèo cho A (đổi từ giá trị giả sang code thật)
-- [ ] `CompleteForLoanAsync(session, readerId, bookIds, loanId)`: **chạy trong `session` A truyền vào**; `UpdateMany` các yêu cầu *Chờ duyệt* / *Đã duyệt* của độc giả cho các sách này sang *Hoàn tất*, ghi `completedLoanId`
-- [ ] `GetWaitingListAsync(bookIds)`: yêu cầu *Đã duyệt* của các sách, sắp theo `reservedAt` tăng dần, trả về `List<WaitingReader>` với họ tên, SĐT, email lấy từ `readers` (dùng `$lookup` hoặc truy vấn `readers` theo danh sách `readerId`)
-- [ ] `HasWaitingAsync(bookIds)`: có yêu cầu *Chờ duyệt* hoặc *Đã duyệt* cho sách nào trong danh sách không
+- [x] `CompleteForLoanAsync(session, readerId, bookIds, loanId)`: **chạy trong `session` A truyền vào**; `UpdateMany` các yêu cầu *Chờ duyệt* / *Đã duyệt* của độc giả cho các sách này sang *Hoàn tất*, ghi `completedLoanId` (22/11/2026)
+- [x] `GetWaitingListAsync(bookIds)`: yêu cầu *Đã duyệt* của các sách, sắp theo `reservedAt` tăng dần, trả về `List<WaitingReader>` với họ tên, SĐT, email lấy từ `readers` (dùng `$lookup` hoặc truy vấn `readers` theo danh sách `readerId`) (22/11/2026)
+- [x] `HasWaitingAsync(bookIds)`: có yêu cầu *Chờ duyệt* hoặc *Đã duyệt* cho sách nào trong danh sách không (22/11/2026)
 - [ ] Gộp vào `dev` và báo A đã có hàm thật
 
 ## Đợt 3: Tra cứu và thống kê
