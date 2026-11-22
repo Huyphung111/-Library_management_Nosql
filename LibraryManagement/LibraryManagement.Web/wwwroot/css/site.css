@@ -398,3 +398,15 @@ body {
     opacity: 1;
   }
 }
+
+/* ===== Ảnh bìa sách (GridFS, mục 7.5) ===== */
+.book-cover.has-img { height: 260px; padding: 0.6rem; background: #eef1f6; }
+.book-cover.has-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+.cover-thumb { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 52px; overflow: hidden;
+  border-radius: 3px; background: #eef1f6; color: var(--lib-muted); }
+.cover-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.cover-large { width: 100%; max-width: 240px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); }
+.cover-preview { display: grid; place-items: center; flex-shrink: 0; width: 96px; height: 144px; overflow: hidden;
+  border: 1px dashed var(--lib-border); border-radius: 6px; background: #f8f9fb; color: var(--lib-muted); font-size: 2rem; }
+.cover-preview img { width: 100%; height: 100%; object-fit: cover; }

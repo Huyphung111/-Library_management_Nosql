@@ -169,6 +169,7 @@ Database: `library_management`. Tên field trong MongoDB dùng **camelCase**, en
 | `loans` | Phiếu mượn; các cuốn sách, tiền phạt và yêu cầu gia hạn nhúng bên trong |
 | `reservations` | Yêu cầu đặt trước |
 | `counters` | Bộ đếm sinh mã thẻ `DG000001`, mã phiếu `PM000001` |
+| `covers.files`, `covers.chunks` | Ảnh bìa sách lưu bằng **GridFS** (bucket `covers`), xem mục 7.5 |
 
 `counters` là collection kỹ thuật, không phải dữ liệu nghiệp vụ. Mỗi lần cần mã mới, gọi `FindOneAndUpdate` với `$inc` để tăng số đếm một cách nguyên tử.
 
@@ -222,6 +223,7 @@ Database: `library_management`. Tên field trong MongoDB dùng **camelCase**, en
   "categoryIds": [ObjectId],
   "totalQuantity": 3,
   "availableQuantity": 1,
+  "coverImageId": ObjectId,         // ảnh bìa trong GridFS (covers.files), null nếu chưa có
   "createdAt": ISODate
 }
 ```
@@ -459,6 +461,19 @@ if (result.ModifiedCount == 0) throw new BusinessException("Sách đã hết.");
 | Tổng tiền phạt | `$match` theo khoảng ngày → `$group` theo tháng với `$sum: "$totalFine"` |
 
 Thử pipeline trong tab Aggregations của Compass trước, rồi mới chuyển sang C# bằng `Aggregate()` hoặc `BsonDocument[]`.
+
+### 7.5. Ảnh bìa sách bằng GridFS
+
+Ảnh bìa lưu ngay trong MongoDB bằng **GridFS**: file được cắt thành các mảnh 255 KB lưu ở `covers.chunks`, thông tin file ở `covers.files`. Sách chỉ giữ `coverImageId` trỏ tới `covers.files._id`. Nhờ vậy sao lưu database là có luôn ảnh, không phụ thuộc thư mục trên đĩa.
+
+| Việc | Cách làm |
+|---|---|
+| Khởi tạo | `MongoDbContext.Covers` là `GridFSBucket` tên `covers` |
+| Upload (UC04 thêm / sửa sách) | Chỉ nhận JPEG, PNG, WebP, tối đa 2 MB; kiểm tra cả đuôi file, `ContentType` và vài byte đầu của file. `UploadFromStreamAsync(tên, stream, options)` với `Metadata = { contentType, bookId }` |
+| Hiển thị | `GET /Covers/{id}` (`CoversController`, mọi người đã đăng nhập) mở stream bằng `OpenDownloadStreamAsync` và trả ảnh, có cache 1 ngày. Không có ảnh thì 404, giao diện hiện khung màu như cũ |
+| Đổi ảnh, bỏ ảnh | Upload ảnh mới, cập nhật `coverImageId`, rồi `DeleteAsync` ảnh cũ |
+| Xóa sách | Xóa luôn ảnh trong GridFS |
+| Dữ liệu mẫu | Ảnh của 28 sách mẫu để trong `Data/SeedCovers/` (tên file = tên sách bỏ dấu). Khi khởi động, `DbInitializer` upload ảnh cho sách nào chưa có ảnh (hoặc `coverImageId` trỏ tới file không tồn tại) mà có file trùng tên. Không xuất GridFS ra `Data/MongoData` vì ảnh tự nạp lại từ `Data/SeedCovers/` |
 
 ## 8. Seed dữ liệu mẫu
 

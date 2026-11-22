@@ -156,3 +156,9 @@ A sửa trên nhánh `member1` (theo yêu cầu của nhóm), mỗi chỗ có gh
 | 6 | Seed: 18 sách có số còn lại nhỏ hơn tổng dù không ai mượn | `DbInitializer` | Đồng bộ lại sau khi seed (giữ 3 sách cố ý hết hàng) |
 | 7 | File JSON xuất ra có BOM nên `import.js` lỗi; tự ghi đè JSON mỗi lần khởi động | `DbInitializer` | Ghi UTF-8 không BOM; chỉ xuất khi vừa seed database mới. Đã xuất lại `Data/MongoData` |
 
+## Ảnh bìa sách bằng GridFS (A làm thêm, 22/11/2026, nhánh `feature/anh-bia`)
+
+Thiết kế ở mục 7.5 `thiet-ke-ky-thuat.md`. Các file của B có sửa: `BookService` (upload, đổi, xóa ảnh), `BooksController`, `CatalogController`, `Views/Books/Create|Edit|Index`, `Views/Catalog/Index|Details`. File mới: `CoversController` (`GET /Covers/{id}`), `Data/SeedCovers/` (28 ảnh của sách mẫu: 23 bìa thật bản tiếng Anh lấy từ Open Library, 5 ảnh tự tạo cho sách chỉ có bản tiếng Việt và cuốn C# 12).
+
+Đã thử (Đạt): 28/28 sách mẫu có ảnh khi khởi động; ảnh hiện ở Quản lý sách, Tìm sách, Chi tiết sách; upload PNG và JPG; chặn file giả đuôi .jpg, file .txt, file trên 2 MB; sửa không chọn ảnh thì giữ ảnh cũ; đổi ảnh thì ảnh cũ bị xóa khỏi `covers.files` và `covers.chunks`; tick "Xóa ảnh bìa" và xóa sách đều xóa ảnh; `/Covers/abc` trả 404; chưa đăng nhập thì chuyển về trang đăng nhập; `coverImageId` trỏ tới file không còn thì khởi động lại tự nạp lại. Bộ kiểm thử phần B 88/88, phần A 74/74 vẫn Đạt.
+

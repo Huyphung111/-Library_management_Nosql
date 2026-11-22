@@ -87,6 +87,7 @@ public class BooksController : Controller
         var vm = new BookFormVM
         {
             Id = book.Id,
+            CoverImageId = book.CoverImageId,
             Title = book.Title,
             AuthorsString = string.Join(", ", book.Authors),
             Publisher = book.Publisher,

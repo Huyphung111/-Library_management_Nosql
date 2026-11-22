@@ -18,6 +18,9 @@ public class BookListVM
     public int TotalQuantity { get; set; }
     public int AvailableQuantity { get; set; }
     public int BorrowedQuantity => TotalQuantity - AvailableQuantity;
+
+    /// <summary>Id ảnh bìa trong GridFS, null nếu chưa có. Hiển thị qua /Covers/{id}.</summary>
+    public string? CoverImageId { get; set; }
 }
 
 /// <summary>
@@ -59,6 +62,16 @@ public class BookFormVM
 
     /// <summary>Dùng khi chỉnh sửa để hiển thị số lượng đang cho mượn.</summary>
     public int CurrentBorrowedQuantity { get; set; }
+
+    /// <summary>Ảnh bìa mới (JPEG, PNG, WebP, tối đa 2 MB). Lưu vào GridFS.</summary>
+    [Display(Name = "Ảnh bìa")]
+    public Microsoft.AspNetCore.Http.IFormFile? CoverFile { get; set; }
+
+    /// <summary>Khi sửa: tick để bỏ ảnh bìa hiện tại.</summary>
+    public bool RemoveCover { get; set; }
+
+    /// <summary>Ảnh bìa hiện tại (khi sửa), để hiển thị.</summary>
+    public string? CoverImageId { get; set; }
 
     /// <summary>Danh sách thể loại để hiển thị checkbox lựa chọn.</summary>
     public List<SelectListItem> CategoryOptions { get; set; } = new();

@@ -35,6 +35,12 @@ public static class DbInitializer
             if (env != null)
                 await ExportMongoDataAsync(db, env);
         }
+
+        // Ảnh bìa mẫu (GridFS, mục 7.5): nạp sau khi xuất JSON nên Data/MongoData không chứa coverImageId.
+        // Chạy mỗi lần khởi động nhưng chỉ upload cho sách còn thiếu ảnh, nên chạy lại không trùng.
+        var webEnv = scope.ServiceProvider.GetService<IWebHostEnvironment>();
+        if (webEnv != null)
+            await EnsureSeedCoversAsync(db, webEnv);
     }
 
     // ---------------------------------------------------------------- Index (mục 5.4)
@@ -537,6 +543,42 @@ public static class DbInitializer
         };
 
         await db.Loans.InsertManyAsync(new[] { loanOverdue, loanDamage, loanLost, loanSept, loanOct });
+    }
+
+    /// <summary>
+    /// Gắn ảnh bìa mẫu trong Data/SeedCovers/{tên sách bỏ dấu}.jpg cho sách chưa có ảnh,
+    /// hoặc có coverImageId nhưng file trong GridFS không còn (ví dụ vừa nhập lại dữ liệu bằng import.js).
+    /// </summary>
+    private static async Task EnsureSeedCoversAsync(MongoDbContext db, IWebHostEnvironment env)
+    {
+        var dir = Path.Combine(env.ContentRootPath, "Data", "SeedCovers");
+        if (!Directory.Exists(dir)) return;
+
+        var existing = (await db.Database.GetCollection<BsonDocument>("covers.files")
+                .Find(new BsonDocument()).Project(new BsonDocument("_id", 1)).ToListAsync())
+            .Select(d => d["_id"].ToString()).ToHashSet();
+
+        var books = await db.Books.Find(_ => true).ToListAsync();
+        foreach (var book in books.Where(b => b.CoverImageId == null || !existing.Contains(b.CoverImageId)))
+        {
+            var file = Path.Combine(dir, CoverFileName(book.Title));
+            if (!File.Exists(file)) continue;
+
+            await using var stream = File.OpenRead(file);
+            var coverId = await BookService.UploadCoverStreamAsync(stream, Path.GetFileName(file), "image/jpeg", book.Id!, db.Covers);
+            await db.Books.UpdateOneAsync(b => b.Id == book.Id, Builders<Book>.Update.Set(b => b.CoverImageId, coverId));
+        }
+    }
+
+    /// <summary>"Đắc Nhân Tâm" → "dac-nhan-tam.jpg": bỏ dấu, chữ thường, ký tự khác chữ / số thành "-".</summary>
+    private static string CoverFileName(string title)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in title.Replace('đ', 'd').Replace('Đ', 'D').Normalize(System.Text.NormalizationForm.FormD))
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        var slug = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), "[^a-z0-9]+", "-").Trim('-');
+        return slug + ".jpg";
     }
 
     /// <summary>

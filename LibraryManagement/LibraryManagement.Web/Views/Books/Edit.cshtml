@@ -8,7 +8,8 @@
         <div class="content-card">
             <h2><i class="bi bi-pencil-square me-2 text-primary"></i>Cập nhật thông tin sách</h2>
 
-            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" novalidate>
+                <input type="hidden" asp-for="CoverImageId" />
                 <input type="hidden" asp-for="Id" />
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
 
@@ -75,6 +76,36 @@
                     <span asp-validation-for="SelectedCategoryIds" class="text-danger small"></span>
                 </div>
 
+                @* Ảnh bìa: lưu trong MongoDB GridFS (mục 7.5 thiết kế kỹ thuật) *@
+                <div class="mb-4">
+                    <label asp-for="CoverFile" class="form-label"></label>
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="cover-preview" id="coverPreviewBox">
+                            @if (!string.IsNullOrEmpty(Model.CoverImageId))
+                            {
+                                <img id="coverPreview" src="/Covers/@Model.CoverImageId" alt="Ảnh bìa hiện tại" />
+                            }
+                            else
+                            {
+                                <img id="coverPreview" alt="Xem trước ảnh bìa" class="d-none" />
+                                <i class="bi bi-image" id="coverPlaceholder"></i>
+                            }
+                        </div>
+                        <div class="flex-grow-1">
+                            <input asp-for="CoverFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                            <div class="form-text">JPG, PNG hoặc WebP, tối đa 2 MB. Không chọn ảnh mới thì giữ ảnh cũ.</div>
+                            <span asp-validation-for="CoverFile" class="text-danger small"></span>
+                            @if (!string.IsNullOrEmpty(Model.CoverImageId))
+                            {
+                                <div class="form-check mt-2">
+                                    <input asp-for="RemoveCover" class="form-check-input" />
+                                    <label asp-for="RemoveCover" class="form-check-label">Xóa ảnh bìa hiện tại</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-lg"></i> Cập nhật
@@ -89,6 +120,24 @@
 </div>
 
 @section Scripts {
+    <script>
+        // Xem trước ảnh bìa trước khi lưu
+        (function () {
+            const input = document.getElementById("CoverFile");
+            const img = document.getElementById("coverPreview");
+            const ph = document.getElementById("coverPlaceholder");
+            if (!input || !img) return;
+            input.addEventListener("change", () => {
+                const f = input.files[0];
+                if (!f) return;
+                img.src = URL.createObjectURL(f);
+                img.classList.remove("d-none");
+                if (ph) ph.classList.add("d-none");
+                const rm = document.getElementById("RemoveCover");
+                if (rm) rm.checked = false;
+            });
+        })();
+    </script>
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener("DOMContentLoaded", function () {

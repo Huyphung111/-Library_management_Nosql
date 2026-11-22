@@ -66,7 +66,8 @@ public class CatalogController : Controller
             Price = book.Price,
             CategoryNames = book.CategoryIds.Where(id => catMap.ContainsKey(id)).Select(id => catMap[id]).ToList(),
             TotalQuantity = book.TotalQuantity,
-            AvailableQuantity = book.AvailableQuantity
+            AvailableQuantity = book.AvailableQuantity,
+            CoverImageId = book.CoverImageId
         };
 
         return View(vm);

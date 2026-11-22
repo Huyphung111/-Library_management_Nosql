@@ -8,7 +8,7 @@
         <div class="content-card">
             <h2><i class="bi bi-book-half me-2 text-primary"></i>Thông tin sách mới</h2>
 
-            <form asp-action="Create" method="post" novalidate>
+            <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
 
                 <div class="mb-3">
@@ -78,6 +78,30 @@
                     <span asp-validation-for="SelectedCategoryIds" class="text-danger small"></span>
                 </div>
 
+                @* Ảnh bìa: lưu trong MongoDB GridFS (mục 7.5 thiết kế kỹ thuật) *@
+                <div class="mb-4">
+                    <label asp-for="CoverFile" class="form-label"></label>
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="cover-preview" id="coverPreviewBox">
+                            @if (!string.IsNullOrEmpty(Model.CoverImageId))
+                            {
+                                <img id="coverPreview" src="/Covers/@Model.CoverImageId" alt="Ảnh bìa hiện tại" />
+                            }
+                            else
+                            {
+                                <img id="coverPreview" alt="Xem trước ảnh bìa" class="d-none" />
+                                <i class="bi bi-image" id="coverPlaceholder"></i>
+                            }
+                        </div>
+                        <div class="flex-grow-1">
+                            <input asp-for="CoverFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                            <div class="form-text">JPG, PNG hoặc WebP, tối đa 2 MB.</div>
+                            <span asp-validation-for="CoverFile" class="text-danger small"></span>
+                            
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-lg"></i> Lưu sách
@@ -92,6 +116,24 @@
 </div>
 
 @section Scripts {
+    <script>
+        // Xem trước ảnh bìa trước khi lưu
+        (function () {
+            const input = document.getElementById("CoverFile");
+            const img = document.getElementById("coverPreview");
+            const ph = document.getElementById("coverPlaceholder");
+            if (!input || !img) return;
+            input.addEventListener("change", () => {
+                const f = input.files[0];
+                if (!f) return;
+                img.src = URL.createObjectURL(f);
+                img.classList.remove("d-none");
+                if (ph) ph.classList.add("d-none");
+                const rm = document.getElementById("RemoveCover");
+                if (rm) rm.checked = false;
+            });
+        })();
+    </script>
     <partial name="_ValidationScriptsPartial" />
 }
 

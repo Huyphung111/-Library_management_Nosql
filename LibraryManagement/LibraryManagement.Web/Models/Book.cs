@@ -26,5 +26,9 @@ public class Book
     /// <summary>Số cuốn còn trên kệ. Chỉ trừ bằng update có điều kiện "availableQuantity &gt; 0".</summary>
     public int AvailableQuantity { get; set; }
 
+    /// <summary>Ảnh bìa trong GridFS (bucket "covers", collection covers.files). Null nếu chưa có ảnh. Mục 7.5.</summary>
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? CoverImageId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

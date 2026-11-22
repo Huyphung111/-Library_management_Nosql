@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 using LibraryManagement.Web.Models;
 
 namespace LibraryManagement.Web.Data;
@@ -19,6 +20,7 @@ public class MongoDbContext
         Loans = Database.GetCollection<Loan>("loans");
         Reservations = Database.GetCollection<Reservation>("reservations");
         Counters = Database.GetCollection<Counter>("counters");
+        Covers = new GridFSBucket(Database, new GridFSBucketOptions { BucketName = "covers" });
     }
 
     public IMongoClient Client { get; }
@@ -31,4 +33,7 @@ public class MongoDbContext
     public IMongoCollection<Loan> Loans { get; }
     public IMongoCollection<Reservation> Reservations { get; }
     public IMongoCollection<Counter> Counters { get; }
+
+    /// <summary>GridFS chứa ảnh bìa sách (covers.files, covers.chunks), mục 7.5 thiết kế kỹ thuật.</summary>
+    public GridFSBucket Covers { get; }
 }
