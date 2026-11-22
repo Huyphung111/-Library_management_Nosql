@@ -1,6 +1,6 @@
-﻿{ "_id" : { "$oid" : "6b01f37fe473a1cb36345238" }, "name" : "Công nghệ thông tin", "description" : "Lập trình, mạng máy tính, trí tuệ nhân tạo và hệ thống" }
-{ "_id" : { "$oid" : "6b01f37fe473a1cb36345239" }, "name" : "Kỹ năng sống", "description" : "Phát triển bản thân, tư duy lãnh đạo, quản lý cảm xúc" }
-{ "_id" : { "$oid" : "6b01f37fe473a1cb3634523a" }, "name" : "Văn học", "description" : "Tiểu thuyết, truyện ngắn, tác phẩm kinh điển trong và ngoài nước" }
-{ "_id" : { "$oid" : "6b01f37fe473a1cb3634523b" }, "name" : "Kinh tế & Quản trị", "description" : "Kinh doanh, tài chính cá nhân, khởi nghiệp và đầu tư" }
-{ "_id" : { "$oid" : "6b01f37fe473a1cb3634523c" }, "name" : "Khoa học tự nhiên", "description" : "Vũ trụ, vật lý, toán học và thế giới tự nhiên" }
-{ "_id" : { "$oid" : "6b01f37fe473a1cb3634523d" }, "name" : "Lịch sử & Triết học", "description" : "Lịch sử Việt Nam, văn minh thế giới và triết học" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d536b" }, "name" : "Công nghệ thông tin", "description" : "Lập trình, mạng máy tính, trí tuệ nhân tạo và hệ thống" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d536c" }, "name" : "Kỹ năng sống", "description" : "Phát triển bản thân, tư duy lãnh đạo, quản lý cảm xúc" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d536d" }, "name" : "Văn học", "description" : "Tiểu thuyết, truyện ngắn, tác phẩm kinh điển trong và ngoài nước" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d536e" }, "name" : "Kinh tế & Quản trị", "description" : "Kinh doanh, tài chính cá nhân, khởi nghiệp và đầu tư" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d536f" }, "name" : "Khoa học tự nhiên", "description" : "Vũ trụ, vật lý, toán học và thế giới tự nhiên" }
+{ "_id" : { "$oid" : "6b0305704f36e4387b8d5370" }, "name" : "Lịch sử & Triết học", "description" : "Lịch sử Việt Nam, văn minh thế giới và triết học" }

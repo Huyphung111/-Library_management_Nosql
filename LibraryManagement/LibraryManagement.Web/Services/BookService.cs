@@ -29,16 +29,17 @@ public class BookService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim();
-            // Lọc theo text search hoặc regex trên title/authors
+            // Sửa (A, 22/11/2026): thoát ký tự đặc biệt để "(" không làm lỗi regex; tìm được theo một phần tên tác giả
+            var regex = new MongoDB.Bson.BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(search.Trim()), "i");
             filter &= filterBuilder.Or(
-                filterBuilder.Regex(b => b.Title, new MongoDB.Bson.BsonRegularExpression(s, "i")),
-                filterBuilder.AnyEq(b => b.Authors, s)
+                filterBuilder.Regex(b => b.Title, regex),
+                filterBuilder.Regex("authors", regex)
             );
         }
 
         if (!string.IsNullOrWhiteSpace(categoryId))
         {
+            if (!ValidId(categoryId)) return new List<BookListVM>();
             filter &= filterBuilder.AnyEq(b => b.CategoryIds, categoryId);
         }
 
@@ -68,7 +69,11 @@ public class BookService
     /// Lấy chi tiết sách theo Id.
     /// </summary>
     public async Task<Book?> GetByIdAsync(string id) =>
-        await _db.Books.Find(b => b.Id == id).FirstOrDefaultAsync();
+        ValidId(id) ? await _db.Books.Find(b => b.Id == id).FirstOrDefaultAsync() : null;
+
+    // Sửa lỗi 500 khi id sai định dạng ObjectId trên URL (A, 22/11/2026)
+    private static bool ValidId(string? id) => MongoDB.Bson.ObjectId.TryParse(id, out _);
+
 
     /// <summary>
     /// Thêm sách mới.
@@ -132,9 +137,10 @@ public class BookService
                 nameof(BookFormVM.TotalQuantity));
         }
 
-        // Tính lại số còn lại theo độ chênh lệch
+        // Tính lại số còn lại theo độ chênh lệch.
+        // Sửa (A, 22/11/2026): dùng $inc + điều kiện "availableQuantity >= -delta" trong filter (mục 7.2),
+        // để không lệch khi đúng lúc đó có người mượn / trả sách.
         var delta = vm.TotalQuantity - existingBook.TotalQuantity;
-        var newAvailable = existingBook.AvailableQuantity + delta;
 
         var update = Builders<Book>.Update
             .Set(b => b.Title, vm.Title.Trim())
@@ -143,10 +149,14 @@ public class BookService
             .Set(b => b.PublishYear, vm.PublishYear)
             .Set(b => b.Price, vm.Price)
             .Set(b => b.CategoryIds, vm.SelectedCategoryIds)
-            .Set(b => b.TotalQuantity, vm.TotalQuantity)
-            .Set(b => b.AvailableQuantity, newAvailable);
+            .Inc(b => b.TotalQuantity, delta)
+            .Inc(b => b.AvailableQuantity, delta);
 
-        await _db.Books.UpdateOneAsync(b => b.Id == id, update);
+        var minAvailable = Math.Max(0, -delta);
+        var result = await _db.Books.UpdateOneAsync(b => b.Id == id && b.AvailableQuantity >= minAvailable, update);
+        if (result.MatchedCount == 0)
+            return ServiceResult.Fail("Số sách đang cho mượn vừa thay đổi nên không giảm được số lượng tổng. Vui lòng tải lại và thử lại.",
+                nameof(BookFormVM.TotalQuantity));
         return ServiceResult.Ok("Cập nhật sách thành công.");
     }
 
@@ -155,6 +165,7 @@ public class BookService
     /// </summary>
     public async Task<ServiceResult> DeleteAsync(string id)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy sách cần xóa.");
         var hasOpenLoan = await _loanService.HasOpenLoanForBookAsync(id);
         if (hasOpenLoan)
             return ServiceResult.Fail("Không thể xóa sách này vì đang nằm trong phiếu mượn chưa trả.");

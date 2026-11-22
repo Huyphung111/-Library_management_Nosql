@@ -46,7 +46,11 @@ public class CategoryService
     /// Lấy chi tiết một thể loại theo Id.
     /// </summary>
     public async Task<Category?> GetByIdAsync(string id) =>
-        await _db.Categories.Find(c => c.Id == id).FirstOrDefaultAsync();
+        ValidId(id) ? await _db.Categories.Find(c => c.Id == id).FirstOrDefaultAsync() : null;
+
+    // Sửa lỗi 500 khi id sai định dạng ObjectId trên URL (A, 22/11/2026)
+    private static bool ValidId(string? id) => MongoDB.Bson.ObjectId.TryParse(id, out _);
+
 
     /// <summary>
     /// Thêm thể loại mới. Bắt lỗi trùng tên từ unique index.
@@ -75,6 +79,7 @@ public class CategoryService
     /// </summary>
     public async Task<ServiceResult> UpdateAsync(string id, CategoryFormVM vm)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy thể loại cần cập nhật.");
         var update = Builders<Category>.Update
             .Set(c => c.Name, vm.Name.Trim())
             .Set(c => c.Description, string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim());
@@ -98,6 +103,7 @@ public class CategoryService
     /// </summary>
     public async Task<ServiceResult> DeleteAsync(string id)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy thể loại cần xóa.");
         var bookCount = await _db.Books.CountDocumentsAsync(b => b.CategoryIds.Contains(id));
         if (bookCount > 0)
         {

@@ -22,13 +22,18 @@ public static class DbInitializer
         var counterService = scope.ServiceProvider.GetRequiredService<CounterService>();
         var rules = scope.ServiceProvider.GetRequiredService<IOptions<LibraryRules>>().Value;
 
-        await SeedAsync(db, counterService, rules);
+        var seeded = await SeedAsync(db, counterService, rules);
         await EnsureRichLoansAsync(db, counterService, rules);
 
-        var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
-        if (env != null)
+        // Sửa (A, 22/11/2026): chỉ làm khi vừa seed database mới.
+        // - Đồng bộ availableQuantity = totalQuantity - số cuốn chưa trả trong phiếu đang mượn (seed cũ bị lệch 18 sách; giữ nguyên sách cố ý để hết hàng).
+        // - Xuất Data/MongoData một lần lúc seed, không ghi đè file JSON mỗi lần khởi động.
+        if (seeded)
         {
-            await ExportMongoDataAsync(db, env);
+            await SyncAvailableQuantityAsync(db);
+            var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
+            if (env != null)
+                await ExportMongoDataAsync(db, env);
         }
     }
 
@@ -97,9 +102,9 @@ public static class DbInitializer
     /// Seed dữ liệu mẫu đầy đủ (Mục 8 thiết kế kỹ thuật):
     /// 1 Thủ thư, 6 Thể loại, 28 Sách, 10 Độc giả (có thẻ khóa & hết hạn), Phiếu mượn (đang mượn, quá hạn, đã trả) và Đặt trước.
     /// </summary>
-    private static async Task SeedAsync(MongoDbContext db, CounterService counters, LibraryRules rules)
+    private static async Task<bool> SeedAsync(MongoDbContext db, CounterService counters, LibraryRules rules)
     {
-        if (await db.Users.Find(_ => true).AnyAsync()) return;
+        if (await db.Users.Find(_ => true).AnyAsync()) return false;
 
         var now = DateTime.UtcNow;
         var todayVn = DateHelper.TodayVn();
@@ -350,6 +355,32 @@ public static class DbInitializer
         };
 
         await db.Reservations.InsertManyAsync(new[] { res1, res2 });
+        return true;
+    }
+
+    /// <summary>
+    /// Đặt lại số còn lại của mỗi sách cho khớp phiếu mượn: available = total - số cuốn chưa trả trong phiếu Borrowing
+    /// (A thêm 22/11/2026). Nếu số đang mượn lớn hơn tổng thì nâng tổng lên bằng số đang mượn.
+    /// Bỏ qua sách đang hết (available = 0) vì seed cố ý tạo vài sách hết hàng để thử đặt trước.
+    /// </summary>
+    private static async Task SyncAvailableQuantityAsync(MongoDbContext db)
+    {
+        var openLoans = await db.Loans.Find(l => l.Status == LoanStatus.Borrowing).ToListAsync();
+        var borrowed = openLoans.SelectMany(l => l.Items).Where(i => i.ReturnDate == null)
+            .GroupBy(i => i.BookId).ToDictionary(g => g.Key, g => g.Count());
+
+        var books = await db.Books.Find(_ => true).ToListAsync();
+        foreach (var b in books)
+        {
+            // Giữ nguyên các sách seed cố ý để hết hàng (available = 0) làm dữ liệu thử đặt trước (UC10, UC16)
+            if (b.AvailableQuantity == 0) continue;
+            var out0 = borrowed.GetValueOrDefault(b.Id!, 0);
+            var total = Math.Max(b.TotalQuantity, out0);
+            var available = total - out0;
+            if (total != b.TotalQuantity || available != b.AvailableQuantity)
+                await db.Books.UpdateOneAsync(x => x.Id == b.Id,
+                    Builders<Book>.Update.Set(x => x.TotalQuantity, total).Set(x => x.AvailableQuantity, available));
+        }
     }
 
     /// <summary>
@@ -531,7 +562,7 @@ public static class DbInitializer
                 var docs = await col.Find(_ => true).Sort(new BsonDocument("_id", 1)).ToListAsync();
                 var lines = docs.Select(d => d.ToJson(jsonSettings)).ToList();
                 var filePath = Path.Combine(outDir, $"{colName}.json");
-                await File.WriteAllTextAsync(filePath, string.Join("\n", lines) + (lines.Count > 0 ? "\n" : ""), System.Text.Encoding.UTF8);
+                await File.WriteAllTextAsync(filePath, string.Join("\n", lines) + (lines.Count > 0 ? "\n" : ""), new System.Text.UTF8Encoding(false));   // Sửa (A, 22/11/2026): không ghi BOM
             }
         }
         catch

@@ -34,7 +34,7 @@ public class SearchService
         if (!string.IsNullOrWhiteSpace(keyword))
         {
             var s = keyword.Trim();
-            var regex = new BsonRegularExpression(s, "i");
+            var regex = new BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(s), "i");   // Sửa (A, 22/11/2026): thoát ký tự đặc biệt
             filter &= filterBuilder.Or(
                 filterBuilder.Regex(b => b.Title, regex),
                 filterBuilder.Regex("authors", regex)
@@ -43,6 +43,7 @@ public class SearchService
 
         if (!string.IsNullOrWhiteSpace(categoryId))
         {
+            if (!ObjectId.TryParse(categoryId, out _)) return new List<BookSearchResultVM>();   // Sửa (A, 22/11/2026)
             filter &= filterBuilder.AnyEq(b => b.CategoryIds, categoryId);
         }
 
@@ -78,7 +79,7 @@ public class SearchService
         if (!string.IsNullOrWhiteSpace(keyword))
         {
             var s = keyword.Trim();
-            var regex = new BsonRegularExpression(s, "i");
+            var regex = new BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(s), "i");   // Sửa (A, 22/11/2026): thoát ký tự đặc biệt
             filter &= filterBuilder.Or(
                 filterBuilder.Regex(r => r.CardNumber, regex),
                 filterBuilder.Regex(r => r.FullName, regex),
@@ -120,7 +121,7 @@ public class SearchService
         if (!string.IsNullOrWhiteSpace(keyword))
         {
             var s = keyword.Trim();
-            var regex = new BsonRegularExpression(s, "i");
+            var regex = new BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(s), "i");   // Sửa (A, 22/11/2026): thoát ký tự đặc biệt
             filter &= filterBuilder.Or(
                 filterBuilder.Regex(l => l.LoanCode, regex),
                 filterBuilder.Regex(l => l.Reader.CardNumber, regex),

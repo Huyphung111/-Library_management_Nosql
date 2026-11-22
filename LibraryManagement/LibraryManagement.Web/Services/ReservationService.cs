@@ -39,6 +39,9 @@ public class ReservationService
         _loans = loans;
     }
 
+    // Sửa lỗi 500 khi id sai định dạng ObjectId trên URL (A, 22/11/2026)
+    private static bool ValidId(string? id) => MongoDB.Bson.ObjectId.TryParse(id, out _);
+
     #region UC16 - Phía Độc giả
 
     /// <summary>
@@ -67,6 +70,7 @@ public class ReservationService
     /// </summary>
     public async Task<ReservationConfirmVM?> GetBookForReservationConfirmAsync(string bookId)
     {
+        if (!ValidId(bookId)) return null;
         var book = await _db.Books.Find(b => b.Id == bookId).FirstOrDefaultAsync();
         if (book == null) return null;
 
@@ -97,6 +101,7 @@ public class ReservationService
     /// </summary>
     public async Task<ServiceResult> CreateAsync(string readerId, string bookId)
     {
+        if (!ValidId(bookId)) return ServiceResult.Fail("Không tìm thấy thông tin cuốn sách trong hệ thống.");
         // 1. Kiểm tra thông tin thẻ độc giả (UC16 bước 2, dòng phụ 2a)
         var reader = await _db.Readers.Find(r => r.Id == readerId).FirstOrDefaultAsync();
         if (reader == null)
@@ -160,6 +165,7 @@ public class ReservationService
     /// </summary>
     public async Task<ServiceResult> CancelByReaderAsync(string readerId, string reservationId)
     {
+        if (!ValidId(reservationId)) return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước của bạn.");
         var res = await _db.Reservations.Find(r => r.Id == reservationId).FirstOrDefaultAsync();
         if (res == null || res.ReaderId != readerId)
             return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước của bạn.");
@@ -252,6 +258,7 @@ public class ReservationService
     /// </summary>
     public async Task<ServiceResult> ApproveAsync(string id, string librarianId)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước.");
         var res = await _db.Reservations.Find(r => r.Id == id).FirstOrDefaultAsync();
         if (res == null)
             return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước.");
@@ -272,6 +279,7 @@ public class ReservationService
     /// </summary>
     public async Task<ServiceResult> RejectAsync(string id, string librarianId, string reason)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước.");
         if (string.IsNullOrWhiteSpace(reason))
             return ServiceResult.Fail("Vui lòng nhập lý do từ chối yêu cầu đặt trước.", "Reason");
 
@@ -296,6 +304,7 @@ public class ReservationService
     /// </summary>
     public async Task<ServiceResult> CancelByLibrarianAsync(string id, string librarianId, string reason)
     {
+        if (!ValidId(id)) return ServiceResult.Fail("Không tìm thấy yêu cầu đặt trước.");
         if (string.IsNullOrWhiteSpace(reason))
             return ServiceResult.Fail("Vui lòng nhập lý do hủy yêu cầu đặt trước.", "Reason");
 

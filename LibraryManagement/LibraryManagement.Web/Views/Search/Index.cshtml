@@ -220,7 +220,7 @@
                                 <td>
                                     <span class="badge bg-light text-dark border font-monospace fs-6">@r.CardNumber</span>
                                 </td>
-                                <td class="fw-semibold text-dark">@r.FullName</td>
+                                <td class="fw-semibold"><a asp-controller="Readers" asp-action="Details" asp-route-id="@r.Id" title="Xem chi tiết độc giả">@r.FullName</a></td>
                                 <td><code>@r.IdNumber</code></td>
                                 <td class="small text-muted">
                                     @if (!string.IsNullOrEmpty(r.Phone))
@@ -286,10 +286,10 @@
                             <tr>
                                 <td class="text-muted">@(i + 1)</td>
                                 <td>
-                                    <span class="badge bg-light text-dark border font-monospace fs-6">@l.LoanCode</span>
+                                    <a asp-controller="Loans" asp-action="Details" asp-route-id="@l.Id" class="badge bg-light text-dark border font-monospace fs-6 text-decoration-none" title="Xem chi tiết phiếu">@l.LoanCode</a>
                                 </td>
                                 <td>
-                                    <div class="fw-semibold text-dark">@l.ReaderName</div>
+                                    <div class="fw-semibold"><a asp-controller="Readers" asp-action="Details" asp-route-id="@l.ReaderId">@l.ReaderName</a></div>
                                     <div class="small text-muted">@l.CardNumber</div>
                                 </td>
                                 <td>

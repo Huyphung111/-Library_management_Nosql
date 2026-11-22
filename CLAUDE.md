@@ -27,7 +27,7 @@ Get-Process LibraryManagement.Web | Stop-Process -Force   # dừng app đang ch�
 
 - Chưa có project test. Kiểm thử thủ công theo các dòng sự kiện phụ (3a, 4b...) của từng UC trong `dac-ta-use-case.md`.
 - Muốn thử mà không đụng dữ liệu thật: chạy với database riêng, ví dụ `$env:MongoDb__DatabaseName = "library_management_test"; dotnet run --launch-profile http` (database mới sẽ tự seed).
-- `DbInitializer` (phần của B) tự xuất lại `Data/MongoData/*.json` mỗi lần khởi động: chạy thử xong nhớ `git checkout -- Data/MongoData/` nếu không muốn commit dữ liệu thử.
+- `DbInitializer` tự xuất `Data/MongoData/*.json` khi vừa seed một database mới (kể cả database thử): chạy thử trên database mới xong nhớ `git checkout -- Data/MongoData/` nếu không muốn commit dữ liệu thử.
 - mongosh: chỉ có trong PATH của PowerShell mở mới (Git Bash không thấy). Nếu PowerShell báo không tìm thấy, nạp lại PATH:
   `$env:Path = [Environment]::GetEnvironmentVariable('Path','User') + ';' + [Environment]::GetEnvironmentVariable('Path','Machine')`.
   Chuỗi kết nối: `mongodb://localhost:27017/library_management?replicaSet=rs0`. Khi đối số `--eval` có dấu ngoặc kép, viết script ra file rồi chạy `mongosh --file`.

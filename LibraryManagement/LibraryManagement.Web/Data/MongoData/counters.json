@@ -1,2 +1,2 @@
-﻿{ "_id" : "loan", "seq" : { "$numberLong" : "9" } }
+{ "_id" : "loan", "seq" : { "$numberLong" : "9" } }
 { "_id" : "reader", "seq" : { "$numberLong" : "10" } }

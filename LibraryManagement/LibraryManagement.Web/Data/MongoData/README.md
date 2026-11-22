@@ -2,7 +2,7 @@
 
 Bản xuất database `library_management` để mọi người có **cùng một bộ dữ liệu**, giữ nguyên `_id`. Mỗi collection một file JSON, dạng Extended JSON canonical (mỗi dòng một document), nên giữ đúng kiểu `ObjectId`, ngày giờ và số `long`.
 
-Xuất ngày 22/11/2026 từ seed đầy đủ (Member B hoàn tất Đợt 4):
+Xuất ngày 22/11/2026 từ seed đầy đủ (Member B hoàn tất Đợt 4), xuất lại cùng ngày sau khi A sửa seed: file không còn BOM (trước đó `import.js` báo `SyntaxError: Unexpected token`), số còn lại của sách còn hàng khớp với phiếu đang mượn. 3 sách cố ý để hết hàng (số còn lại 0) để thử đặt trước:
 
 | Collection | Số document | Nội dung |
 |---|---|---|
@@ -33,6 +33,9 @@ mongosh "mongodb://localhost:27017/library_management?replicaSet=rs0" --file imp
   `mongoimport --uri "mongodb://localhost:27017/library_management?replicaSet=rs0" --collection books --drop --file books.json`
 
 ## Xuất lại khi dữ liệu thay đổi
+
+`DbInitializer` chỉ tự xuất các file này **một lần, ngay khi seed database mới** (không còn ghi đè mỗi lần khởi động). Muốn xuất dữ liệu hiện tại thì chạy `export.js` như dưới.
+
 
 Ai sửa dữ liệu mẫu (ví dụ B làm seed đầy đủ) thì xuất lại rồi commit các file `.json`:
 

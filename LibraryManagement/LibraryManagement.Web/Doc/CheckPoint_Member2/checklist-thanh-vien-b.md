@@ -141,3 +141,18 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 - Chỉ sửa file của B. Cần thêm field, link menu, class CSS hay đổi file dùng chung thì nhắn A
 - Đổi nghiệp vụ hoặc schema: sửa `Doc/` trước, báo A, rồi mới sửa code
 - Ghi mã UC (ví dụ `// UC04`) ở đầu action và method service; quy định nghiệp vụ đọc từ `LibraryRules`, không viết cứng
+
+## Lỗi A tìm được khi kiểm thử chéo và đã sửa giúp (22/11/2026)
+
+A sửa trên nhánh `member1` (theo yêu cầu của nhóm), mỗi chỗ có ghi chú `Sửa (A, 22/11/2026)`. Sau khi sửa: bộ kiểm thử phần B 88/88 Đạt, phần A 74/74 Đạt.
+
+| # | Lỗi | File | Cách sửa |
+|---|---|---|---|
+| 1 | Gõ `(` vào ô tìm kiếm (UC04, UC11) bị lỗi 500 | `BookService`, `SearchService` | `Regex.Escape` từ khóa trước khi tạo regex |
+| 2 | Id sai trên URL (`/Categories/Edit/abc`, `/Catalog/Details/abc`...) bị lỗi 500 | `BookService`, `CategoryService`, `ReservationService` | Kiểm tra `ObjectId.TryParse`, coi như không tìm thấy |
+| 3 | Tìm theo một phần tên tác giả không ra ("Carnegie") (UC04, UC13) | `BookService` | Dùng regex trên `authors` thay cho so khớp nguyên chuỗi |
+| 4 | UC11 bước 6: kết quả độc giả, phiếu mượn không mở được chi tiết | `Views/Search/Index.cshtml` | Link tới `Readers/Details`, `Loans/Details` của A |
+| 5 | Sửa số lượng tổng (UC04 3a) đọc rồi ghi, có thể lệch khi đúng lúc có người mượn | `BookService.UpdateAsync` | `$inc` chênh lệch + điều kiện `availableQuantity >= -chênh lệch` trong filter |
+| 6 | Seed: 18 sách có số còn lại nhỏ hơn tổng dù không ai mượn | `DbInitializer` | Đồng bộ lại sau khi seed (giữ 3 sách cố ý hết hàng) |
+| 7 | File JSON xuất ra có BOM nên `import.js` lỗi; tự ghi đè JSON mỗi lần khởi động | `DbInitializer` | Ghi UTF-8 không BOM; chỉ xuất khi vừa seed database mới. Đã xuất lại `Data/MongoData` |
+
