@@ -1,140 +1,25 @@
 @* UC07 Lập phiếu mượn: bước 2 nhập mã thẻ → bước 3 kiểm tra → bước 4–7 chọn sách, hạn trả → bước 8 lập phiếu *@
 @model LibraryManagement.Web.ViewModels.Loans.CreateLoanVM
-@{
-    var b = Model.Borrower;
-}
-
 <div class="content-card">
-    <form method="get" asp-action="Create" class="toolbar mb-0" novalidate>
+    <form method="get" asp-action="Create" class="toolbar mb-0" novalidate id="cardForm" data-check-url="@Url.Action("CheckReader")">
         <input asp-for="CardNumber" class="form-control" placeholder="Nhập mã thẻ, ví dụ DG000001" autofocus />
         <button type="submit" class="btn btn-primary"><i class="bi bi-person-check"></i> Kiểm tra</button>
     </form>
     <span asp-validation-for="CardNumber" class="text-danger small"></span>
 </div>
 
-@if (b != null)
-{
-    var r = b.Reader;
-    <div class="row g-3 mb-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="bi bi-person"></i></div>
-                <div>
-                    <div class="fw-semibold">@r.FullName</div>
-                    <div class="stat-label">@r.CardNumber · <a asp-controller="Readers" asp-action="Details" asp-route-id="@r.Id">xem hồ sơ</a></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon accent"><i class="bi bi-book"></i></div>
-                <div>
-                    <div class="stat-value">@b.BorrowingBooks<span class="fs-6 fw-normal text-muted">/@b.MaxBooks</span></div>
-                    <div class="stat-label">Đang mượn (còn được mượn @b.Remaining)</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon @(b.OverdueLoans > 0 ? "danger" : "success")"><i class="bi bi-alarm"></i></div>
-                <div>
-                    <div class="stat-value">@b.OverdueLoans</div>
-                    <div class="stat-label">Phiếu quá hạn</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon @(r.CardStatus == CardStatus.Locked || r.IsExpired ? "danger" : "success")"><i class="bi bi-credit-card"></i></div>
-                <div>
-                    <div class="fw-semibold">@r.ExpiryDate.ToVnDateText()</div>
-                    <div class="stat-label">Hạn thẻ · <partial name="~/Views/Readers/_CardBadge.cshtml" model="(r.CardStatus, r.IsExpired)" /></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @if (!b.CanBorrow)
-    {
-        @* Bước 3a: báo lý do, kết thúc use case *@
-        <div class="alert alert-danger">
-            <div class="fw-semibold mb-1"><i class="bi bi-x-octagon"></i> Độc giả không được mượn sách</div>
-            <ul class="mb-0">
-                @foreach (var reason in b.Reasons)
-                {
-                    <li>@reason</li>
-                }
-            </ul>
-        </div>
-    }
-    else
-    {
-        <form asp-action="Create" method="post" class="content-card" novalidate id="loanForm">
-            <input type="hidden" asp-for="CardNumber" />
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
-
-            <h2>Chọn sách mượn</h2>
-            <div class="mb-2"><span asp-validation-for="BookIds" class="text-danger"></span></div>
-            <div class="toolbar">
-                <input type="search" id="bookFilter" class="form-control" placeholder="Lọc theo tên sách hoặc tác giả" />
-                <span class="align-self-center text-muted">Đã chọn <strong id="pickedCount">0</strong> / còn được mượn <strong>@b.Remaining</strong> cuốn</span>
-            </div>
-            <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
-                <table class="table table-hover align-middle mb-0" id="bookTable">
-                    <thead><tr><th style="width:3rem"></th><th>Tên sách</th><th>Tác giả</th><th class="text-center">Còn lại</th></tr></thead>
-                    <tbody>
-                        @foreach (var book in Model.Books)
-                        {
-                            var out0 = book.AvailableQuantity <= 0;
-                            <tr class="@(out0 ? "text-muted" : "")" data-search="@($"{book.Title} {book.Authors}".ToLowerInvariant())">
-                                <td>
-                                    <input class="form-check-input" type="checkbox" name="BookIds" value="@book.Id" id="b_@book.Id"
-                                           @(out0 ? "disabled" : "") @(Model.BookIds.Contains(book.Id) ? "checked" : "") />
-                                </td>
-                                <td><label for="b_@book.Id" class="fw-semibold">@book.Title</label></td>
-                                <td>@book.Authors</td>
-                                <td class="text-center">
-                                    @if (out0)
-                                    {
-                                        <span class="badge status-overdue">Hết</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@book.AvailableQuantity/@book.TotalQuantity</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="row g-3 mt-2 align-items-end">
-                <div class="col-sm-4 col-lg-3">
-                    <label class="form-label">Ngày mượn</label>
-                    <input class="form-control" value="@Model.BorrowDate.ToString("dd/MM/yyyy")" disabled />
-                </div>
-                <div class="col-sm-4 col-lg-3">
-                    <label asp-for="DueDate" class="form-label"></label>
-                    <input asp-for="DueDate" class="form-control" min="@Model.BorrowDate.AddDays(1).ToString("yyyy-MM-dd")" />
-                    <div class="form-text">Đề xuất: ngày mượn + @Model.LoanDays ngày</div>
-                    <span asp-validation-for="DueDate" class="text-danger small"></span>
-                </div>
-                <div class="col-sm-4 col-lg-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-journal-plus"></i> Lập phiếu</button>
-                </div>
-            </div>
-        </form>
-    }
-}
+<div id="borrowerArea">
+    <partial name="_Borrower" model="Model" />
+</div>
 
 @section Scripts {
     <script>
-        (function () {
+        // Bảng chọn sách: lọc theo tên / tác giả và đếm số cuốn đã chọn. Gọi lại sau mỗi lần AJAX thay nội dung.
+        function initBookPicker() {
             const filter = document.getElementById("bookFilter");
+            if (!filter) return;
             const rows = document.querySelectorAll("#bookTable tbody tr");
             const count = document.getElementById("pickedCount");
-            if (!filter) return;
             filter.addEventListener("input", () => {
                 const q = filter.value.trim().toLowerCase();
                 rows.forEach(r => r.style.display = r.dataset.search.includes(q) ? "" : "none");
@@ -142,6 +27,51 @@
             const update = () => count.textContent = document.querySelectorAll("#bookTable input:checked").length;
             document.querySelectorAll("#bookTable input").forEach(c => c.addEventListener("change", update));
             update();
+        }
+
+        // UC07 bước 2–3 bằng AJAX: gọi CheckReader, thay khối thông tin độc giả mà không tải lại trang.
+        // Trình duyệt tắt JavaScript thì form vẫn gửi GET ?cardNumber= như bình thường.
+        (function () {
+            const form = document.getElementById("cardForm");
+            const input = document.getElementById("CardNumber");
+            const area = document.getElementById("borrowerArea");
+            const fieldError = document.querySelector('[data-valmsg-for="CardNumber"]');
+            let lastChecked = input.value.trim().toUpperCase();
+            let pending = null;
+
+            async function check(code) {
+                if (pending) pending.abort();
+                pending = new AbortController();
+                area.classList.add("opacity-50");
+                try {
+                    const res = await fetch(form.dataset.checkUrl + "?cardNumber=" + encodeURIComponent(code), {
+                        headers: { "X-Requested-With": "XMLHttpRequest" },
+                        signal: pending.signal
+                    });
+                    if (!res.ok) throw new Error(res.status);
+                    area.innerHTML = await res.text();
+                    if (fieldError) fieldError.textContent = "";
+                    lastChecked = code;
+                    history.replaceState(null, "", "?cardNumber=" + encodeURIComponent(code));
+                    initBookPicker();
+                } catch (e) {
+                    if (e.name !== "AbortError") form.submit();   // lỗi mạng: quay về cách tải lại trang
+                } finally {
+                    area.classList.remove("opacity-50");
+                }
+            }
+
+            form.addEventListener("submit", e => {
+                e.preventDefault();
+                const code = input.value.trim().toUpperCase();
+                if (code) check(code);
+            });
+            // Gõ đủ mã thẻ dạng DG + 6 số thì tự kiểm tra
+            input.addEventListener("input", () => {
+                const code = input.value.trim().toUpperCase();
+                if (/^DG\d{6}$/.test(code) && code !== lastChecked) check(code);
+            });
+            initBookPicker();
         })();
     </script>
 }

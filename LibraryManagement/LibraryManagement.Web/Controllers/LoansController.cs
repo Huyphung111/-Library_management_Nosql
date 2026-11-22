@@ -56,6 +56,18 @@ public class LoansController : Controller
         return View(model);
     }
 
+    // UC07 bước 2–3 (AJAX): trang Create gọi khi Thủ thư nhập mã thẻ, trả về khối HTML thông tin độc giả
+    // và form chọn sách (partial _Borrower), để không phải tải lại cả trang.
+    [HttpGet]
+    public async Task<IActionResult> CheckReader(string? cardNumber)
+    {
+        var vm = new CreateLoanVM { CardNumber = cardNumber };
+        await FillCreateAsync(vm, checkReader: true);
+        vm.DueDate = vm.BorrowDate.AddDays(_rules.LoanDays);
+        ViewData["Ajax"] = true;
+        return PartialView("_Borrower", vm);
+    }
+
     private async Task FillCreateAsync(CreateLoanVM vm, bool checkReader)
     {
         ViewData["Title"] = "Lập phiếu mượn";

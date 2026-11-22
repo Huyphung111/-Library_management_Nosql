@@ -116,7 +116,7 @@ LibraryManagement/
 | UC04 | Quản lý sách | `BooksController` | `Index`, `Create`, `Edit`, `Delete` |
 | UC05 | Quản lý thể loại | `CategoriesController` | `Index`, `Create`, `Edit`, `Delete` |
 | UC06 | Quản lý độc giả | `ReadersController` | `Index`, `Create`, `Edit`, `Lock`, `Unlock`, `ExtendCard`, `ResetPassword` |
-| UC07 | Lập phiếu mượn | `LoansController` | `Create` (GET `?cardNumber=` để kiểm tra độc giả, POST để lập phiếu), `Details` (chi tiết phiếu, dùng chung) |
+| UC07 | Lập phiếu mượn | `LoansController` | `Create` (GET, POST), `CheckReader` (AJAX, trả về partial `_Borrower`; tắt JavaScript thì dùng `Create?cardNumber=`), `Details` (chi tiết phiếu, dùng chung) |
 | UC08 | Nhận trả sách | `LoansController` | `Return` (GET, POST), `ReturnResult` (kết quả và danh sách người chờ) |
 | UC09 | Gia hạn phiếu mượn | `RenewalsController` | `Index`, `Approve`, `Reject`, `RenewAtCounter` |
 | UC10 | Xử lý đặt trước | `ReservationsController` | `Index`, `Approve`, `Reject`, `Cancel` |

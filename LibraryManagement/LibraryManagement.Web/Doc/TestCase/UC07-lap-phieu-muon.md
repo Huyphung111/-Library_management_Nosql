@@ -2,7 +2,7 @@
 
 Code: `LoansController.Create` (GET `?cardNumber=` để kiểm tra độc giả, POST để lập phiếu), `LoanService.CheckBorrowerAsync`, `LoanService.CreateAsync` (transaction), gọi `ReservationService.CompleteForLoanAsync`. Trang chi tiết phiếu: `LoansController.Details`.
 
-Thiết kế ban đầu ghi `CheckReader` (AJAX); khi cài đặt, bước kiểm tra độc giả dùng chính `Create` (GET `?cardNumber=`) để chạy được cả khi không có JavaScript (đã cập nhật mục 3 `thiet-ke-ky-thuat.md`).
+Bước 2–3 dùng AJAX: nhập mã thẻ (bấm "Kiểm tra" hoặc gõ đủ `DG` + 6 số) thì trang gọi `CheckReader` và thay khối thông tin độc giả + form chọn sách (partial `_Borrower`) mà không tải lại trang. Tắt JavaScript thì form gửi GET `Create?cardNumber=` như cũ.
 
 Sau mỗi test thành công, kiểm tra trong MongoDB: `loans` có phiếu mới, `books.availableQuantity` giảm đúng số cuốn.
 
@@ -22,6 +22,8 @@ Sau mỗi test thành công, kiểm tra trong MongoDB: `loans` có phiếu mới
 | TC07-12 | Phân quyền | Độc giả mở trang lập phiếu | Đăng nhập `DG000001`, gõ `/Loans/Create` | Trang "Không có quyền truy cập" | Chuyển tới `/Account/AccessDenied` | Đạt | 22/11/2026 |
 
 ## Ghi chú
+
+- AJAX `CheckReader` (22/11/2026, Đạt): mã thẻ hợp lệ trả khối thông tin và form có token chống giả mạo, lập phiếu từ form đó thành công; mã sai / trống báo lỗi trong khối; thẻ khóa không có form; độc giả gọi `CheckReader` bị chặn (403); không có JavaScript vẫn chạy bằng GET thường.
 
 - Thêm ngoài danh sách (Đạt): không chọn sách nào thì báo "Vui lòng chọn ít nhất một sách."; trang chi tiết phiếu `/Loans/Details/{id}` hiện đủ thông tin; id sai định dạng thì quay về trang lập phiếu kèm thông báo.
 - Lỗi đã sửa trong lúc thử: mã thẻ không tồn tại ban đầu không hiện lỗi (do `ModelState` đã có khóa `cardNumber` từ query string); lỗi hạn trả hiện hai lần. Đã sửa và thử lại đạt.
