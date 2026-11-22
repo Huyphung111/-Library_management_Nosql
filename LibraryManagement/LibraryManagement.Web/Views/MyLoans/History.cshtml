@@ -1,0 +1,45 @@
+@* UC14 bước 3–4, 4a: tab "Lịch sử" *@
+@model List<LibraryManagement.Web.ViewModels.Loans.HistoryLineVM>
+
+<div class="content-card">
+    <partial name="_Tabs" />
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-clock-history"></i>
+            <p>Chưa có lịch sử mượn.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Tên sách</th><th>Mã phiếu</th><th>Ngày mượn</th><th>Ngày trả</th><th>Tình trạng</th><th class="text-end">Tiền phạt</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var h in Model)
+                    {
+                        <tr>
+                            <td>@h.Title</td>
+                            <td>@h.LoanCode</td>
+                            <td>@h.BorrowDate.ToVnDateText()</td>
+                            <td>@h.ReturnDate.ToVnDateText()</td>
+                            <td>
+                                @if (h.Condition.HasValue)
+                                {
+                                    <span class="badge status-@h.Condition.Value.ToString().ToLower()">@h.Condition.Value.ToVn()</span>
+                                }
+                            </td>
+                            <td class="text-end @(h.Fine > 0 ? "text-danger fw-semibold" : "")">@(h.Fine > 0 ? h.Fine.ToMoney() : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="5" class="text-end fw-semibold">Tổng tiền phạt</td><td class="text-end fw-bold">@Model.Sum(h => h.Fine).ToMoney()</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+</div>

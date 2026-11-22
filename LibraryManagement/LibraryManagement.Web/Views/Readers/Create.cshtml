@@ -1,0 +1,17 @@
+@* UC06 bước 3–8 *@
+@model LibraryManagement.Web.ViewModels.Readers.ReaderFormVM
+
+<div class="content-card" style="max-width: 760px;">
+    <p class="text-muted small">Sau khi lưu, hệ thống cấp mã thẻ mới, thẻ có hiệu lực 1 năm từ hôm nay, và tạo tài khoản với tên đăng nhập là mã thẻ, mật khẩu mặc định.</p>
+    <form asp-action="Create" method="post" novalidate>
+        <partial name="_ReaderForm" model="Model" />
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Lưu</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

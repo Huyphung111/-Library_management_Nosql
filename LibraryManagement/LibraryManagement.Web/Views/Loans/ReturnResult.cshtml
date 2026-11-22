@@ -1,0 +1,66 @@
+@* UC08 bước 7–8 và 7a: kết quả nhận trả, danh sách người chờ sách vừa trả *@
+@model LibraryManagement.Web.ViewModels.Loans.ReturnResultVM
+
+@section PageActions {
+    <a asp-action="Return" class="btn btn-primary"><i class="bi bi-journal-arrow-down"></i> Nhận trả tiếp</a>
+    <a asp-action="Details" asp-route-id="@Model.LoanId" class="btn btn-outline-primary"><i class="bi bi-receipt"></i> Xem phiếu</a>
+}
+
+<div class="content-card">
+    <h2>Phiếu @Model.LoanCode · @Model.ReaderName (@Model.CardNumber)</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Sách đã trả</th><th>Tình trạng</th><th class="text-end">Phạt quá hạn</th><th class="text-end">Tiền phạt</th></tr></thead>
+            <tbody>
+                @foreach (var l in Model.Lines)
+                {
+                    <tr>
+                        <td>@l.Title</td>
+                        <td><span class="badge status-@l.Condition.ToString().ToLower()">@l.Condition.ToVn()</span></td>
+                        <td class="text-end">@l.OverdueFine.ToMoney()</td>
+                        <td class="text-end">@l.Fine.ToMoney()</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot><tr><td colspan="3" class="text-end fw-semibold">Tổng tiền phạt lần này</td><td class="text-end fw-bold">@Model.TotalFine.ToMoney()</td></tr></tfoot>
+        </table>
+    </div>
+    <p class="mb-0">
+        @if (Model.LoanClosed)
+        {
+            <span class="badge status-returned">@LoanStatus.Returned.ToVn()</span> <span>Phiếu đã trả hết sách.</span>
+        }
+        else
+        {
+            <span class="badge status-borrowing">@LoanStatus.Borrowing.ToVn()</span> <span>Phiếu còn @Model.RemainingItems cuốn chưa trả.</span>
+        }
+    </p>
+</div>
+
+@if (Model.Waiting.Count > 0)
+{
+    @* Bước 7a: người đặt trước Đã duyệt, sớm nhất lên đầu, để Thủ thư liên hệ *@
+    <div class="content-card border-warning">
+        <h2><i class="bi bi-bell text-warning"></i> Có người đang chờ sách vừa trả</h2>
+        <p class="text-muted small">Liên hệ người đặt sớm nhất. Sách không được giữ riêng: ai đến quầy trước thì mượn trước.</p>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0" id="waitingTable">
+                <thead><tr><th>#</th><th>Sách</th><th>Độc giả</th><th>Số điện thoại</th><th>Email</th><th>Ngày đặt</th></tr></thead>
+                <tbody>
+                    @for (var n = 0; n < Model.Waiting.Count; n++)
+                    {
+                        var w = Model.Waiting[n];
+                        <tr>
+                            <td>@(n + 1)</td>
+                            <td>@w.BookTitle</td>
+                            <td>@w.FullName (@w.CardNumber)</td>
+                            <td>@(w.Phone ?? "—")</td>
+                            <td>@(w.Email ?? "—")</td>
+                            <td>@w.ReservedAt.ToVnDateTimeText()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,14 @@
+@* Badge trạng thái thẻ: Bị khóa ưu tiên hơn Hết hạn; "Hết hạn" tính khi truy vấn (status-expired). *@
+@model (LibraryManagement.Web.Models.CardStatus Status, bool IsExpired)
+@if (Model.Status == CardStatus.Locked)
+{
+    <span class="badge status-locked">@Model.Status.ToVn()</span>
+}
+else if (Model.IsExpired)
+{
+    <span class="badge status-expired">Hết hạn</span>
+}
+else
+{
+    <span class="badge status-active">@Model.Status.ToVn()</span>
+}

@@ -1,0 +1,138 @@
+@* UC08 Nhận trả sách: bước 2 tìm → bước 3 phiếu đang mượn → bước 4 chọn cuốn + tình trạng → bước 5 tính phạt → bước 6 xác nhận *@
+@model LibraryManagement.Web.ViewModels.Loans.ReturnSearchVM
+
+<div class="content-card">
+    <form method="get" asp-action="Return" class="toolbar mb-0">
+        <input asp-for="Keyword" class="form-control" placeholder="Mã thẻ (DG...) hoặc mã phiếu (PM...)" autofocus />
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Tìm</button>
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Notice))
+{
+    <div class="content-card">
+        <div class="empty-state"><i class="bi bi-inbox"></i><p>@Model.Notice</p></div>
+    </div>
+}
+
+@foreach (var loan in Model.Loans)
+{
+    <form asp-action="Return" method="post" class="content-card return-form" novalidate
+          onsubmit="return confirmReturn(this)">
+        <input type="hidden" name="LoanId" value="@loan.LoanId" />
+        <input type="hidden" name="keyword" value="@Model.Keyword" />
+
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+            <div>
+                <h2 class="mb-1">Phiếu @loan.LoanCode</h2>
+                <div class="text-muted small">
+                    @loan.ReaderName (@loan.CardNumber) · Mượn @loan.BorrowDate.ToVnDateText() · Hạn trả <strong>@loan.DueDate.ToVnDateText()</strong>
+                    · Còn @loan.Items.Count/@loan.TotalItems cuốn chưa trả
+                </div>
+            </div>
+            @if (loan.OverdueDays > 0)
+            {
+                <span class="badge status-overdue">Quá hạn @loan.OverdueDays ngày</span>
+            }
+            else
+            {
+                <span class="badge status-borrowing">Đang mượn</span>
+            }
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr><th style="width:3rem">Trả</th><th>Tên sách</th><th style="width:11rem">Tình trạng</th><th style="width:11rem">Phạt hư hỏng</th><th class="text-end" style="width:9rem">Tiền phạt</th></tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < loan.Items.Count; i++)
+                    {
+                        var it = loan.Items[i];
+                        <tr class="return-row" data-overdue="@it.OverdueFine" data-price="@it.Price">
+                            <td>
+                                <input type="hidden" name="Items[@i].BookId" value="@it.BookId" />
+                                <input class="form-check-input pick" type="checkbox" name="Items[@i].Selected" value="true" checked />
+                            </td>
+                            <td>
+                                <div class="fw-semibold">@it.Title</div>
+                                <div class="small text-muted">Giá sách @it.Price.ToMoney()</div>
+                            </td>
+                            <td>
+                                <select name="Items[@i].Condition" class="form-select form-select-sm cond">
+                                    <option value="Normal">@BookCondition.Normal.ToVn()</option>
+                                    <option value="Damaged">@BookCondition.Damaged.ToVn()</option>
+                                    <option value="Lost">@BookCondition.Lost.ToVn()</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" name="Items[@i].DamageFine" class="form-control dmg" min="1000" step="1000" disabled />
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                            </td>
+                            <td class="text-end fine">0đ</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-semibold">
+                            Tổng tiền phạt
+                            @if (loan.OverdueDays > 0)
+                            {
+                                <span class="small text-muted fw-normal">(gồm @loan.OverdueDays ngày trễ × @Model.FinePerDay.ToMoney() mỗi cuốn)</span>
+                            }
+                        </td>
+                        <td class="text-end fw-bold total">0đ</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-journal-arrow-down"></i> Xác nhận nhận trả</button>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <script>
+        // Bước 5: tính trước tiền phạt từng cuốn và tổng (server tính lại khi lưu)
+        const money = v => v.toLocaleString("vi-VN") + "đ";
+        function recalc(form) {
+            let total = 0;
+            form.querySelectorAll(".return-row").forEach(row => {
+                const picked = row.querySelector(".pick").checked;
+                const condEl = row.querySelector(".cond");
+                const dmg = row.querySelector(".dmg");
+                condEl.disabled = !picked;
+                dmg.disabled = !picked || condEl.value !== "Damaged";
+                let fine = 0;
+                if (picked) {
+                    fine = Number(row.dataset.overdue);
+                    if (condEl.value === "Damaged") fine += Number(dmg.value || 0);
+                    if (condEl.value === "Lost") fine += Number(row.dataset.price);
+                }
+                row.querySelector(".fine").textContent = picked ? money(fine) : "—";
+                total += fine;
+            });
+            form.querySelector(".total").textContent = money(total);
+            return total;
+        }
+        // Bước 6: xác nhận sau khi độc giả đã nộp phạt
+        function confirmReturn(form) {
+            const n = form.querySelectorAll(".pick:checked").length;
+            if (n === 0) { alert("Vui lòng chọn ít nhất một cuốn được trả."); return false; }
+            const total = recalc(form);
+            return confirm(total > 0
+                ? "Nhận trả " + n + " cuốn. Tổng tiền phạt " + money(total) + ". Độc giả đã nộp phạt?"
+                : "Nhận trả " + n + " cuốn, không có tiền phạt. Xác nhận?");
+        }
+        document.querySelectorAll(".return-form").forEach(form => {
+            form.addEventListener("input", () => recalc(form));
+            form.addEventListener("change", () => recalc(form));
+            recalc(form);
+        });
+    </script>
+}

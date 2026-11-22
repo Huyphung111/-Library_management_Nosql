@@ -1,0 +1,45 @@
+@* UC15 bước 2–4, 2a, 4a *@
+@model LibraryManagement.Web.ViewModels.Loans.RenewalVM
+
+<div class="content-card" style="max-width: 640px;">
+    <h2>Phiếu @Model.LoanCode</h2>
+    <dl class="info-list">
+        <dt>Sách</dt>
+        <dd>
+            @foreach (var t in Model.Titles)
+            {
+                <div>@t</div>
+            }
+        </dd>
+        <dt>Hạn trả hiện tại</dt><dd>@Model.DueDate.ToVnDateText()</dd>
+        <dt>Hạn trả dự kiến</dt><dd class="fw-semibold text-primary" id="newDueDate">@Model.NewDueDate.ToVnDateText() <span class="text-muted fw-normal">(thêm @Model.RenewalDays ngày)</span></dd>
+        <dt>Đã gia hạn</dt><dd>@Model.RenewalCount / @Model.MaxRenewals lần</dd>
+    </dl>
+
+    @if (!Model.Eligible)
+    {
+        @* Bước 2a *@
+        <div class="alert alert-danger mt-3 mb-0">
+            <div class="fw-semibold mb-1">Không thể gia hạn phiếu này</div>
+            <ul class="mb-0">
+                @foreach (var p in Model.Problems)
+                {
+                    <li>@p</li>
+                }
+            </ul>
+        </div>
+        <div class="form-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted small mt-3">Yêu cầu sẽ được Thủ thư xem xét. Hạn trả chỉ thay đổi khi yêu cầu được duyệt.</p>
+        <form asp-action="RequestRenewal" asp-route-id="@Model.LoanId" method="post">
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Gửi yêu cầu</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+            </div>
+        </form>
+    }
+</div>

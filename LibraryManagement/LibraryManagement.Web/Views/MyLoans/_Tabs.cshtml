@@ -1,0 +1,8 @@
+@* Hai tab của UC14: "Đang mượn" và "Lịch sử" *@
+@{
+    var onHistory = string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "History", StringComparison.OrdinalIgnoreCase);
+}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @(onHistory ? "" : "active")" asp-action="Index"><i class="bi bi-journal-bookmark"></i> Đang mượn</a></li>
+    <li class="nav-item"><a class="nav-link @(onHistory ? "active" : "")" asp-action="History"><i class="bi bi-clock-history"></i> Lịch sử</a></li>
+</ul>

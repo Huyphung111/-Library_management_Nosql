@@ -33,6 +33,10 @@ public static class DateHelper
     /// <summary>Ngày hôm nay theo giờ Việt Nam (00:00, Kind = Unspecified).</summary>
     public static DateTime TodayVn() => NowVn().Date;
 
+    /// <summary>Đổi một thời điểm UTC (lấy từ database) sang giờ Việt Nam (giữ cả giờ phút).</summary>
+    public static DateTime ToVnTime(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(AsUtc(utc), VnZone);
+
     /// <summary>Đổi một thời điểm UTC (lấy từ database) sang NGÀY theo giờ Việt Nam.</summary>
     public static DateTime ToVnDate(DateTime utc) =>
         TimeZoneInfo.ConvertTimeFromUtc(AsUtc(utc), VnZone).Date;

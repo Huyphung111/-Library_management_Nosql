@@ -1,0 +1,65 @@
+@* UC06 bước 2 *@
+@model LibraryManagement.Web.ViewModels.Readers.ReaderIndexVM
+
+@section PageActions {
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-person-plus"></i> Thêm độc giả</a>
+}
+
+<div class="content-card">
+    <form method="get" class="toolbar">
+        <input type="text" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Mã thẻ, họ tên hoặc số điện thoại" />
+        <select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="" selected="@string.IsNullOrEmpty(Model.Status)">Tất cả trạng thái</option>
+            <option value="active" selected="@(Model.Status == "active")">Hoạt động</option>
+            <option value="locked" selected="@(Model.Status == "locked")">Bị khóa</option>
+            <option value="expired" selected="@(Model.Status == "expired")">Hết hạn</option>
+        </select>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Tìm</button>
+        @if (!string.IsNullOrEmpty(Model.Keyword) || !string.IsNullOrEmpty(Model.Status))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i> Xóa lọc</a>
+        }
+    </form>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <p>Không có độc giả nào phù hợp.</p>
+        </div>
+    }
+    else
+    {
+        <p class="result-info">@Model.Items.Count độc giả</p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã thẻ</th>
+                        <th>Họ tên</th>
+                        <th>Số điện thoại</th>
+                        <th>Ngày hết hạn</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@r.CardNumber</td>
+                            <td>@r.FullName</td>
+                            <td>@r.Phone</td>
+                            <td class="@(r.IsExpired ? "text-danger" : "")">@r.ExpiryDate.ToString("dd/MM/yyyy")</td>
+                            <td><partial name="_CardBadge" model="(r.CardStatus, r.IsExpired)" /></td>
+                            <td class="actions">
+                                <a asp-action="Details" asp-route-id="@r.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Chi tiết</a>
+                                <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Sửa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

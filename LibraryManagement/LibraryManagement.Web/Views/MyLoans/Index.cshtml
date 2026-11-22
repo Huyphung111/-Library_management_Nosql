@@ -1,0 +1,63 @@
+@* UC14 bước 2, 2a, 2b: tab "Đang mượn" *@
+@model List<Loan>
+
+<div class="content-card">
+    <partial name="_Tabs" />
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-journal"></i>
+            <p>Bạn chưa mượn sách nào.</p>
+            <a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-primary btn-sm">Tìm sách</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Mã phiếu</th><th>Tên sách</th><th>Ngày mượn</th><th>Hạn trả</th><th class="text-center">Đã gia hạn</th><th>Trạng thái</th><th class="text-end"></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var l in Model)
+                    {
+                        var pending = l.RenewalRequests.Any(r => r.Status == RenewalStatus.Pending);
+                        <tr class="@(l.IsOverdue ? "table-danger" : "")">
+                            <td class="fw-semibold">@l.LoanCode</td>
+                            <td>
+                                @foreach (var it in l.Items.Where(i => i.ReturnDate == null))
+                                {
+                                    <div>@it.Title</div>
+                                }
+                            </td>
+                            <td>@l.BorrowDate.ToVnDateText()</td>
+                            <td class="@(l.IsOverdue ? "text-danger fw-semibold" : "")">@l.DueDate.ToVnDateText()</td>
+                            <td class="text-center">@l.RenewalCount</td>
+                            <td>
+                                @if (l.IsOverdue)
+                                {
+                                    <span class="badge status-overdue">Quá hạn @l.OverdueDays ngày</span>
+                                }
+                                else
+                                {
+                                    <span class="badge status-borrowing">@l.Status.ToVn()</span>
+                                }
+                                @if (pending)
+                                {
+                                    <span class="badge status-pending">Gia hạn chờ duyệt</span>
+                                }
+                            </td>
+                            <td class="actions">
+                                @if (!pending)
+                                {
+                                    <a asp-action="RequestRenewal" asp-route-id="@l.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar-plus"></i> Gia hạn</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -26,6 +26,8 @@ Get-Process LibraryManagement.Web | Stop-Process -Force   # dừng app đang ch�
 ```
 
 - Chưa có project test. Kiểm thử thủ công theo các dòng sự kiện phụ (3a, 4b...) của từng UC trong `dac-ta-use-case.md`.
+- Muốn thử mà không đụng dữ liệu thật: chạy với database riêng, ví dụ `$env:MongoDb__DatabaseName = "library_management_test"; dotnet run --launch-profile http` (database mới sẽ tự seed).
+- `DbInitializer` (phần của B) tự xuất lại `Data/MongoData/*.json` mỗi lần khởi động: chạy thử xong nhớ `git checkout -- Data/MongoData/` nếu không muốn commit dữ liệu thử.
 - mongosh: chỉ có trong PATH của PowerShell mở mới (Git Bash không thấy). Nếu PowerShell báo không tìm thấy, nạp lại PATH:
   `$env:Path = [Environment]::GetEnvironmentVariable('Path','User') + ';' + [Environment]::GetEnvironmentVariable('Path','Machine')`.
   Chuỗi kết nối: `mongodb://localhost:27017/library_management?replicaSet=rs0`. Khi đối số `--eval` có dấu ngoặc kép, viết script ra file rồi chạy `mongosh --file`.
@@ -60,7 +62,7 @@ Một project MVC, chia lớp bằng thư mục: Controller → Service → `Mon
 - **Kết quả service:** trả `ServiceResult` / `ServiceResult<T>`. `Field` là tên property của ViewModel để báo lỗi đúng ô: controller gọi `ModelState.AddModelError(result.Field ?? "", result.Message)`. Trường hợp thành công thì đặt `TempData["Success"]` / `TempData["Error"]`, `_Alert` sẽ hiển thị. Trong transaction thì ném `BusinessException` để transaction tự hủy.
 - **Xác thực:** cookie auth, role `Librarian` / `Reader`. Claim gồm `NameIdentifier` (userId), `Name` (họ tên), `Role`, `ReaderId` (độc giả), và `CardNotice` (thẻ khóa / hết hạn, chỉ để hiển thị). Controller của độc giả lấy `ReaderId` từ claim, không nhận từ form. `HomeController.Index` chuyển hướng theo role: Thủ thư → `Dashboard`, Độc giả → `Catalog`.
 - **Giao diện** (mục 6.5 thiết kế kỹ thuật): một `_Layout` cho cả hai vai trò. Chưa đăng nhập thì chỉ có khung trắng giữa nền navy, view chỉ viết form. Đã đăng nhập thì có sidebar (`_LibrarianMenu` / `_ReaderMenu` theo role), topbar có dropdown tài khoản, thanh `CardNotice`, `_Alert`, tiêu đề lấy từ `ViewData["Title"]`. Nút bên phải tiêu đề đặt trong `@section PageActions`. Class dùng chung trong `wwwroot/css/site.css`: `content-card`, `toolbar`, `stat-card`, `info-list`, `empty-state`, badge `status-{enum viết thường}` (thêm `status-overdue`, `status-expired`). Màu đổi ở biến `:root`. Icon dùng Bootstrap Icons qua CDN.
-- **Link menu tới controller chưa làm sẽ 404.** Menu tạo sẵn mọi link, kể cả phần của B. Hiện chỉ có `Home` và `Account` (UC01–03).
+- Menu tạo sẵn mọi link, kể cả phần của B. Từ 22/11/2026 mọi controller trong menu đều đã có (A: `Account`, `Readers`, `Loans`, `Renewals`, `MyLoans`; B: các controller còn lại). Trang chi tiết dùng chung: `Readers/Details/{id}`, `Loans/Details/{id}` (B link tới từ Tìm kiếm UC11).
 - Thư mục `ThamKhảo/` nằm **trong** project web và chỉ chứa vài file của đồ án cũ. Nếu chép file `.cs` vào đây, SDK sẽ compile luôn. Mã nguồn đầy đủ của đồ án cũ Shop-Flower (ASP.NET MVC 5, dùng tham khảo giao diện) nằm ngoài repo, tại `D:\Flower\Shop-Flower`.
 
 ## Phân công và Git

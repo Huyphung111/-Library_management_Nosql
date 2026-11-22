@@ -42,7 +42,7 @@ Test case chi tiết của từng UC và kết quả thử nằm trong thư mụ
 - [x] `LoanService.HasOpenLoanForBookAsync(bookId)` (A viết thật ở đợt 2) (21/11/2026)
 
 **Giao diện khung**
-- [ ] Chốt bảng màu với B (tham khảo `_AdminLayout` của Shop-Flower, đổi màu cho hợp thư viện). Đã áp dụng navy `#1e3a5f` + vàng đồng `#c8963e` ở đầu `site.css` ngày 21/11/2026, chờ B đồng ý
+- [x] Chốt bảng màu với B (tham khảo `_AdminLayout` của Shop-Flower, đổi màu cho hợp thư viện). Navy `#1e3a5f` + vàng đồng `#c8963e`; B đã dựng toàn bộ giao diện theo bảng màu này (22/11/2026)
 - [x] `Views/Shared/_Layout.cshtml`: sidebar + navbar, chọn menu theo role (21/11/2026). Làm lại theo mục 6.5 thiết kế kỹ thuật ngày 21/11/2026: Bootstrap Icons, nút ☰ thu gọn sidebar, dropdown tài khoản, thanh cảnh báo `CardNotice`, tiêu đề trang + `@section PageActions`, trang chưa đăng nhập nền navy. Đã xem bằng trang mẫu tĩnh (máy tính và điện thoại); xem lại trên ứng dụng thật khi có trang đăng nhập
 - [x] `Views/Shared/_LibrarianMenu.cshtml`: tạo sẵn **tất cả** link của Thủ thư, kể cả phần của B (21/11/2026). Sửa tô sáng mục đang mở theo cả controller, action và `type` (21/11/2026)
 - [x] `Views/Shared/_ReaderMenu.cshtml`: tạo sẵn link `Catalog`, `MyLoans`, `MyReservations` (21/11/2026)
@@ -68,70 +68,70 @@ Test case chi tiết của từng UC và kết quả thử nằm trong thư mụ
 - [x] Thẻ bị khóa hoặc hết hạn: thêm claim `CardNotice` chứa câu thông báo để `_Layout` hiện thanh cảnh báo (mục 6.3) (21/11/2026)
 - [x] Views: `Login` (không có link đăng ký, quên mật khẩu), `ChangePassword`, `AccessDenied` (21/11/2026)
 - [x] Thêm `Field` vào `ServiceResult` để báo lỗi tại trường tương ứng (B dùng được, ví dụ CCCD trùng ở UC06) (21/11/2026)
-- [ ] Kiểm thử UC01: bỏ trống trường (3a), sai mật khẩu (4a), thẻ khóa hoặc hết hạn vẫn đăng nhập được và có thông báo (5a). Đã thử 3a, 4a, đăng nhập Thủ thư và Độc giả trên Chrome ngày 21/11/2026; còn 5a (seed chưa có thẻ khóa / hết hạn)
-- [ ] Kiểm thử UC02: phiên hết hạn thì chuyển về trang đăng nhập (1a). Đã thử đăng xuất bình thường ngày 21/11/2026; còn 1a
-- [ ] Kiểm thử UC03: sai mật khẩu hiện tại (4a); mật khẩu mới dưới 6 ký tự, trùng mật khẩu cũ, xác nhận không khớp (4b). Đã thử 4a và mật khẩu ngắn ngày 21/11/2026; còn trùng mật khẩu cũ, xác nhận không khớp, đổi thành công
+- [x] Kiểm thử UC01: bỏ trống trường (3a), sai mật khẩu (4a), thẻ khóa hoặc hết hạn vẫn đăng nhập được và có thông báo (5a). 10/10 Đạt với seed đầy đủ của B (22/11/2026)
+- [x] Kiểm thử UC02: phiên hết hạn thì chuyển về trang đăng nhập (1a). 3/3 Đạt (22/11/2026)
+- [x] Kiểm thử UC03: sai mật khẩu hiện tại (4a); mật khẩu mới dưới 6 ký tự, trùng mật khẩu cũ, xác nhận không khớp (4b). 7/7 Đạt (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC06 Quản lý độc giả (nhánh `uc06-quan-ly-doc-gia`)
-- [ ] `ReaderService`: danh sách, thêm, sửa, khóa (kèm lý do), mở khóa, gia hạn thẻ, đặt lại mật khẩu
-- [ ] Thêm độc giả tạo đồng thời hồ sơ `readers` và tài khoản `users` (tên đăng nhập = mã thẻ, mật khẩu = `DefaultPassword`)
-- [ ] `ViewModels/Readers`: `ReaderFormVM`, `ReaderListVM`
-- [ ] `ReadersController`: `Index`, `Create`, `Edit`, `Lock`, `Unlock`, `ExtendCard`, `ResetPassword`
-- [ ] Views: danh sách (mã thẻ, họ tên, SĐT, ngày hết hạn, trạng thái), form thêm / sửa, màn hiện tài khoản vừa cấp
-- [ ] Trạng thái "hết hạn" tính khi truy vấn, không lưu vào database
-- [ ] Kiểm thử: trường bắt buộc trống, email sai định dạng, CCCD trùng (6a); khóa, mở khóa, gia hạn thẻ, đặt lại mật khẩu (3b–3e)
+- [x] `ReaderService`: danh sách, thêm, sửa, khóa (kèm lý do), mở khóa, gia hạn thẻ, đặt lại mật khẩu (22/11/2026)
+- [x] Thêm độc giả tạo đồng thời hồ sơ `readers` và tài khoản `users` (tên đăng nhập = mã thẻ, mật khẩu = `DefaultPassword`) (22/11/2026)
+- [x] `ViewModels/Readers`: `ReaderFormVM`, `ReaderListVM` (22/11/2026)
+- [x] `ReadersController`: `Index`, `Create`, `Edit`, `Lock`, `Unlock`, `ExtendCard`, `ResetPassword` (22/11/2026)
+- [x] Views: danh sách (mã thẻ, họ tên, SĐT, ngày hết hạn, trạng thái), form thêm / sửa, màn hiện tài khoản vừa cấp (22/11/2026)
+- [x] Trạng thái "hết hạn" tính khi truy vấn, không lưu vào database (22/11/2026)
+- [x] Kiểm thử: trường bắt buộc trống, email sai định dạng, CCCD trùng (6a); khóa, mở khóa, gia hạn thẻ, đặt lại mật khẩu (3b–3e) (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ## Đợt 2: Mượn trả
 
 ### UC07 Lập phiếu mượn (nhánh `uc07-lap-phieu-muon`)
-- [ ] `LoanService.CreateAsync`: kiểm tra thẻ, phiếu quá hạn, số sách đang mượn
-- [ ] Trong transaction: trừ `availableQuantity` bằng update có điều kiện `> 0`, tạo loan, gọi `CompleteForLoanAsync`
-- [ ] `LoansController`: `Create` (GET, POST), `CheckReader` (AJAX)
-- [ ] `ViewModels/Loans`: `CreateLoanVM`
-- [ ] View: ô nhập mã thẻ, khung thông tin độc giả (đang mượn x/5, phiếu quá hạn, hạn thẻ), chọn sách, hạn trả đề xuất
-- [ ] Kiểm thử: mã thẻ không có (2a); thẻ khóa, hết hạn, có phiếu quá hạn (3a); sách hết (5a); vượt 5 cuốn (5b); đặt trước chuyển *Hoàn tất* (5c); hạn trả không sau ngày mượn (7a)
+- [x] `LoanService.CreateAsync`: kiểm tra thẻ, phiếu quá hạn, số sách đang mượn (22/11/2026)
+- [x] Trong transaction: trừ `availableQuantity` bằng update có điều kiện `> 0`, tạo loan, gọi `CompleteForLoanAsync` (22/11/2026)
+- [x] `LoansController`: `Create` (GET, POST), `Details`. Bước kiểm tra độc giả dùng `Create` GET `?cardNumber=` thay cho `CheckReader` (AJAX), đã cập nhật mục 3 thiết kế kỹ thuật (22/11/2026)
+- [x] `ViewModels/Loans`: `CreateLoanVM` (22/11/2026)
+- [x] View: ô nhập mã thẻ, khung thông tin độc giả (đang mượn x/5, phiếu quá hạn, hạn thẻ), chọn sách, hạn trả đề xuất (22/11/2026)
+- [x] Kiểm thử: mã thẻ không có (2a); thẻ khóa, hết hạn, có phiếu quá hạn (3a); sách hết (5a); vượt 5 cuốn (5b); đặt trước chuyển *Hoàn tất* (5c); hạn trả không sau ngày mượn (7a) (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC08 Nhận trả sách (nhánh `uc08-nhan-tra-sach`)
-- [ ] `LoanService.ReturnAsync`: tính phạt quá hạn theo ngày giờ Việt Nam, hư hỏng theo mức nhập, mất bằng giá sách
-- [ ] Trong transaction: cập nhật từng item bằng `arrayFilters`; sách không mất thì `availableQuantity +1`, sách mất thì `totalQuantity -1`; cập nhật `totalFine`; chuyển `Returned` khi trả hết
-- [ ] Sau transaction: gọi `GetWaitingListAsync`, nhận `List<WaitingReader>` (đã có họ tên, SĐT, email, sắp người đặt sớm nhất lên đầu) và hiện danh sách người chờ
-- [ ] `LoansController`: `Return` (GET, POST)
-- [ ] `ViewModels/Loans`: `ReturnLoanVM`
-- [ ] View: tìm theo mã thẻ hoặc mã phiếu, bảng sách chưa trả có chọn tình trạng và cột tiền phạt, tổng phạt
-- [ ] Kiểm thử: không có phiếu đang mượn (3a); trả đúng hạn phạt 0 (5a); có người chờ (7a); trả từng phần, phiếu vẫn *Đang mượn* (8a)
+- [x] `LoanService.ReturnAsync`: tính phạt quá hạn theo ngày giờ Việt Nam, hư hỏng theo mức nhập, mất bằng giá sách (22/11/2026)
+- [x] Trong transaction: cập nhật từng item bằng `arrayFilters`; sách không mất thì `availableQuantity +1`, sách mất thì `totalQuantity -1`; cập nhật `totalFine`; chuyển `Returned` khi trả hết (22/11/2026)
+- [x] Sau transaction: gọi `GetWaitingListAsync`, nhận `List<WaitingReader>` (đã có họ tên, SĐT, email, sắp người đặt sớm nhất lên đầu) và hiện danh sách người chờ (22/11/2026)
+- [x] `LoansController`: `Return` (GET, POST) (22/11/2026)
+- [x] `ViewModels/Loans`: `ReturnLoanVM` (22/11/2026)
+- [x] View: tìm theo mã thẻ hoặc mã phiếu, bảng sách chưa trả có chọn tình trạng và cột tiền phạt, tổng phạt (22/11/2026)
+- [x] Kiểm thử: không có phiếu đang mượn (3a); trả đúng hạn phạt 0 (5a); có người chờ (7a); trả từng phần, phiếu vẫn *Đang mượn* (8a) (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### Hàm giao kèo cho B
-- [ ] Viết thật `IsBorrowingAsync(readerId, bookId)`
-- [ ] Viết thật `HasOpenLoanForBookAsync(bookId)`
-- [ ] Báo B đã có hàm thật
+- [x] Viết thật `IsBorrowingAsync(readerId, bookId)` (22/11/2026)
+- [x] Viết thật `HasOpenLoanForBookAsync(bookId)` (22/11/2026)
+- [ ] Báo B đã có hàm thật (code xong 22/11/2026, đã thử qua UC04 xóa sách và UC16 đặt trước của B; chờ gộp `dev` rồi báo)
 
 ## Đợt 3: Phía độc giả và gia hạn
 
 ### UC14 Sách đang mượn và lịch sử (nhánh `uc14-sach-cua-toi`)
-- [ ] `LoanService`: lấy phiếu đang mượn và lịch sử theo `ReaderId` lấy từ claim
-- [ ] `MyLoansController`: `Index`, `History`
-- [ ] Views: tab "Đang mượn" (tên sách, ngày mượn, hạn trả, số lần gia hạn, đánh dấu quá hạn), tab "Lịch sử" (ngày trả, tiền phạt)
-- [ ] Kiểm thử: chưa mượn sách nào (2a), chưa có lịch sử (4a), không xem được phiếu của độc giả khác
+- [x] `LoanService`: lấy phiếu đang mượn và lịch sử theo `ReaderId` lấy từ claim (22/11/2026)
+- [x] `MyLoansController`: `Index`, `History` (22/11/2026)
+- [x] Views: tab "Đang mượn" (tên sách, ngày mượn, hạn trả, số lần gia hạn, đánh dấu quá hạn), tab "Lịch sử" (ngày trả, tiền phạt) (22/11/2026)
+- [x] Kiểm thử: chưa mượn sách nào (2a), chưa có lịch sử (4a), không xem được phiếu của độc giả khác (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC15 Yêu cầu gia hạn (nhánh `uc15-yeu-cau-gia-han`)
-- [ ] `LoanService.RequestRenewalAsync`: kiểm tra thẻ, quá hạn, số lần gia hạn, chưa có yêu cầu đang chờ; `$push` vào `renewalRequests`
-- [ ] `MyLoansController.RequestRenewal` (POST)
-- [ ] View: hiện hạn trả hiện tại và hạn trả dự kiến, nút "Gửi yêu cầu" / "Hủy"
-- [ ] Kiểm thử: không đủ điều kiện thì hiện lý do (2a), nhấn Hủy (4a), gửi hai lần liên tiếp
+- [x] `LoanService.RequestRenewalAsync`: kiểm tra thẻ, quá hạn, số lần gia hạn, chưa có yêu cầu đang chờ; `$push` vào `renewalRequests` (22/11/2026)
+- [x] `MyLoansController.RequestRenewal` (POST) (22/11/2026)
+- [x] View: hiện hạn trả hiện tại và hạn trả dự kiến, nút "Gửi yêu cầu" / "Hủy" (22/11/2026)
+- [x] Kiểm thử: không đủ điều kiện thì hiện lý do (2a), nhấn Hủy (4a), gửi hai lần liên tiếp (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC09 Gia hạn phiếu mượn (nhánh `uc09-gia-han`)
-- [ ] `LoanService`: duyệt, từ chối, gia hạn tại quầy; kiểm tra điều kiện gồm gọi `HasWaitingAsync`
-- [ ] Duyệt: `$inc renewalCount`, cộng 7 ngày vào `dueDate`, cập nhật yêu cầu bằng positional `$`
-- [ ] `RenewalsController`: `Index`, `Approve`, `Reject`, `RenewAtCounter`
-- [ ] `ViewModels/Loans`: `RenewalVM`
-- [ ] View: danh sách yêu cầu *Chờ duyệt* (độc giả, mã phiếu, hạn trả, số lần đã gia hạn), nút Duyệt / Từ chối kèm lý do
-- [ ] Kiểm thử: gia hạn tại quầy (1a), không đủ điều kiện chỉ được từ chối (4a), từ chối kèm lý do (5a), đã gia hạn 2 lần
+- [x] `LoanService`: duyệt, từ chối, gia hạn tại quầy; kiểm tra điều kiện gồm gọi `HasWaitingAsync` (22/11/2026)
+- [x] Duyệt: `$inc renewalCount`, cộng 7 ngày vào `dueDate`, cập nhật yêu cầu bằng positional `$` (22/11/2026)
+- [x] `RenewalsController`: `Index`, `Approve`, `Reject`, `RenewAtCounter` (22/11/2026)
+- [x] `ViewModels/Loans`: `RenewalVM` (22/11/2026)
+- [x] View: danh sách yêu cầu *Chờ duyệt* (độc giả, mã phiếu, hạn trả, số lần đã gia hạn), nút Duyệt / Từ chối kèm lý do (22/11/2026)
+- [x] Kiểm thử: gia hạn tại quầy (1a), không đủ điều kiện chỉ được từ chối (4a), từ chối kèm lý do (5a), đã gia hạn 2 lần (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ## Đợt 4: Kiểm thử chéo phần của B

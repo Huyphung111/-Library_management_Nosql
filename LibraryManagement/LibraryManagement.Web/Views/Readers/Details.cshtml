@@ -1,0 +1,130 @@
+@* UC06: chi tiết độc giả và các thao tác 3b–3e. Bước 8: hiện tài khoản vừa cấp ngay sau khi thêm. UC11 chọn độc giả cũng mở trang này. *@
+@model LibraryManagement.Web.ViewModels.Readers.ReaderDetailsVM
+@{
+    var r = Model.Reader;
+}
+
+@section PageActions {
+    <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Sửa thông tin</a>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Danh sách</a>
+}
+
+@if (Model.JustIssued)
+{
+    <div class="content-card border-success">
+        <h2><i class="bi bi-person-check text-success"></i> Tài khoản vừa cấp</h2>
+        <dl class="info-list">
+            <dt>Tên đăng nhập</dt><dd class="fw-semibold">@Model.Username</dd>
+            <dt>Mật khẩu</dt><dd class="fw-semibold">@Model.DefaultPassword</dd>
+        </dl>
+        <p class="text-muted small mb-0 mt-2">Đưa thông tin này cho độc giả và nhắc đổi mật khẩu sau lần đăng nhập đầu tiên.</p>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="content-card h-100">
+            <h2>Thông tin độc giả</h2>
+            <dl class="info-list">
+                <dt>Mã thẻ</dt><dd class="fw-semibold">@r.CardNumber</dd>
+                <dt>Họ tên</dt><dd>@r.FullName</dd>
+                <dt>Ngày sinh</dt><dd>@(r.DateOfBirth.HasValue ? DateHelper.ToVnDate(r.DateOfBirth.Value).ToString("dd/MM/yyyy") : "—")</dd>
+                <dt>Số CCCD</dt><dd>@r.IdNumber</dd>
+                <dt>Số điện thoại</dt><dd>@r.Phone</dd>
+                <dt>Email</dt><dd>@(r.Email ?? "—")</dd>
+                <dt>Địa chỉ</dt><dd>@(r.Address ?? "—")</dd>
+                <dt>Tài khoản</dt><dd>@(Model.Username ?? "—")</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-card h-100">
+            <h2>Thẻ thư viện</h2>
+            <dl class="info-list">
+                <dt>Trạng thái</dt><dd><partial name="_CardBadge" model="(r.CardStatus, Model.IsExpired)" /></dd>
+                @if (r.CardStatus == CardStatus.Locked)
+                {
+                    <dt>Lý do khóa</dt><dd>@r.LockReason</dd>
+                }
+                <dt>Ngày cấp</dt><dd>@r.IssuedDate.ToVnDateText()</dd>
+                <dt>Ngày hết hạn</dt><dd class="@(Model.IsExpired ? "text-danger fw-semibold" : "")">@r.ExpiryDate.ToVnDateText()</dd>
+                <dt>Đang mượn</dt><dd>@Model.BorrowingBooks cuốn</dd>
+            </dl>
+
+            <hr />
+            <div class="d-flex flex-wrap gap-2">
+                @if (r.CardStatus == CardStatus.Active)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#lockForm">
+                        <i class="bi bi-lock"></i> Khóa thẻ
+                    </button>
+                }
+                else
+                {
+                    <form asp-action="Unlock" asp-route-id="@r.Id" method="post" onsubmit="return confirm('Mở khóa thẻ @r.CardNumber?');">
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-unlock"></i> Mở khóa thẻ</button>
+                    </form>
+                }
+                <form asp-action="ExtendCard" asp-route-id="@r.Id" method="post" onsubmit="return confirm('Gia hạn thẻ @r.CardNumber thêm 1 năm?');">
+                    <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar-plus"></i> Gia hạn thẻ</button>
+                </form>
+                <form asp-action="ResetPassword" asp-route-id="@r.Id" method="post" onsubmit="return confirm('Đặt lại mật khẩu của @r.CardNumber về mặc định?');">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-key"></i> Đặt lại mật khẩu</button>
+                </form>
+            </div>
+
+            @if (r.CardStatus == CardStatus.Active)
+            {
+                <form asp-action="Lock" asp-route-id="@r.Id" method="post" id="lockForm" class="collapse mt-3"
+                      onsubmit="return confirm('Khóa thẻ @r.CardNumber?');">
+                    <label for="lockReason" class="form-label">Lý do khóa <span class="text-danger">*</span></label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="lockReason" name="lockReason" class="form-control" required maxlength="200" />
+                        <button type="submit" class="btn btn-danger">Xác nhận khóa</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="content-card mt-3">
+    <h2>Phiếu mượn</h2>
+    @if (Model.Loans.Count == 0)
+    {
+        <div class="empty-state"><i class="bi bi-journal"></i><p>Độc giả chưa có phiếu mượn nào.</p></div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr><th>Mã phiếu</th><th>Ngày mượn</th><th>Hạn trả</th><th>Số sách</th><th>Tiền phạt</th><th>Trạng thái</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var l in Model.Loans)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@l.LoanCode</td>
+                            <td>@l.BorrowDate.ToVnDateText()</td>
+                            <td>@l.DueDate.ToVnDateText()</td>
+                            <td>@l.Items.Count(i => i.ReturnDate == null) / @l.Items.Count chưa trả</td>
+                            <td>@(l.TotalFine > 0 ? l.TotalFine.ToMoney() : "—")</td>
+                            <td>
+                                @if (l.IsOverdue)
+                                {
+                                    <span class="badge status-overdue">Quá hạn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge status-@l.Status.ToString().ToLower()">@l.Status.ToVn()</span>
+                                }
+                            </td>
+                            <td class="actions"><a asp-controller="Loans" asp-action="Details" asp-route-id="@l.Id" class="btn btn-sm btn-outline-primary">Xem</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
