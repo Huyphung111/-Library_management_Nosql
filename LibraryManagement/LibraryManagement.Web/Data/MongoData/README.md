@@ -2,16 +2,17 @@
 
 Bản xuất database `library_management` để mọi người có **cùng một bộ dữ liệu**, giữ nguyên `_id`. Mỗi collection một file JSON, dạng Extended JSON canonical (mỗi dòng một document), nên giữ đúng kiểu `ObjectId`, ngày giờ và số `long`.
 
-Xuất ngày 21/11/2026 từ seed tối thiểu:
+Xuất ngày 22/11/2026 từ seed đầy đủ (Member B hoàn tất Đợt 4):
 
 | Collection | Số document | Nội dung |
 |---|---|---|
-| `users` | 3 | `admin` (Thủ thư, mật khẩu `admin123`), `DG000001`, `DG000002` (Độc giả, mật khẩu = `LibraryRules.DefaultPassword`) |
-| `readers` | 2 | Nguyễn Văn An, Trần Thị Bình; thẻ *Hoạt động*, hết hạn 20/11/2027 |
-| `categories` | 2 | Kỹ năng sống, Văn học |
-| `books` | 5 | Đắc Nhân Tâm, Nhà Giả Kim, Tuổi Trẻ Đáng Giá Bao Nhiêu, Dế Mèn Phiêu Lưu Ký, Cho Tôi Xin Một Vé Đi Tuổi Thơ |
-| `counters` | 1 | Bộ đếm mã thẻ đang ở 2 |
-| `loans`, `reservations` | 0 | File rỗng |
+| `users` | 11 | `admin` (Thủ thư, mật khẩu `admin123`), 10 tài khoản Độc giả `DG000001` - `DG000010` (mật khẩu = `123456`) |
+| `readers` | 10 | 10 độc giả đầy đủ họ tên, CCCD, SĐT, trong đó có thẻ Hoạt động, thẻ Khóa (`DG000009`), thẻ Hết hạn (`DG000010`) |
+| `categories` | 6 | 6 thể loại phong phú (CNTT, Kỹ năng sống, Văn học, Kinh tế, Khoa học, Lịch sử) |
+| `books` | 28 | 28 đầu sách thực tế, gồm sách còn và sách hết hàng để thử nghiệm đặt trước |
+| `counters` | 3 | Bộ đếm mã thẻ (`DG`), mã phiếu mượn (`PM`), v.v. |
+| `loans` | 9 | Phiếu mượn trải đều các tháng: đúng hạn, quá hạn, đã trả có phạt trễ hạn, phạt hư hỏng, phạt mất sách |
+| `reservations` | 2 | Yêu cầu đặt trước mẫu ở các trạng thái Chờ duyệt, Đã duyệt có sách về kho |
 
 ## Nhập vào máy (cách nhanh, dùng mongosh)
 

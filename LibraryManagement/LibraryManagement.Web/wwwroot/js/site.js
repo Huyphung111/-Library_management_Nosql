@@ -1,4 +1,4 @@
-﻿// Nút ☰ thu gọn / mở sidebar (giống #sidebarCollapse của Shop-Flower).
+// Nút ☰ thu gọn / mở sidebar (giống #sidebarCollapse của Shop-Flower).
 // Máy tính: ẩn hẳn sidebar, nhớ lựa chọn. Màn hình nhỏ: sidebar trượt ra đè lên nội dung.
 (function () {
     const body = document.body;
@@ -23,3 +23,16 @@
     document.querySelectorAll(".sidebar .nav-link").forEach(link =>
         link.addEventListener("click", () => body.classList.remove("sidebar-open")));
 })();
+
+// Tự động đóng banner thông báo thành công sau 3.5 giây
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        document.querySelectorAll(".alert.alert-success").forEach(function (alertEl) {
+            if (window.bootstrap && bootstrap.Alert) {
+                bootstrap.Alert.getOrCreateInstance(alertEl).close();
+            } else {
+                alertEl.remove();
+            }
+        });
+    }, 3500);
+});

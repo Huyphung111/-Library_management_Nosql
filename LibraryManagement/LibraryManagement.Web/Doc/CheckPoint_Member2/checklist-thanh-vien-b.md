@@ -39,97 +39,91 @@ Test case: viết cho từng UC của B trong thư mục [TestCase/](../TestCase
 ## Đợt 1: Danh mục và tìm sách
 
 ### Dashboard (đề xuất làm sớm, vì sau đăng nhập Thủ thư đang bị 404)
-- [ ] `DashboardController.Index` với `[Authorize(Roles = "Librarian")]`
-- [ ] `ReportService.GetDashboardAsync()`: chỉ đọc dữ liệu, trả về các con số bên dưới
-- [ ] 4 thẻ `stat-card`: Đầu sách (số đầu sách / tổng số cuốn), Độc giả đang hoạt động, Phiếu đang mượn, Phiếu quá hạn (thẻ màu đỏ, tính khi truy vấn)
-- [ ] Khung "Việc cần xử lý", mỗi dòng có link: gia hạn chờ duyệt (→ `Renewals`), đặt trước chờ duyệt (→ `Reservations`), đặt trước đã duyệt có sách về cần liên hệ (→ `Reservations`)
-- [ ] Nút nhanh "Lập phiếu mượn" (→ `Loans/Create`), "Nhận trả sách" (→ `Loans/Return`) đặt trong `@section PageActions`
+- [x] `DashboardController.Index` với `[Authorize(Roles = "Librarian")]` (22/11/2026)
+- [x] `ReportService.GetDashboardAsync()`: chỉ đọc dữ liệu, trả về các con số bên dưới (22/11/2026)
+- [x] 4 thẻ `stat-card`: Đầu sách (số đầu sách / tổng số cuốn), Độc giả đang hoạt động, Phiếu đang mượn, Phiếu quá hạn (thẻ màu đỏ, tính khi truy vấn) (22/11/2026)
+- [x] Khung "Việc cần xử lý", mỗi dòng có link: gia hạn chờ duyệt (→ `Renewals`), đặt trước chờ duyệt (→ `Reservations`), đặt trước đã duyệt có sách về cần liên hệ (→ `Reservations`) (22/11/2026)
+- [x] Nút nhanh "Lập phiếu mượn" (→ `Loans/Create`), "Nhận trả sách" (→ `Loans/Return`) đặt trong `@section PageActions` (22/11/2026)
 - [ ] Gộp vào `dev`
 
 ### UC05 Quản lý thể loại (nhánh `uc05-the-loai`)
-- [ ] `CategoryService`: danh sách kèm **số đầu sách** của mỗi thể loại, thêm, sửa, xóa
-- [ ] Tên không trống, không trùng. Index `name` unique có collation `vi` strength 2 nên "văn học" trùng "Văn học": bắt lỗi trùng khóa và báo đúng ô tên (`ServiceResult.Fail(..., "Name")`)
-- [ ] Xóa chỉ khi không còn sách thuộc thể loại (QĐ09); nếu còn thì báo số sách còn thuộc thể loại
-- [ ] `CategoriesController`: `Index`, `Create`, `Edit`, `Delete` (POST, hỏi xác nhận trước)
-- [ ] ViewModel form thể loại, views danh sách và form
+- [x] `CategoryService`: danh sách kèm **số đầu sách** của mỗi thể loại, thêm, sửa, xóa (22/11/2026)
+- [x] Tên không trống, không trùng. Index `name` unique có collation `vi` strength 2 nên "văn học" trùng "Văn học": bắt lỗi trùng khóa và báo đúng ô tên (`ServiceResult.Fail(..., "Name")`) (22/11/2026)
+- [x] Xóa chỉ khi không còn sách thuộc thể loại (QĐ09); nếu còn thì báo số sách còn thuộc thể loại (22/11/2026)
+- [x] `CategoriesController`: `Index`, `Create`, `Edit`, `Delete` (POST, hỏi xác nhận trước) (22/11/2026)
+- [x] ViewModel form thể loại, views danh sách và form (22/11/2026)
 - [ ] Kiểm thử: tên trống, tên trùng kể cả khác hoa thường (6a); sửa (3a); xóa thể loại còn sách (3b); xóa thành công
 - [ ] Gộp vào `dev`
 
 ### UC04 Quản lý sách (nhánh `uc04-quan-ly-sach`)
-- [ ] `BookService`: danh sách (tên, tác giả, thể loại, số lượng tổng, số còn lại), thêm, sửa, xóa
-- [ ] Thêm: tên không trống, ít nhất 1 tác giả và 1 thể loại, giá và số lượng tổng là số dương; `availableQuantity` = `totalQuantity`
-- [ ] Sửa (3a): số lượng tổng mới không nhỏ hơn số đang cho mượn (`total - available`), số còn lại đổi theo mức chênh lệch. Dùng update có điều kiện để không lệch khi đang có người mượn cùng lúc
-- [ ] Xóa (3b): gọi `LoanService.HasOpenLoanForBookAsync(bookId)`; có phiếu mở thì báo không thể xóa (QĐ09)
-- [ ] `BooksController`: `Index`, `Create`, `Edit`, `Delete`; thể loại chọn từ danh mục có sẵn
-- [ ] `ViewModels/Books`: `BookFormVM`, `BookListVM`
+- [x] `BookService`: danh sách (tên, tác giả, thể loại, số lượng tổng, số còn lại), thêm, sửa, xóa (22/11/2026)
+- [x] Thêm: tên không trống, ít nhất 1 tác giả và 1 thể loại, giá và số lượng tổng là số dương; `availableQuantity` = `totalQuantity` (22/11/2026)
+- [x] Sửa (3a): số lượng tổng mới không nhỏ hơn số đang cho mượn (`total - available`), số còn lại đổi theo mức chênh lệch. Dùng update có điều kiện để không lệch khi đang có người mượn cùng lúc (22/11/2026)
+- [x] Xóa (3b): gọi `LoanService.HasOpenLoanForBookAsync(bookId)`; có phiếu mở thì báo không thể xóa (QĐ09) (22/11/2026)
+- [x] `BooksController`: `Index`, `Create`, `Edit`, `Delete`; thể loại chọn từ danh mục có sẵn (22/11/2026)
+- [x] `ViewModels/Books`: `BookFormVM`, `BookListVM` (22/11/2026)
 - [ ] Kiểm thử: dữ liệu không hợp lệ (6a); giảm số lượng tổng dưới số đang cho mượn; xóa sách đang có phiếu mở (3b); xóa thành công. **Lưu ý:** `HasOpenLoanForBookAsync` của A đang tạm trả `false`, thử lại test xóa sau khi A viết thật
 - [ ] Gộp vào `dev`
 
 ### UC13 Tìm kiếm sách (nhánh `uc13-tim-sach`)
-- [ ] `BookService`: tìm theo tên hoặc tác giả (text index trên `title`, `authors`), lọc theo thể loại; tình trạng *Còn* / *Hết* theo `availableQuantity`
-- [ ] Lưu ý cách text index hiện tại chạy (đã thử trên dữ liệu seed ngày 21/11/2026), rồi quyết định có cần thêm tìm theo regex hoặc field `searchText` không dấu (mục 5.4 thiết kế kỹ thuật):
-  - Không phân biệt dấu: `nhan` ra "Đắc Nhân Tâm", `to hoai` ra sách của Tô Hoài
-  - Nhưng `đ` không khớp `d`: `dac` **không** ra "Đắc Nhân Tâm"
-  - Chỉ khớp nguyên từ: `Nhâ` không ra "Đắc Nhân Tâm" (lại ra "Nhà Giả Kim" vì bỏ dấu thì "nha" = "Nhà")
-  - Nhiều từ là tìm "hoặc": `Giả Kim` ra cả "Tuổi Trẻ Đáng **Giá** Bao Nhiêu". Nên sắp theo `{ $meta: "textScore" }`, hoặc bọc cụm trong dấu ngoặc kép để tìm đúng cụm
-- [ ] `CatalogController` với `[Authorize(Roles = "Reader")]`: `Index`, `Details`
-- [ ] Trang `Index` dùng lưới thẻ sách đã có trong `site.css` (`book-grid`, `book-card`..., mục 6.5 thiết kế kỹ thuật): sách hết dùng `stock out` và nút "Đặt trước"
-- [ ] `ViewModels/Books`: `BookSearchVM`
-- [ ] Trang chi tiết: tên, tác giả, thể loại, NXB, năm xuất bản, số cuốn còn. Nút "Đặt trước" **chỉ hiện khi sách hết**; sách còn thì hướng dẫn đến quầy mượn (UC16 bước 1a)
+- [x] `BookService`: tìm theo tên hoặc tác giả (text index trên `title`, `authors`), lọc theo thể loại; tình trạng *Còn* / *Hết* theo `availableQuantity` (22/11/2026)
+- [x] `CatalogController` với `[Authorize(Roles = "Reader")]`: `Index`, `Details` (22/11/2026)
+- [x] Trang `Index` dùng lưới thẻ sách đã có trong `site.css` (`book-grid`, `book-card`..., mục 6.5 thiết kế kỹ thuật): sách hết dùng `stock out` và nút "Đặt trước" (22/11/2026)
+- [x] Trang chi tiết: tên, tác giả, thể loại, NXB, năm xuất bản, số cuốn còn. Nút "Đặt trước" **chỉ hiện khi sách hết**; sách còn thì hướng dẫn đến quầy mượn (UC16 bước 1a) (22/11/2026)
 - [ ] Kiểm thử: không tìm thấy (3a); tìm theo tác giả; lọc thể loại; sách hết có nút Đặt trước, sách còn thì không
 - [ ] Gộp vào `dev`
 
 ## Đợt 2: Đặt trước và hàm giao kèo
 
 ### UC16 Đặt trước sách (nhánh `uc16-dat-truoc`)
-- [ ] `ReservationService`: kiểm tra `availableQuantity == 0`, thẻ *Hoạt động* (và chưa hết hạn, khớp thông báo `CardNotice` của UC01), chưa có yêu cầu *Chờ duyệt* / *Đã duyệt* cho sách này (QĐ08), không đang mượn sách này (gọi `LoanService.IsBorrowingAsync`)
-- [ ] Tạo yêu cầu: `reservedAt` = bây giờ (UTC), *Chờ duyệt*, lưu bản sao `bookTitle`
-- [ ] Hủy (1b): yêu cầu *Chờ duyệt* hoặc *Đã duyệt* của chính mình chuyển *Đã hủy*
-- [ ] `MyReservationsController` với `[Authorize(Roles = "Reader")]`: `Index`, `Create` (POST), `Cancel` (POST). `ReaderId` lấy từ claim, không nhận từ form
-- [ ] View xác nhận: thông tin sách và lưu ý "thư viện sẽ liên hệ khi có sách, sách không được giữ riêng"
+- [x] `ReservationService`: kiểm tra `availableQuantity == 0`, thẻ *Hoạt động* (và chưa hết hạn, khớp thông báo `CardNotice` của UC01), chưa có yêu cầu *Chờ duyệt* / *Đã duyệt* cho sách này (QĐ08), không đang mượn sách này (gọi `LoanService.IsBorrowingAsync`) (22/11/2026)
+- [x] Tạo yêu cầu: `reservedAt` = bây giờ (UTC), *Chờ duyệt*, lưu bản sao `bookTitle` (22/11/2026)
+- [x] Hủy (1b): yêu cầu *Chờ duyệt* hoặc *Đã duyệt* của chính mình chuyển *Đã hủy* (22/11/2026)
+- [x] `MyReservationsController` với `[Authorize(Roles = "Reader")]`: `Index`, `Create` (POST), `Cancel` (POST). `ReaderId` lấy từ claim, không nhận từ form (22/11/2026)
+- [x] View xác nhận: thông tin sách và lưu ý "thư viện sẽ liên hệ khi có sách, sách không được giữ riêng" (22/11/2026)
 - [ ] Kiểm thử: sách còn thì không có nút (1a); hủy (1b); thẻ khóa / hết hạn, đã có yêu cầu, đang mượn sách này (2a); không hủy được yêu cầu của người khác. **Lưu ý:** `IsBorrowingAsync` của A đang tạm trả `false`
 - [ ] Gộp vào `dev`
 
 ### UC10 Xử lý đặt trước (nhánh `uc10-xu-ly-dat-truoc`)
-- [ ] `ReservationService`: danh sách theo trạng thái; `$lookup` sang `books` để đánh dấu yêu cầu *Đã duyệt* có sách đã về kho (`availableQuantity > 0`)
-- [ ] Chi tiết yêu cầu: độc giả, SĐT, tình trạng thẻ, sách, ngày đặt, số còn lại; cảnh báo khi thẻ khóa hoặc hết hạn (4a); yêu cầu *Đã duyệt* có sách về thì hiện SĐT và email để liên hệ (3a, dùng lại `WaitingReader`)
-- [ ] Duyệt, Từ chối (kèm lý do, 5a), Hủy yêu cầu *Đã duyệt* (kèm lý do, 3b): đổi `status`, lưu `reason`, `processedBy`
-- [ ] `ReservationsController` với `[Authorize(Roles = "Librarian")]`: `Index`, `Approve`, `Reject`, `Cancel`
+- [x] `ReservationService`: danh sách theo trạng thái; `$lookup` sang `books` để đánh dấu yêu cầu *Đã duyệt* có sách đã về kho (`availableQuantity > 0`) (22/11/2026)
+- [x] Chi tiết yêu cầu: độc giả, SĐT, tình trạng thẻ, sách, ngày đặt, số còn lại; cảnh báo khi thẻ khóa hoặc hết hạn (4a); yêu cầu *Đã duyệt* có sách về thì hiện SĐT và email để liên hệ (3a, dùng lại `WaitingReader`) (22/11/2026)
+- [x] Duyệt, Từ chối (kèm lý do, 5a), Hủy yêu cầu *Đã duyệt* (kèm lý do, 3b): đổi `status`, lưu `reason`, `processedBy` (22/11/2026)
+- [x] `ReservationsController` với `[Authorize(Roles = "Librarian")]`: `Index`, `Approve`, `Reject`, `Cancel` (22/11/2026)
 - [ ] Kiểm thử: duyệt; từ chối kèm lý do; hủy yêu cầu đã duyệt; cảnh báo thẻ khóa; đánh dấu sách đã về
 - [ ] Gộp vào `dev`
 
 ### 3 hàm giao kèo cho A (đổi từ giá trị giả sang code thật)
-- [ ] `CompleteForLoanAsync(session, readerId, bookIds, loanId)`: **chạy trong `session` A truyền vào**; `UpdateMany` các yêu cầu *Chờ duyệt* / *Đã duyệt* của độc giả cho các sách này sang *Hoàn tất*, ghi `completedLoanId`
-- [ ] `GetWaitingListAsync(bookIds)`: yêu cầu *Đã duyệt* của các sách, sắp theo `reservedAt` tăng dần, trả về `List<WaitingReader>` với họ tên, SĐT, email lấy từ `readers` (dùng `$lookup` hoặc truy vấn `readers` theo danh sách `readerId`)
-- [ ] `HasWaitingAsync(bookIds)`: có yêu cầu *Chờ duyệt* hoặc *Đã duyệt* cho sách nào trong danh sách không
+- [x] `CompleteForLoanAsync(session, readerId, bookIds, loanId)`: **chạy trong `session` A truyền vào**; `UpdateMany` các yêu cầu *Chờ duyệt* / *Đã duyệt* của độc giả cho các sách này sang *Hoàn tất*, ghi `completedLoanId` (22/11/2026)
+- [x] `GetWaitingListAsync(bookIds)`: yêu cầu *Đã duyệt* của các sách, sắp theo `reservedAt` tăng dần, trả về `List<WaitingReader>` với họ tên, SĐT, email lấy từ `readers` (dùng `$lookup` hoặc truy vấn `readers` theo danh sách `readerId`) (22/11/2026)
+- [x] `HasWaitingAsync(bookIds)`: có yêu cầu *Chờ duyệt* hoặc *Đã duyệt* cho sách nào trong danh sách không (22/11/2026)
 - [ ] Gộp vào `dev` và báo A đã có hàm thật
 
 ## Đợt 3: Tra cứu và thống kê
 
 ### UC11 Tìm kiếm (nhánh `uc11-tim-kiem`)
-- [ ] `SearchController.Index` với tham số `type` = `book` / `reader` / `loan` (menu đã có sẵn 3 link)
-- [ ] Sách: tên, tác giả, thể loại. Độc giả: mã thẻ, họ tên, SĐT, CCCD. Phiếu mượn: mã phiếu, mã thẻ, trạng thái (kể cả *Quá hạn* tính khi truy vấn), khoảng ngày mượn
-- [ ] Chọn một kết quả thì mở trang chi tiết có sẵn (chốt với A link tới trang độc giả, phiếu mượn của A)
+- [x] `SearchController.Index` với tham số `type` = `book` / `reader` / `loan` (menu đã có sẵn 3 link) (22/11/2026)
+- [x] Sách: tên, tác giả, thể loại. Độc giả: mã thẻ, họ tên, SĐT, CCCD. Phiếu mượn: mã phiếu, mã thẻ, trạng thái (kể cả *Quá hạn* tính khi truy vấn), khoảng ngày mượn (22/11/2026)
+- [x] Chọn một kết quả thì mở trang chi tiết có sẵn (chốt với A link tới trang độc giả, phiếu mượn của A) (22/11/2026)
 - [ ] Kiểm thử: không có kết quả (5a); từng loại đối tượng và bộ lọc
 - [ ] Gộp vào `dev`
 
 ### UC12 Thống kê (nhánh `uc12-thong-ke`)
-- [ ] Thử 5 pipeline ở mục 7.4 thiết kế kỹ thuật trong tab Aggregations của Compass trước
-- [ ] `ReportService`: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, theo thể loại, tổng tiền phạt
-- [ ] Ngày lưu là 00:00 giờ VN quy ra UTC (17:00 hôm trước): khi `$group` theo `$month` / `$dateToString` phải truyền `timezone: "Asia/Ho_Chi_Minh"`, nếu không số liệu bị lệch sang tháng trước. Phiếu quá hạn so với `DateHelper.StartOfTodayVnUtc()`
-- [ ] `ReportsController`: `TopBooks`, `Overdue`, `ByMonth`, `ByCategory`, `Fines`; `ViewModels/Reports`
-- [ ] Biểu đồ Chart.js: nhúng trong `@section Scripts` của từng view (không sửa layout)
+- [x] Thử 5 pipeline ở mục 7.4 thiết kế kỹ thuật trong tab Aggregations của Compass trước (22/11/2026)
+- [x] `ReportService`: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, theo thể loại, tổng tiền phạt (22/11/2026)
+- [x] Ngày lưu là 00:00 giờ VN quy ra UTC (17:00 hôm trước): khi `$group` theo `$month` / `$dateToString` phải truyền `timezone: "Asia/Ho_Chi_Minh"`, nếu không số liệu bị lệch sang tháng trước. Phiếu quá hạn so với `DateHelper.StartOfTodayVnUtc()` (22/11/2026)
+- [x] `ReportsController`: `TopBooks`, `Overdue`, `ByMonth`, `ByCategory`, `Fines`; `ViewModels/Reports` (22/11/2026)
+- [x] Biểu đồ Chart.js: nhúng trong `@section Scripts` của từng view (không sửa layout) (22/11/2026)
 - [ ] Kiểm thử: ngày bắt đầu sau ngày kết thúc (3a); khoảng thời gian không có dữ liệu (4a); số liệu khớp với đếm tay trong Compass
 - [ ] Gộp vào `dev`
 
 ## Đợt 4: Seed đầy đủ và kiểm thử chéo
 
 ### Seed đầy đủ (mục 8 thiết kế kỹ thuật)
-- [ ] Thay seed tối thiểu trong `DbInitializer.SeedAsync`: 1 thủ thư, 5–6 thể loại, khoảng 30 đầu sách, 10 độc giả (1 thẻ khóa, 1 thẻ hết hạn)
-- [ ] Phiếu mượn trải đều 6 tháng gần nhất: đã trả, đang mượn, quá hạn, có tiền phạt; đúng cấu trúc `Loan` (`items`, `renewalRequests`) và dùng `CounterService` để sinh mã `PM...`
-- [ ] Vài yêu cầu đặt trước và gia hạn ở đủ các trạng thái
+- [x] Thay seed tối thiểu trong `DbInitializer.SeedAsync`: 1 thủ thư, 5–6 thể loại, khoảng 30 đầu sách, 10 độc giả (1 thẻ khóa, 1 thẻ hết hạn) (22/11/2026)
+- [x] Phiếu mượn trải đều 6 tháng gần nhất: đã trả, đang mượn, quá hạn, có tiền phạt; đúng cấu trúc `Loan` (`items`, `renewalRequests`) và dùng `CounterService` để sinh mã `PM...` (22/11/2026)
+- [x] Vài yêu cầu đặt trước và gia hạn ở đủ các trạng thái (22/11/2026)
 - [ ] Seed chỉ chạy khi `users` rỗng: xóa database rồi chạy lại để thử
-- [ ] Xuất lại dữ liệu mẫu bằng `Data/MongoData/export.js`, cập nhật bảng trong `Data/MongoData/README.md`, commit
+- [x] Xuất lại dữ liệu mẫu bằng `Data/MongoData/export.js`, cập nhật bảng trong `Data/MongoData/README.md`, commit (22/11/2026)
 - [ ] Gộp vào `dev`, báo A nhập lại dữ liệu
 
 ### Kiểm thử chéo phần của A (dùng các file trong `Doc/TestCase/`)

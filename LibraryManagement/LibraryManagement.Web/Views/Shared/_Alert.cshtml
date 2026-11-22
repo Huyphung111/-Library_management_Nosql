@@ -1,15 +1,17 @@
-@* Hiện thông báo từ TempData. Controller đặt TempData["Success"] hoặc TempData["Error"]. *@
+@* Hiện thông báo Toast góc dưới bên phải màn hình, không làm xê dịch nội dung trang *@
 @if (TempData["Success"] is string success && !string.IsNullOrWhiteSpace(success))
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @success
+    <div class="alert alert-success alert-dismissible fade show alert-floating" role="alert">
+        <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+        <span class="align-middle">@success</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
     </div>
 }
 @if (TempData["Error"] is string error && !string.IsNullOrWhiteSpace(error))
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @error
+    <div class="alert alert-danger alert-dismissible fade show alert-floating" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5 align-middle"></i>
+        <span class="align-middle">@error</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
     </div>
 }

@@ -1,0 +1,340 @@
+@model LibraryManagement.Web.ViewModels.Search.SearchIndexVM
+@using LibraryManagement.Web.Models
+@using LibraryManagement.Web.Services
+@{
+    var type = Model.Filter.Type.ToLower();
+}
+
+<div class="content-card">
+    @* Tab chuyển đổi loại đối tượng tra cứu (UC11) *@
+    <ul class="nav nav-pills mb-3 border-bottom pb-3 gap-1">
+        <li class="nav-item">
+            <a class="nav-link @(type == "book" ? "active" : "text-dark")" asp-action="Index" asp-route-type="book">
+                <i class="bi bi-book me-1"></i>Tra cứu Sách
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(type == "reader" ? "active" : "text-dark")" asp-action="Index" asp-route-type="reader">
+                <i class="bi bi-person-vcard me-1"></i>Tra cứu Độc giả
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(type == "loan" ? "active" : "text-dark")" asp-action="Index" asp-route-type="loan">
+                <i class="bi bi-receipt me-1"></i>Tra cứu Phiếu mượn
+            </a>
+        </li>
+    </ul>
+
+    @* Form tìm kiếm theo từng loại đối tượng *@
+    <form method="get" class="mb-4">
+        <input type="hidden" name="type" value="@type" />
+
+        @if (type == "book")
+        {
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="keyword" value="@Model.Filter.Keyword" class="form-control" placeholder="Tìm theo tên sách hoặc tác giả..." />
+                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-lg-3">
+                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Tất cả thể loại --</option>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+                        }
+                    </select>
+                </div>
+
+                @if (Model.HasSearched)
+                {
+                    <div class="col-auto">
+                        <a asp-action="Index" asp-route-type="book" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else if (type == "reader")
+        {
+            <div class="row g-2 align-items-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-person-search"></i></span>
+                        <input type="text" name="keyword" value="@Model.Filter.Keyword" class="form-control" placeholder="Tìm theo Mã thẻ (DG...), Họ tên, SĐT hoặc số CCCD..." />
+                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                    </div>
+                </div>
+
+                @if (Model.HasSearched)
+                {
+                    <div class="col-auto">
+                        <a asp-action="Index" asp-route-type="reader" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else if (type == "loan")
+        {
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="keyword" value="@Model.Filter.Keyword" class="form-control" placeholder="Mã phiếu (PM...), mã thẻ, họ tên..." />
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-lg-2">
+                    <select name="loanStatus" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="borrowing" selected="@(Model.Filter.LoanStatus == "borrowing")">Đang mượn</option>
+                        <option value="returned" selected="@(Model.Filter.LoanStatus == "returned")">Đã trả</option>
+                        <option value="overdue" selected="@(Model.Filter.LoanStatus == "overdue")">Quá hạn</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white small">Từ</span>
+                        <input type="date" name="fromDate" value="@(Model.Filter.FromDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+                        <span class="input-group-text bg-white small">Đến</span>
+                        <input type="date" name="toDate" value="@(Model.Filter.ToDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                    @if (Model.HasSearched)
+                    {
+                        <a asp-action="Index" asp-route-type="loan" class="btn btn-outline-secondary ms-1">
+                            <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </form>
+
+    @* Thanh thông tin kết quả tìm kiếm *@
+    <div class="result-info mb-3">
+        Tìm thấy <strong>@Model.TotalResults</strong> kết quả
+        @if (!string.IsNullOrEmpty(Model.Filter.Keyword))
+        {
+            <span>theo từ khóa "<em>@Model.Filter.Keyword</em>"</span>
+        }
+    </div>
+
+    @* Danh sách kết quả *@
+    @if (Model.TotalResults == 0)
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-search text-muted" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Không tìm thấy kết quả phù hợp với điều kiện tìm kiếm.</p>
+        </div>
+    }
+    else
+    {
+        @if (type == "book")
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">#</th>
+                            <th>Tên sách</th>
+                            <th>Tác giả</th>
+                            <th>Thể loại</th>
+                            <th>Nhà xuất bản</th>
+                            <th style="width: 130px;">Tồn kho</th>
+                            <th style="width: 120px;" class="text-end">Giá bìa</th>
+                            <th class="actions" style="width: 100px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Books.Count; i++)
+                        {
+                            var b = Model.Books[i];
+                            <tr>
+                                <td class="text-muted">@(i + 1)</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@b.Title</div>
+                                </td>
+                                <td>@b.Authors</td>
+                                <td>
+                                    @foreach (var c in b.CategoryNames)
+                                    {
+                                        <span class="badge bg-light text-dark border me-1">@c</span>
+                                    }
+                                </td>
+                                <td class="small text-muted">@b.Publisher @(b.PublishYear.HasValue ? $"({b.PublishYear})" : "")</td>
+                                <td>
+                                    @if (b.AvailableQuantity > 0)
+                                    {
+                                        <span class="badge bg-light text-dark border">@b.AvailableQuantity / @b.TotalQuantity cuốn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge status-overdue">Hết sách (0/@b.TotalQuantity)</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-semibold">@b.Price.ToString("#,##0") đ</td>
+                                <td class="actions">
+                                    <a asp-controller="Books" asp-action="Edit" asp-route-id="@b.Id" class="btn btn-sm btn-outline-primary" title="Sửa thông tin sách">
+                                        <i class="bi bi-pencil me-1"></i>Sửa
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (type == "reader")
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">#</th>
+                            <th style="width: 130px;">Mã thẻ</th>
+                            <th>Họ và tên</th>
+                            <th style="width: 150px;">Số CCCD</th>
+                            <th>Liên hệ</th>
+                            <th style="width: 150px;">Ngày hết hạn</th>
+                            <th style="width: 140px;">Tình trạng thẻ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Readers.Count; i++)
+                        {
+                            var r = Model.Readers[i];
+                            <tr>
+                                <td class="text-muted">@(i + 1)</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace fs-6">@r.CardNumber</span>
+                                </td>
+                                <td class="fw-semibold text-dark">@r.FullName</td>
+                                <td><code>@r.IdNumber</code></td>
+                                <td class="small text-muted">
+                                    @if (!string.IsNullOrEmpty(r.Phone))
+                                    {
+                                        <div><i class="bi bi-telephone me-1"></i>@r.Phone</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(r.Email))
+                                    {
+                                        <div><i class="bi bi-envelope me-1"></i>@r.Email</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div>@DateHelper.ToVnDate(r.ExpiryDate).ToString("dd/MM/yyyy")</div>
+                                    @if (r.IsExpired)
+                                    {
+                                        <small class="text-danger fw-semibold">Đã quá hạn thẻ</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (r.CardStatus == CardStatus.Locked)
+                                    {
+                                        <span class="badge status-locked"><i class="bi bi-lock-fill me-1"></i>Bị khóa</span>
+                                        @if (!string.IsNullOrEmpty(r.LockReason))
+                                        {
+                                            <div class="small text-muted mt-1">@r.LockReason</div>
+                                        }
+                                    }
+                                    else if (r.IsExpired)
+                                    {
+                                        <span class="badge status-expired"><i class="bi bi-calendar-x me-1"></i>Hết hạn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge status-active">Hoạt động</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (type == "loan")
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">#</th>
+                            <th style="width: 120px;">Mã phiếu</th>
+                            <th>Độc giả</th>
+                            <th>Sách trong phiếu</th>
+                            <th style="width: 140px;">Ngày mượn</th>
+                            <th style="width: 140px;">Hạn trả</th>
+                            <th style="width: 130px;">Trạng thái</th>
+                            <th style="width: 110px;" class="text-end">Tiền phạt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Loans.Count; i++)
+                        {
+                            var l = Model.Loans[i];
+                            <tr>
+                                <td class="text-muted">@(i + 1)</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace fs-6">@l.LoanCode</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@l.ReaderName</div>
+                                    <div class="small text-muted">@l.CardNumber</div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        @foreach (var book in l.BookTitles)
+                                        {
+                                            <div><i class="bi bi-book me-1 text-muted"></i>@book</div>
+                                        }
+                                    </div>
+                                    <small class="text-muted">(@l.ReturnedCount / @l.ItemsCount cuốn đã trả)</small>
+                                </td>
+                                <td>@DateHelper.ToVnDate(l.BorrowDate).ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div>@DateHelper.ToVnDate(l.DueDate).ToString("dd/MM/yyyy")</div>
+                                    @if (l.IsOverdue)
+                                    {
+                                        <small class="text-danger fw-semibold">Quá hạn @l.OverdueDays ngày</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (l.IsOverdue)
+                                    {
+                                        <span class="badge status-overdue"><i class="bi bi-clock-history me-1"></i>Quá hạn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge status-@l.Status.ToString().ToLower()">@l.Status.ToVn()</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-semibold">
+                                    @if (l.TotalFine > 0)
+                                    {
+                                        <span class="text-danger">@l.TotalFine.ToString("#,##0") đ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">0 đ</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+

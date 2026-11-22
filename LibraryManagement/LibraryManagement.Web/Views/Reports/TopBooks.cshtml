@@ -1,0 +1,134 @@
+@model LibraryManagement.Web.ViewModels.Reports.TopBooksReportVM
+@{
+    ViewData["Title"] = "Top sách mượn nhiều nhất";
+}
+
+<div class="content-card">
+    @* Bộ lọc khoảng thời gian *@
+    <form method="get" class="row g-2 align-items-center mb-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white small">Từ ngày</span>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+                <span class="input-group-text bg-white small">Đến ngày</span>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-filter me-1"></i>Lọc báo cáo
+            </button>
+            @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+            {
+                <a asp-action="TopBooks" class="btn btn-outline-secondary ms-1">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </a>
+            }
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger py-2 small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>@Model.ErrorMessage
+        </div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-trophy text-muted" style="font-size: 2.5rem;"></i>
+            <p class="fs-6 text-muted mt-2 mb-0">Chưa có lượt mượn sách nào trong khoảng thời gian này.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;" class="text-center">Hạng</th>
+                        <th>Tên sách</th>
+                        <th>Tác giả</th>
+                        <th>Thể loại</th>
+                        <th style="width: 140px;" class="text-center">Số lượt mượn</th>
+                        <th style="width: 140px;" class="text-center">Tồn kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        <tr>
+                            <td class="text-center">
+                                @if (i == 0)
+                                {
+                                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" title="Hạng 1 - Cúp Vàng" class="align-middle">
+                                        <path d="M8 7 C4.5 7 3.5 9.5 3.5 12 C3.5 14.8 6 16.5 8 17 L8 14.8 C6.8 14.3 5.5 13.2 5.5 12 C5.5 10.2 6.5 9 8 9 Z" fill="#EAB308"/>
+                                        <path d="M24 7 C27.5 7 28.5 9.5 28.5 12 C28.5 14.8 26 16.5 24 17 L24 14.8 C25.2 14.3 26.5 13.2 26.5 12 C26.5 10.2 25.5 9 24 9 Z" fill="#EAB308"/>
+                                        <path d="M7.5 5 H24.5 V13 C24.5 17.8 20.8 20.5 16 20.5 C11.2 20.5 7.5 17.8 7.5 13 Z" fill="#FACC15" stroke="#CA8A04" stroke-width="1"/>
+                                        <path d="M14 20.5 H18 V24.5 H14 Z" fill="#EAB308"/>
+                                        <rect x="9" y="24.5" width="14" height="3.5" rx="1.5" fill="#CA8A04"/>
+                                        <text x="16" y="14.5" text-anchor="middle" font-size="10" font-weight="900" fill="#713F12" font-family="system-ui, -apple-system, sans-serif">1</text>
+                                    </svg>
+                                }
+                                else if (i == 1)
+                                {
+                                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" title="Hạng 2 - Cúp Bạc" class="align-middle">
+                                        <path d="M8 7 C4.5 7 3.5 9.5 3.5 12 C3.5 14.8 6 16.5 8 17 L8 14.8 C6.8 14.3 5.5 13.2 5.5 12 C5.5 10.2 6.5 9 8 9 Z" fill="#94A3B8"/>
+                                        <path d="M24 7 C27.5 7 28.5 9.5 28.5 12 C28.5 14.8 26 16.5 24 17 L24 14.8 C25.2 14.3 26.5 13.2 26.5 12 C26.5 10.2 25.5 9 24 9 Z" fill="#94A3B8"/>
+                                        <path d="M7.5 5 H24.5 V13 C24.5 17.8 20.8 20.5 16 20.5 C11.2 20.5 7.5 17.8 7.5 13 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1"/>
+                                        <path d="M14 20.5 H18 V24.5 H14 Z" fill="#94A3B8"/>
+                                        <rect x="9" y="24.5" width="14" height="3.5" rx="1.5" fill="#64748B"/>
+                                        <text x="16" y="14.5" text-anchor="middle" font-size="10" font-weight="900" fill="#334155" font-family="system-ui, -apple-system, sans-serif">2</text>
+                                    </svg>
+                                }
+                                else if (i == 2)
+                                {
+                                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" title="Hạng 3 - Cúp Đồng" class="align-middle">
+                                        <path d="M8 7 C4.5 7 3.5 9.5 3.5 12 C3.5 14.8 6 16.5 8 17 L8 14.8 C6.8 14.3 5.5 13.2 5.5 12 C5.5 10.2 6.5 9 8 9 Z" fill="#B45309"/>
+                                        <path d="M24 7 C27.5 7 28.5 9.5 28.5 12 C28.5 14.8 26 16.5 24 17 L24 14.8 C25.2 14.3 26.5 13.2 26.5 12 C26.5 10.2 25.5 9 24 9 Z" fill="#B45309"/>
+                                        <path d="M7.5 5 H24.5 V13 C24.5 17.8 20.8 20.5 16 20.5 C11.2 20.5 7.5 17.8 7.5 13 Z" fill="#FED7AA" stroke="#B45309" stroke-width="1"/>
+                                        <path d="M14 20.5 H18 V24.5 H14 Z" fill="#B45309"/>
+                                        <rect x="9" y="24.5" width="14" height="3.5" rx="1.5" fill="#9A3412"/>
+                                        <text x="16" y="14.5" text-anchor="middle" font-size="10" font-weight="900" fill="#7C2D12" font-family="system-ui, -apple-system, sans-serif">3</text>
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fw-semibold">@(i + 1)</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@item.BookTitle</div>
+                            </td>
+                            <td>@item.Authors</td>
+                            <td>
+                                @foreach (var cat in item.CategoryNames)
+                                {
+                                    <span class="badge bg-light text-dark border me-1">@cat</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-primary border font-monospace fs-6 px-3">
+                                    <strong>@item.BorrowCount</strong> lượt
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.AvailableQuantity > 0)
+                                {
+                                    <span class="badge bg-light text-dark border">@item.AvailableQuantity / @item.TotalQuantity cuốn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge status-overdue">Hết sách (0/@item.TotalQuantity)</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
