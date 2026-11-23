@@ -87,18 +87,13 @@
                             </td>
                             <td>@item.Authors</td>
                             <td>
-                                @foreach (var cat in item.CategoryNames)
-                                {
-                                    <span class="badge bg-light text-dark border me-1 mb-1">@cat</span>
-                                }
+                                @string.Join(", ", item.CategoryNames)
                             </td>
                             <td class="text-end font-monospace">@item.Price.ToString("#,##0") đ</td>
                             <td class="text-center">
                                 @if (item.AvailableQuantity > 0)
                                 {
-                                    <span class="badge bg-light text-dark border">
-                                        @item.AvailableQuantity / @item.TotalQuantity cuốn
-                                    </span>
+                                    <span>@item.AvailableQuantity / @item.TotalQuantity cuốn</span>
                                 }
                                 else
                                 {

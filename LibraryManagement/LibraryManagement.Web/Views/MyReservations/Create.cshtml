@@ -15,10 +15,7 @@
             @* Thông tin sách dạng phiếu thư viện chuẩn, chữ đều và dễ đọc *@
             <div class="border-bottom pb-3 mb-4">
                 <div class="d-flex align-items-center gap-2 mb-2">
-                    @foreach (var cat in Model.CategoryNames)
-                    {
-                        <span class="badge bg-light text-dark border">@cat</span>
-                    }
+                    <span class="text-muted">@string.Join(", ", Model.CategoryNames)</span>
                     @if (Model.WillHold)
                     {
                         <span class="badge status-active">

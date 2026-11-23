@@ -37,7 +37,7 @@
                             <td class="fw-semibold">@item.Name</td>
                             <td class="text-muted">@(string.IsNullOrWhiteSpace(item.Description) ? "—" : item.Description)</td>
                             <td class="text-center">
-                                <span class="badge bg-light text-dark border px-2 py-1">@item.BookCount sách</span>
+                                <span>@item.BookCount sách</span>
                             </td>
                             <td class="text-end">
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Chỉnh sửa">

@@ -168,16 +168,13 @@
                                 </td>
                                 <td>@b.Authors</td>
                                 <td>
-                                    @foreach (var c in b.CategoryNames)
-                                    {
-                                        <span class="badge bg-light text-dark border me-1">@c</span>
-                                    }
+                                    @string.Join(", ", b.CategoryNames)
                                 </td>
                                 <td class="small text-muted">@b.Publisher @(b.PublishYear.HasValue ? $"({b.PublishYear})" : "")</td>
                                 <td>
                                     @if (b.AvailableQuantity > 0)
                                     {
-                                        <span class="badge bg-light text-dark border">@b.AvailableQuantity / @b.TotalQuantity cuốn</span>
+                                        <span>@b.AvailableQuantity / @b.TotalQuantity cuốn</span>
                                     }
                                     else
                                     {
@@ -218,7 +215,7 @@
                             <tr>
                                 <td class="text-muted">@(i + 1)</td>
                                 <td>
-                                    <span class="badge bg-light text-dark border font-monospace fs-6">@r.CardNumber</span>
+                                    <span class="font-monospace fw-semibold">@r.CardNumber</span>
                                 </td>
                                 <td class="fw-semibold"><a asp-controller="Readers" asp-action="Details" asp-route-id="@r.Id" title="Xem chi tiết độc giả">@r.FullName</a></td>
                                 <td><code>@r.IdNumber</code></td>
@@ -286,7 +283,7 @@
                             <tr>
                                 <td class="text-muted">@(i + 1)</td>
                                 <td>
-                                    <a asp-controller="Loans" asp-action="Details" asp-route-id="@l.Id" class="badge bg-light text-dark border font-monospace fs-6 text-decoration-none" title="Xem chi tiết phiếu">@l.LoanCode</a>
+                                    <a asp-controller="Loans" asp-action="Details" asp-route-id="@l.Id" class="font-monospace fw-semibold text-decoration-none" title="Xem chi tiết phiếu">@l.LoanCode</a>
                                 </td>
                                 <td>
                                     <div class="fw-semibold"><a asp-controller="Readers" asp-action="Details" asp-route-id="@l.ReaderId">@l.ReaderName</a></div>

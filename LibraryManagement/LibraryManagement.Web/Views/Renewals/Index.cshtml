@@ -97,16 +97,11 @@
                                         <i class="bi bi-check2"></i> Duyệt
                                     </button>
                                 </form>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#reject_@r.LoanId">
+                                @* Mở hộp nhập lý do (modal #rejectModal bên dưới), thông tin phiếu truyền qua data-* *@
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                        data-loan-id="@r.LoanId" data-loan-code="@r.LoanCode" data-reader="@r.ReaderName">
                                     <i class="bi bi-x"></i> Từ chối
                                 </button>
-                                <form asp-action="Reject" method="post" id="reject_@r.LoanId" class="collapse mt-2" onsubmit="return confirm('Từ chối yêu cầu gia hạn phiếu @r.LoanCode?');">
-                                    <input type="hidden" name="loanId" value="@r.LoanId" />
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" name="reason" class="form-control" placeholder="Lý do từ chối" required maxlength="200" />
-                                        <button type="submit" class="btn btn-danger">Xác nhận</button>
-                                    </div>
-                                </form>
                             </td>
                         </tr>
                     }
@@ -115,3 +110,44 @@
         </div>
     }
 </div>
+
+@* Hộp từ chối gia hạn: nhập lý do rồi bấm Xác nhận *@
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <input type="hidden" name="loanId" id="rejectLoanId" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalTitle">Từ chối gia hạn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Phiếu <strong id="rejectLoanCode"></strong> của <strong id="rejectReader"></strong>.</p>
+                    <label for="rejectReason" class="form-label">Lý do từ chối</label>
+                    <input type="text" name="reason" id="rejectReason" class="form-control" required maxlength="200" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Điền thông tin phiếu vào hộp từ chối khi mở, xóa lý do cũ và đặt con trỏ vào ô nhập
+        (function () {
+            const modal = document.getElementById("rejectModal");
+            modal.addEventListener("show.bs.modal", e => {
+                const btn = e.relatedTarget;
+                document.getElementById("rejectLoanId").value = btn.dataset.loanId;
+                document.getElementById("rejectLoanCode").textContent = btn.dataset.loanCode;
+                document.getElementById("rejectReader").textContent = btn.dataset.reader;
+                document.getElementById("rejectReason").value = "";
+            });
+            modal.addEventListener("shown.bs.modal", () => document.getElementById("rejectReason").focus());
+        })();
+    </script>
+}

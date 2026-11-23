@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị Thư viện HUIT - Bản mẫu Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="admin-preview.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- 1. HEADER NGANG ĐỒNG BỘ LOGO HUIT & Ô TÌM KIẾM TỐI GIẢN -->
+  <header class="admin-header">
+    <button class="header-toggle" id="sidebarToggle" aria-label="Thu gọn / mở menu">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <a href="#" class="header-brand" onclick="switchView('dashboard'); return false;">
+      <img src="huit-logo.jpg" alt="Logo HUIT" class="header-brand-logo" />
+      <div>
+        <div class="header-brand-title">THƯ VIỆN HUIT</div>
+        <div class="header-brand-sub">Cổng quản trị Thủ thư</div>
+      </div>
+    </a>
+
+    <form class="header-search" onsubmit="handleQuickSearch(event)">
+      <input type="text" id="globalSearch" placeholder="Tìm nhanh sách, mã thẻ DG..., mã phiếu PM..." autocomplete="off" />
+      <button type="submit" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
+    </form>
+
+    <div class="header-user">
+      <button class="header-user-btn" id="userMenuBtn" type="button">
+        <i class="bi bi-person-circle"></i>
+        <span>Quản trị viên Thư viện</span>
+        <span class="header-user-role">Thủ thư</span>
+        <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
+      </button>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="#" onclick="alert('Mở trang /Account/ChangePassword'); return false;">
+          <i class="bi bi-key"></i> Đổi mật khẩu
+        </a>
+        <a href="landing-preview.html" class="danger">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. SIDEBAR TRÁI (Đủ 15 mục thật của _LibrarianMenu) -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="nav-heading">Tổng quan</div>
+    <a class="nav-link-item active" data-view="dashboard" onclick="switchView('dashboard')">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <div class="nav-heading">Mượn trả</div>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-journal-plus"></i> Lập phiếu mượn
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-journal-arrow-down"></i> Nhận trả sách
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-calendar-plus"></i> Gia hạn
+      <span class="nav-pill">2</span>
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-bookmark-star"></i> Đặt trước
+      <span class="nav-pill">3</span>
+    </a>
+
+    <div class="nav-heading">Danh mục</div>
+    <a class="nav-link-item" data-view="books" onclick="switchView('books')">
+      <i class="bi bi-book"></i> Sách
+    </a>
+    <a class="nav-link-item" data-view="books" onclick="switchView('books')">
+      <i class="bi bi-tags"></i> Thể loại
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-people"></i> Độc giả
+    </a>
+
+    <div class="nav-heading">Tra cứu</div>
+    <a class="nav-link-item" data-view="books" onclick="switchView('books')">
+      <i class="bi bi-search"></i> Tìm sách
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-person-vcard"></i> Tìm độc giả
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-receipt"></i> Tìm phiếu mượn
+    </a>
+
+    <div class="nav-heading">Thống kê</div>
+    <a class="nav-link-item" data-view="dashboard" onclick="switchView('dashboard')">
+      <i class="bi bi-trophy"></i> Sách mượn nhiều
+    </a>
+    <a class="nav-link-item" data-view="loans" onclick="switchView('loans')">
+      <i class="bi bi-alarm"></i> Phiếu quá hạn
+    </a>
+    <a class="nav-link-item" data-view="dashboard" onclick="switchView('dashboard')">
+      <i class="bi bi-bar-chart-line"></i> Lượt mượn theo tháng
+    </a>
+    <a class="nav-link-item" data-view="dashboard" onclick="switchView('dashboard')">
+      <i class="bi bi-pie-chart"></i> Lượt mượn theo thể loại
+    </a>
+    <a class="nav-link-item" data-view="dashboard" onclick="switchView('dashboard')">
+      <i class="bi bi-cash-coin"></i> Tiền phạt
+    </a>
+  </aside>
+
+  <!-- 3. NỘI DUNG CHÍNH -->
+  <main class="admin-main">
+
+    <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+    <section class="view-pane active" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Tổng quan thư viện</h1>
+          <div class="page-sub">Số liệu cập nhật trực tiếp từ hệ thống quản lý mượn trả</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-lib btn-lib-primary" onclick="switchView('loans')">Lập phiếu mượn</button>
+          <button class="btn-lib btn-lib-outline" onclick="switchView('loans')">Nhận trả sách</button>
+        </div>
+      </div>
+
+      <!-- 4 thẻ KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-label">Đầu sách trong kho</div>
+            <div class="kpi-value">60</div>
+            <div class="kpi-note">Tổng cộng 192 bản sách · 6 thể loại</div>
+          </div>
+          <div class="kpi-icon"><i class="bi bi-book"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-success">
+          <div>
+            <div class="kpi-label">Độc giả hoạt động</div>
+            <div class="kpi-value">8</div>
+            <div class="kpi-note">1 thẻ bị khóa · 1 thẻ hết hạn</div>
+          </div>
+          <div class="kpi-icon"><i class="bi bi-people"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-accent">
+          <div>
+            <div class="kpi-label">Phiếu đang mượn</div>
+            <div class="kpi-value">5</div>
+            <div class="kpi-note">9 cuốn đang được độc giả mượn</div>
+          </div>
+          <div class="kpi-icon"><i class="bi bi-journal-text"></i></div>
+        </div>
+
+        <div class="kpi-card kpi-danger">
+          <div>
+            <div class="kpi-label">Phiếu quá hạn</div>
+            <div class="kpi-value">2</div>
+            <div class="kpi-note">Cần nhắc trả &amp; tính phạt quá hạn</div>
+          </div>
+          <div class="kpi-icon"><i class="bi bi-exclamation-triangle"></i></div>
+        </div>
+      </div>
+
+      <!-- Biểu đồ + Việc cần xử lý -->
+      <div class="dashboard-grid">
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title">Lượt mượn sách theo tháng (2026)</h2>
+            <a href="#" class="panel-link" onclick="return false;">Xem báo cáo chi tiết</a>
+          </div>
+          <div style="height: 250px;">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title">Việc cần xử lý</h2>
+          </div>
+          <div class="task-list">
+            <a href="#" class="task-item" onclick="switchView('loans'); return false;">
+              <div>
+                <div class="task-item-title">Yêu cầu gia hạn online</div>
+                <div class="task-item-desc">Độc giả xin gia hạn thêm 7 ngày</div>
+              </div>
+              <span class="badge-soft badge-warn">2 chờ duyệt</span>
+            </a>
+
+            <a href="#" class="task-item" onclick="switchView('loans'); return false;">
+              <div>
+                <div class="task-item-title">Đặt trước chờ duyệt</div>
+                <div class="task-item-desc">Đăng ký hàng chờ khi sách đã hết</div>
+              </div>
+              <span class="badge-soft badge-warn">3 chờ duyệt</span>
+            </a>
+
+            <a href="#" class="task-item" onclick="switchView('loans'); return false;">
+              <div>
+                <div class="task-item-title">Sách đặt trước đã về kho</div>
+                <div class="task-item-desc">Đã có bản trống, cần liên hệ độc giả</div>
+              </div>
+              <span class="badge-soft badge-success">1 cần liên hệ</span>
+            </a>
+
+            <a href="#" class="task-item" onclick="switchView('loans'); return false;">
+              <div>
+                <div class="task-item-title">Đặt giữ online đang chờ nhận</div>
+                <div class="task-item-desc">Giữ trên kệ tối đa 3 ngày</div>
+              </div>
+              <span class="badge-soft badge-info">2 đang giữ</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng phiếu gần đây + Biểu đồ thể loại -->
+      <div class="dashboard-grid">
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title">Phiếu mượn cần chú ý</h2>
+            <a href="#" class="panel-link" onclick="switchView('loans'); return false;">Xem tất cả</a>
+          </div>
+          <div class="table-wrap">
+            <table class="lib-table">
+              <thead>
+                <tr>
+                  <th>Mã phiếu</th>
+                  <th>Độc giả</th>
+                  <th>Số cuốn</th>
+                  <th>Hạn trả</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>PM000004</strong></td>
+                  <td>Nguyễn Văn An <span style="color:var(--lib-muted);">(DG000001)</span></td>
+                  <td>2 cuốn</td>
+                  <td>15/11/2026</td>
+                  <td><span class="badge-soft badge-danger">Quá hạn 8 ngày</span></td>
+                </tr>
+                <tr>
+                  <td><strong>PM000005</strong></td>
+                  <td>Trần Thị Bình <span style="color:var(--lib-muted);">(DG000002)</span></td>
+                  <td>1 cuốn</td>
+                  <td>19/11/2026</td>
+                  <td><span class="badge-soft badge-danger">Quá hạn 4 ngày</span></td>
+                </tr>
+                <tr>
+                  <td><strong>PM000008</strong></td>
+                  <td>Lê Minh Châu <span style="color:var(--lib-muted);">(DG000003)</span></td>
+                  <td>2 cuốn</td>
+                  <td>28/11/2026</td>
+                  <td><span class="badge-soft badge-info">Đang mượn</span></td>
+                </tr>
+                <tr>
+                  <td><strong>PM000009</strong></td>
+                  <td>Phạm Quốc Dũng <span style="color:var(--lib-muted);">(DG000004)</span></td>
+                  <td>3 cuốn</td>
+                  <td>02/12/2026</td>
+                  <td><span class="badge-soft badge-info">Đang mượn</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title">Phân bổ 60 đầu sách theo thể loại</h2>
+          </div>
+          <div style="height: 230px; display:flex; align-items:center; justify-content:center;">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: QUẢN LÝ SÁCH (MẪU BẢNG) ==================== -->
+    <section class="view-pane" id="view-books">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Quản lý sách</h1>
+          <div class="page-sub">Danh mục đầu sách, ảnh bìa và tình trạng tồn kho</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-lib btn-lib-primary" onclick="alert('Mở form /Books/Create')">Thêm sách mới</button>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="toolbar">
+          <input type="text" id="bookFilterInput" class="toolbar-input" placeholder="Tìm theo tên sách hoặc tác giả..." oninput="renderBookTable()" />
+          <select id="bookCatFilter" class="toolbar-select" onchange="renderBookTable()">
+            <option value="">Tất cả thể loại</option>
+            <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+            <option value="Kỹ năng sống">Kỹ năng sống</option>
+            <option value="Văn học">Văn học</option>
+            <option value="Kinh tế & Quản trị">Kinh tế & Quản trị</option>
+            <option value="Khoa học tự nhiên">Khoa học tự nhiên</option>
+            <option value="Lịch sử & Triết học">Lịch sử & Triết học</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="lib-table">
+            <thead>
+              <tr>
+                <th>Đầu sách</th>
+                <th>Thể loại</th>
+                <th>Năm XB</th>
+                <th>Giá bìa</th>
+                <th>Tồn kho</th>
+                <th style="text-align:right;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="booksTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Phân trang gọn giống bản mới 0bf0bab -->
+        <div class="mini-pager">
+          <button type="button">&laquo;</button>
+          <button type="button" class="active">1</button>
+          <button type="button">2</button>
+          <button type="button">3</button>
+          <button type="button">&raquo;</button>
+          <input type="number" min="1" max="5" placeholder="1" title="Nhập số trang rồi nhấn Enter" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: MƯỢN TRẢ / XỬ LÝ ==================== -->
+    <section class="view-pane" id="view-loans">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Quản lý mượn trả &amp; Yêu cầu</h1>
+          <div class="page-sub">Lập phiếu nhanh, nhận trả sách và duyệt gia hạn / đặt trước</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-lib btn-lib-primary" onclick="alert('Mở /Loans/Create')">Lập phiếu mượn</button>
+          <button class="btn-lib btn-lib-outline" onclick="alert('Mở /Loans/Return')">Nhận trả sách</button>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-head">
+          <h2 class="panel-title">Danh sách yêu cầu gia hạn &amp; đặt giữ gần đây</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="lib-table">
+            <thead>
+              <tr>
+                <th>Loại</th>
+                <th>Độc giả</th>
+                <th>Nội dung</th>
+                <th>Thời điểm</th>
+                <th>Trạng thái</th>
+                <th style="text-align:right;">Xử lý</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Gia hạn</strong></td>
+                <td>Lê Minh Châu (DG000003)</td>
+                <td>Phiếu PM000008 (hạn mới 05/12/2026)</td>
+                <td>23/11/2026 09:15</td>
+                <td><span class="badge-soft badge-warn">Chờ duyệt</span></td>
+                <td style="text-align:right;">
+                  <button class="btn-lib btn-lib-primary btn-lib-sm">Duyệt</button>
+                  <button class="btn-lib btn-lib-outline btn-lib-sm">Từ chối</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Đặt giữ</strong></td>
+                <td>Phạm Quốc Dũng (DG000004)</td>
+                <td>Clean Code - Mã Sạch (giữ đến 25/11/2026)</td>
+                <td>23/11/2026 08:40</td>
+                <td><span class="badge-soft badge-info">Đang giữ sách</span></td>
+                <td style="text-align:right;">
+                  <button class="btn-lib btn-lib-primary btn-lib-sm">Lập phiếu</button>
+                  <button class="btn-lib btn-lib-outline btn-lib-sm">Hủy</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Đặt trước</strong></td>
+                <td>Hoàng Thị Em (DG000005)</td>
+                <td>Cơ Sở Dữ Liệu NoSQL &amp; Phân Tích Dữ Liệu Lớn</td>
+                <td>22/11/2026 16:20</td>
+                <td><span class="badge-soft badge-success">Sách đã về</span></td>
+                <td style="text-align:right;">
+                  <button class="btn-lib btn-lib-primary btn-lib-sm">Lập phiếu</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Toggle sidebar
+    document.getElementById("sidebarToggle").addEventListener("click", () => {
+      if (window.innerWidth <= 768) {
+        document.body.classList.toggle("sidebar-open");
+      } else {
+        document.body.classList.toggle("sidebar-collapsed");
+      }
+    });
+
+    // Dropdown user
+    const userBtn = document.getElementById("userMenuBtn");
+    const userDrop = document.getElementById("userDropdown");
+    userBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      userDrop.classList.toggle("open");
+    });
+    document.addEventListener("click", () => userDrop.classList.remove("open"));
+
+    // Chuyển view mẫu
+    function switchView(viewId) {
+      document.querySelectorAll(".view-pane").forEach(v => v.classList.remove("active"));
+      document.getElementById("view-" + viewId).classList.add("active");
+      document.querySelectorAll(".nav-link-item").forEach(a => {
+        a.classList.toggle("active", a.dataset.view === viewId && a.textContent.trim().length > 0);
+      });
+      // Highlight đúng item đầu tiên khớp view
+      const matched = document.querySelectorAll(`.nav-link-item[data-view="${viewId}"]`);
+      document.querySelectorAll(".nav-link-item").forEach(a => a.classList.remove("active"));
+      if (matched[0]) matched[0].classList.add("active");
+      document.body.classList.remove("sidebar-open");
+    }
+
+    function handleQuickSearch(e) {
+      e.preventDefault();
+      const val = document.getElementById("globalSearch").value.trim();
+      if (!val) return;
+      switchView("books");
+      document.getElementById("bookFilterInput").value = val;
+      renderBookTable();
+    }
+
+    // Dữ liệu sách mẫu (dùng ảnh thật từ SeedCovers & BookCovers)
+    const SAMPLE_BOOKS = [
+      { title: "Clean Code - Mã Sạch", author: "Robert C. Martin", cat: "Công nghệ thông tin", year: 2021, price: "215.000đ", avail: 3, total: 4, img: "../Data/SeedCovers/clean-code-ma-sach.jpg" },
+      { title: "Tái Cấu Trúc Mã Nguồn (Refactoring)", author: "Martin Fowler", cat: "Công nghệ thông tin", year: 2022, price: "285.000đ", avail: 3, total: 3, img: "BookCovers/tai-cau-truc-ma-nguon-refactoring.jpg" },
+      { title: "Nhập Môn Thuật Toán (Introduction to Algorithms)", author: "Thomas H. Cormen", cat: "Công nghệ thông tin", year: 2022, price: "420.000đ", avail: 2, total: 2, img: "BookCovers/nhap-mon-thuat-toan-introduction-to-algorithms.jpg" },
+      { title: "Đắc Nhân Tâm", author: "Dale Carnegie", cat: "Kỹ năng sống", year: 2021, price: "86.000đ", avail: 4, total: 5, img: "../Data/SeedCovers/dac-nhan-tam.jpg" },
+      { title: "Số Đỏ", author: "Vũ Trọng Phụng", cat: "Văn học", year: 2020, price: "75.000đ", avail: 3, total: 3, img: "BookCovers/so-do.jpg" },
+      { title: "Nhà Đầu Tư Thông Minh", author: "Benjamin Graham", cat: "Kinh tế & Quản trị", year: 2021, price: "240.000đ", avail: 0, total: 3, img: "BookCovers/nha-dau-tu-thong-minh.jpg" },
+      { title: "Vũ Trụ (Cosmos)", author: "Carl Sagan", cat: "Khoa học tự nhiên", year: 2021, price: "195.000đ", avail: 2, total: 2, img: "BookCovers/vu-tru-cosmos.jpg" },
+      { title: "Việt Nam Sử Lược", author: "Trần Trọng Kim", cat: "Lịch sử & Triết học", year: 2020, price: "165.000đ", avail: 3, total: 3, img: "BookCovers/viet-nam-su-luoc.jpg" }
+    ];
+
+    function renderBookTable() {
+      const q = document.getElementById("bookFilterInput").value.trim().toLowerCase();
+      const cat = document.getElementById("bookCatFilter").value;
+      const rows = SAMPLE_BOOKS.filter(b => {
+        const okCat = !cat || b.cat === cat;
+        const okQ = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+        return okCat && okQ;
+      });
+
+      document.getElementById("booksTableBody").innerHTML = rows.map(b => `
+        <tr>
+          <td>
+            <div class="book-row-cell">
+              <img src="${b.img}" alt="${b.title}" class="book-thumb" />
+              <div>
+                <div class="book-row-title">${b.title}</div>
+                <div class="book-row-sub">${b.author}</div>
+              </div>
+            </div>
+          </td>
+          <td>${b.cat}</td>
+          <td>${b.year}</td>
+          <td>${b.price}</td>
+          <td>
+            <span class="badge-soft ${b.avail > 0 ? "badge-success" : "badge-danger"}">
+              ${b.avail > 0 ? `Còn ${b.avail}/${b.total}` : `Hết (0/${b.total})`}
+            </span>
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-lib btn-lib-outline btn-lib-sm" onclick="alert('Sửa: ${b.title}')">Sửa</button>
+            <button class="btn-lib btn-lib-outline btn-lib-sm" style="color:#c5221f;" onclick="alert('Xóa: ${b.title}')">Xóa</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+    renderBookTable();
+
+    // Biểu đồ lượt mượn theo tháng
+    new Chart(document.getElementById("monthlyChart"), {
+      type: "bar",
+      data: {
+        labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+        datasets: [
+          {
+            label: "Số cuốn mượn",
+            data: [12, 18, 24, 21, 29, 25, 19, 32, 38, 44, 41, 15],
+            backgroundColor: "rgba(30, 58, 95, 0.85)",
+            borderRadius: 5,
+            barPercentage: 0.55
+          },
+          {
+            label: "Số phiếu mượn",
+            data: [7, 10, 14, 12, 16, 14, 11, 18, 21, 24, 22, 9],
+            type: "line",
+            borderColor: "#c8963e",
+            backgroundColor: "#c8963e",
+            tension: 0.35,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 12 } } } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: "#eef1f6" } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Biểu đồ phân bổ thể loại (60 đầu sách thật)
+    new Chart(document.getElementById("categoryChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Văn học (15)", "CNTT (11)", "Kỹ năng sống (10)", "Kinh tế (8)", "Khoa học (8)", "Lịch sử (8)"],
+        datasets: [{
+          data: [15, 11, 10, 8, 8, 8],
+          backgroundColor: ["#1e3a5f", "#c8963e", "#2b6cb0", "#198754", "#6b7280", "#8b5cf6"],
+          borderWidth: 2,
+          borderColor: "#fff"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: { position: "right", labels: { boxWidth: 11, font: { size: 12 } } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

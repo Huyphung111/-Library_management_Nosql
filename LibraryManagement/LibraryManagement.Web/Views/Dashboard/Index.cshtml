@@ -76,11 +76,11 @@
             </div>
             @if (Model.PendingRenewals > 0)
             {
-                <span class="badge bg-warning text-dark rounded-pill fs-6 px-3">@Model.PendingRenewals chờ duyệt</span>
+                <span class="text-warning-emphasis fw-semibold">@Model.PendingRenewals chờ duyệt</span>
             }
             else
             {
-                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+                <span class="text-muted">0 yêu cầu</span>
             }
         </a>
 
@@ -92,11 +92,11 @@
             </div>
             @if (Model.PendingReservations > 0)
             {
-                <span class="badge bg-warning text-dark rounded-pill fs-6 px-3">@Model.PendingReservations chờ duyệt</span>
+                <span class="text-warning-emphasis fw-semibold">@Model.PendingReservations chờ duyệt</span>
             }
             else
             {
-                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+                <span class="text-muted">0 yêu cầu</span>
             }
         </a>
 
@@ -108,11 +108,11 @@
             </div>
             @if (Model.ReadyReservations > 0)
             {
-                <span class="badge bg-success rounded-pill fs-6 px-3">@Model.ReadyReservations cần liên hệ</span>
+                <span class="text-success fw-semibold">@Model.ReadyReservations cần liên hệ</span>
             }
             else
             {
-                <span class="badge bg-light text-muted rounded-pill fs-6 px-3">0 yêu cầu</span>
+                <span class="text-muted">0 yêu cầu</span>
             }
         </a>
     </div>

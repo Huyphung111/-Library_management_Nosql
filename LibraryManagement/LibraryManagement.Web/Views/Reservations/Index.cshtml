@@ -111,7 +111,7 @@
                             <td>
                                 @if (item.AvailableQuantity > 0)
                                 {
-                                    <span class="badge bg-light text-dark border">
+                                    <span>
                                         Có sẵn @item.AvailableQuantity cuốn
                                     </span>
                                 }
@@ -140,7 +140,7 @@
                                 }
                                 @if (item.IsReadyForPickup)
                                 {
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <span class="text-success fw-semibold small">
                                         <i class="bi bi-telephone-outbound me-1"></i>Sách đã về - Có thể gọi
                                     </span>
                                 }
