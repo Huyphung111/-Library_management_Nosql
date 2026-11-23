@@ -1,0 +1,72 @@
+@* Trang chủ công khai trước khi đăng nhập (thiết kế gốc: Antigravity/landing-preview.html).
+   Header + footer riêng của trang khách; phần trưng bày sách dùng chung partial _BookShowcase
+   (trang chủ độc giả Catalog/Index cũng dùng partial này). *@
+@model LibraryManagement.Web.ViewModels.Home.BookShowcaseVM
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thư viện HUIT - Trang chủ tra cứu sách</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+  <link rel="stylesheet" href="~/css/showcase.css" asp-append-version="true" />
+</head>
+<body>
+
+  <!-- 1. HEADER CHÍNH -->
+  <header class="pub-header">
+    <div class="pub-container pub-header-inner">
+      <a href="#" class="pub-brand" id="resetHome">
+        <img src="~/images/huit-logo.jpg" alt="Logo HUIT" class="pub-brand-logo" />
+        <div>
+          <div class="pub-brand-title">THƯ VIỆN HUIT</div>
+          <div class="pub-brand-sub">Hệ thống quản lý mượn trả sách</div>
+        </div>
+      </a>
+
+      <form class="pub-search" id="searchForm">
+        <input type="text" id="searchInput" placeholder="Tìm theo tên sách hoặc tác giả..." autocomplete="off" />
+        <button type="submit"><i class="bi bi-search"></i> Tìm</button>
+      </form>
+
+      <a asp-controller="Account" asp-action="Login" class="pub-login-btn">
+        Đăng nhập
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. THANH DANH MỤC + HOTLINE -->
+  <div class="pub-subbar">
+    <div class="pub-container pub-subbar-inner">
+      <div class="pub-cat-heading"><i class="bi bi-list"></i> DANH MỤC SÁCH</div>
+      <div class="pub-hotline-group">
+        <div class="pub-hotline"><i class="bi bi-clock-fill"></i> Giờ mở cửa: <span>07:30 – 20:00 (T2 – T7)</span></div>
+        <div class="pub-hotline"><i class="bi bi-telephone-fill"></i> Hotline: <span>0243.3323.6714</span></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="pub-container">
+    <partial name="_BookShowcase" model="Model" />
+  </main>
+
+  <footer class="pub-footer">
+    <div class="pub-container pub-footer-inner">
+      <div><strong>THƯ VIỆN TRUNG TÂM</strong> — Hệ thống quản lý mượn trả sách (ASP.NET Core MVC &amp; MongoDB)</div>
+      <div>Chưa có thẻ độc giả? Vui lòng mang CCCD đến quầy thủ thư để được cấp thẻ.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("resetHome").addEventListener("click", e => {
+      e.preventDefault();
+      window.resetShowcaseFilters();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>

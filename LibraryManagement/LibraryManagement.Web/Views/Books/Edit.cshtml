@@ -95,6 +95,11 @@
                             <input asp-for="CoverFile" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" />
                             <div class="form-text">JPG, PNG hoặc WebP, tối đa 2 MB. Không chọn ảnh mới thì giữ ảnh cũ.</div>
                             <span asp-validation-for="CoverFile" class="text-danger small"></span>
+
+                            <label asp-for="CoverUrl" class="form-label mt-3 mb-1"></label>
+                            <input asp-for="CoverUrl" type="url" class="form-control" placeholder="https://..." />
+                            <div class="form-text">Hệ thống tải ảnh về và lưu như ảnh upload. Chọn cả file lẫn đường dẫn thì ưu tiên file.</div>
+                            <span asp-validation-for="CoverUrl" class="text-danger small"></span>
                             @if (!string.IsNullOrEmpty(Model.CoverImageId))
                             {
                                 <div class="form-check mt-2">
@@ -131,6 +136,18 @@
                 const f = input.files[0];
                 if (!f) return;
                 img.src = URL.createObjectURL(f);
+                img.classList.remove("d-none");
+                if (ph) ph.classList.add("d-none");
+                const rm = document.getElementById("RemoveCover");
+                if (rm) rm.checked = false;
+            });
+
+            // Dán đường dẫn ảnh: xem trước ngay (chỉ trình duyệt tải để xem, khi lưu server mới tải về GridFS)
+            const url = document.getElementById("CoverUrl");
+            if (url) url.addEventListener("change", () => {
+                const v = url.value.trim();
+                if (!/^https?:\/\//i.test(v) || (input.files && input.files.length)) return;
+                img.src = v;
                 img.classList.remove("d-none");
                 if (ph) ph.classList.add("d-none");
                 const rm = document.getElementById("RemoveCover");

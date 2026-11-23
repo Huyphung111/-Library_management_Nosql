@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -12,13 +14,18 @@ namespace LibraryManagement.Web.Services;
 /// </summary>
 public class BookService
 {
+    /// <summary>Tên HttpClient (đăng ký ở Program.cs) dùng để tải ảnh bìa từ đường dẫn.</summary>
+    public const string CoverHttpClient = "covers";
+
     private readonly MongoDbContext _db;
     private readonly LoanService _loanService;
+    private readonly IHttpClientFactory _http;
 
-    public BookService(MongoDbContext db, LoanService loanService)
+    public BookService(MongoDbContext db, LoanService loanService, IHttpClientFactory http)
     {
         _db = db;
         _loanService = loanService;
+        _http = http;
     }
 
     /// <summary>
@@ -77,17 +84,33 @@ public class BookService
     // Sửa lỗi 500 khi id sai định dạng ObjectId trên URL (A, 22/11/2026)
     private static bool ValidId(string? id) => MongoDB.Bson.ObjectId.TryParse(id, out _);
 
+    /// <summary>
+    /// Bỏ id thể loại rỗng / sai định dạng / trùng, và kiểm tra các thể loại còn lại có thật trong database.
+    /// Trước đây form gửi id rỗng vẫn lọt qua và sách bị lưu categoryIds = [null]. Trả về thông báo lỗi hoặc null.
+    /// </summary>
+    private async Task<string?> NormalizeCategoriesAsync(BookFormVM vm)
+    {
+        vm.SelectedCategoryIds = vm.SelectedCategoryIds.Where(ValidId).Distinct().ToList();
+        if (vm.SelectedCategoryIds.Count == 0)
+            return "Vui lòng chọn ít nhất một thể loại.";
+
+        var ids = vm.SelectedCategoryIds;
+        var found = await _db.Categories.CountDocumentsAsync(c => ids.Contains(c.Id!));
+        return found == ids.Count ? null : "Có thể loại không còn tồn tại, vui lòng chọn lại.";
+    }
+
 
     /// <summary>
     /// Thêm sách mới.
     /// </summary>
     public async Task<ServiceResult> CreateAsync(BookFormVM vm)
     {
-        var coverError = ValidateCover(vm.CoverFile);
-        if (coverError != null) return ServiceResult.Fail(coverError, nameof(BookFormVM.CoverFile));
+        // Đọc / tải ảnh bìa TRƯỚC khi tạo sách: ảnh lỗi thì báo lỗi, không tạo sách dở dang
+        var (cover, coverError, coverField) = await ReadCoverAsync(vm);
+        if (coverError != null) return ServiceResult.Fail(coverError, coverField);
 
-        if (vm.SelectedCategoryIds.Count == 0)
-            return ServiceResult.Fail("Vui lòng chọn ít nhất một thể loại.", nameof(BookFormVM.SelectedCategoryIds));
+        var categoryError = await NormalizeCategoriesAsync(vm);
+        if (categoryError != null) return ServiceResult.Fail(categoryError, nameof(BookFormVM.SelectedCategoryIds));
 
         var authors = vm.AuthorsString
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -113,9 +136,9 @@ public class BookService
         await _db.Books.InsertOneAsync(book);
 
         // Ảnh bìa: upload vào GridFS sau khi có Id sách (lưu bookId trong metadata)
-        if (vm.CoverFile != null)
+        if (cover != null)
         {
-            var coverId = await UploadCoverAsync(vm.CoverFile, book.Id!);
+            var coverId = await UploadCoverAsync(cover, book.Id!);
             await _db.Books.UpdateOneAsync(b => b.Id == book.Id, Builders<Book>.Update.Set(b => b.CoverImageId, coverId));
         }
         return ServiceResult.Ok("Thêm sách mới thành công.");
@@ -130,11 +153,11 @@ public class BookService
         if (existingBook == null)
             return ServiceResult.Fail("Không tìm thấy sách cần cập nhật.");
 
-        var coverError = ValidateCover(vm.CoverFile);
-        if (coverError != null) return ServiceResult.Fail(coverError, nameof(BookFormVM.CoverFile));
+        var (cover, coverError, coverField) = await ReadCoverAsync(vm);
+        if (coverError != null) return ServiceResult.Fail(coverError, coverField);
 
-        if (vm.SelectedCategoryIds.Count == 0)
-            return ServiceResult.Fail("Vui lòng chọn ít nhất một thể loại.", nameof(BookFormVM.SelectedCategoryIds));
+        var categoryError = await NormalizeCategoriesAsync(vm);
+        if (categoryError != null) return ServiceResult.Fail(categoryError, nameof(BookFormVM.SelectedCategoryIds));
 
         var authors = vm.AuthorsString
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -175,9 +198,9 @@ public class BookService
                 nameof(BookFormVM.TotalQuantity));
 
         // Ảnh bìa: có ảnh mới thì thay, tick "Xóa ảnh" thì bỏ; ảnh cũ xóa khỏi GridFS sau khi đã cập nhật sách
-        if (vm.CoverFile != null || vm.RemoveCover)
+        if (cover != null || vm.RemoveCover)
         {
-            var newCoverId = vm.CoverFile != null ? await UploadCoverAsync(vm.CoverFile, id) : null;
+            var newCoverId = cover != null ? await UploadCoverAsync(cover, id) : null;
             await _db.Books.UpdateOneAsync(b => b.Id == id, Builders<Book>.Update.Set(b => b.CoverImageId, newCoverId));
             await DeleteCoverAsync(existingBook.CoverImageId);
         }
@@ -240,13 +263,125 @@ public class BookService
         return null;
     }
 
-    /// <summary>Upload ảnh vào GridFS bucket "covers", metadata ghi contentType và bookId. Trả về id file.</summary>
-    private async Task<string> UploadCoverAsync(Microsoft.AspNetCore.Http.IFormFile file, string bookId)
+    /// <summary>Ảnh bìa đã đọc vào bộ nhớ và đã kiểm tra, sẵn sàng lưu GridFS.</summary>
+    private sealed record CoverData(byte[] Bytes, string ContentType, string FileName);
+
+    /// <summary>
+    /// Lấy ảnh bìa từ form: ưu tiên file upload, không có thì tải từ đường dẫn.
+    /// Trả về (null, null, null) nếu không chọn ảnh; có lỗi thì trả về thông báo và tên field để hiện lỗi.
+    /// </summary>
+    private async Task<(CoverData? Cover, string? Error, string? Field)> ReadCoverAsync(BookFormVM vm)
     {
-        await using var stream = file.OpenReadStream();
-        var contentType = DetectImageType(stream)!;
-        stream.Position = 0;
-        return await UploadCoverStreamAsync(stream, Path.GetFileName(file.FileName), contentType, bookId, _db.Covers);
+        if (vm.CoverFile != null)
+        {
+            var error = ValidateCover(vm.CoverFile);
+            if (error != null) return (null, error, nameof(BookFormVM.CoverFile));
+
+            using var ms = new MemoryStream();
+            await vm.CoverFile.CopyToAsync(ms);
+            ms.Position = 0;
+            return (new CoverData(ms.ToArray(), DetectImageType(ms)!, Path.GetFileName(vm.CoverFile.FileName)), null, null);
+        }
+
+        if (!string.IsNullOrWhiteSpace(vm.CoverUrl))
+        {
+            var (cover, error) = await DownloadCoverAsync(vm.CoverUrl.Trim());
+            return (cover, error, error != null ? nameof(BookFormVM.CoverUrl) : null);
+        }
+
+        return (null, null, null);
+    }
+
+    /// <summary>
+    /// Tải ảnh bìa từ đường dẫn http/https. Kiểm tra giống file upload: tối đa 2 MB, đúng chữ ký JPG/PNG/WebP.
+    /// Tự theo chuyển hướng (tối đa 5 lần, ví dụ ảnh Open Library chuyển sang archive.org) và
+    /// không tải từ địa chỉ nội bộ (localhost, mạng LAN) để server không bị lợi dụng gọi vào mạng trong.
+    /// </summary>
+    private async Task<(CoverData? Cover, string? Error)> DownloadCoverAsync(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !IsHttp(uri))
+            return (null, "Đường dẫn ảnh phải bắt đầu bằng http:// hoặc https://.");
+
+        var client = _http.CreateClient(CoverHttpClient);
+        try
+        {
+            for (var hop = 0; hop <= 5; hop++)
+            {
+                if (!await IsPublicHostAsync(uri.Host))
+                    return (null, "Không tải ảnh từ địa chỉ nội bộ (localhost, mạng LAN) được.");
+
+                using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+
+                if ((int)response.StatusCode is >= 300 and < 400 && response.Headers.Location != null)
+                {
+                    uri = new Uri(uri, response.Headers.Location);
+                    if (!IsHttp(uri)) return (null, "Đường dẫn ảnh chuyển hướng tới địa chỉ không hợp lệ.");
+                    continue;
+                }
+                if (!response.IsSuccessStatusCode)
+                    return (null, $"Không tải được ảnh: máy chủ trả về lỗi {(int)response.StatusCode}.");
+                if (response.Content.Headers.ContentLength > MaxCoverBytes)
+                    return (null, "Ảnh bìa tối đa 2 MB.");
+
+                // Đọc từng phần, vượt 2 MB thì dừng ngay (không tin Content-Length)
+                await using var body = await response.Content.ReadAsStreamAsync();
+                using var ms = new MemoryStream();
+                var buffer = new byte[81920];
+                int read;
+                while ((read = await body.ReadAsync(buffer)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                    if (ms.Length > MaxCoverBytes) return (null, "Ảnh bìa tối đa 2 MB.");
+                }
+                if (ms.Length == 0) return (null, "Đường dẫn không trả về ảnh nào.");
+
+                ms.Position = 0;
+                var contentType = DetectImageType(ms);
+                if (contentType == null)
+                    return (null, "Đường dẫn không phải ảnh JPG, PNG hoặc WebP. Nếu đó là một trang web, hãy chuột phải vào ảnh → \"Sao chép địa chỉ hình ảnh\" rồi dán lại.");
+
+                var fileName = Path.GetFileName(uri.LocalPath);
+                return (new CoverData(ms.ToArray(), contentType, string.IsNullOrEmpty(fileName) ? "cover" : fileName), null);
+            }
+            return (null, "Đường dẫn ảnh chuyển hướng quá nhiều lần.");
+        }
+        catch (TaskCanceledException)
+        {
+            return (null, "Tải ảnh quá lâu (quá 15 giây), vui lòng thử đường dẫn khác.");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or SocketException)
+        {
+            return (null, "Không kết nối được tới đường dẫn ảnh, vui lòng kiểm tra lại.");
+        }
+    }
+
+    private static bool IsHttp(Uri uri) => uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+
+    /// <summary>Tên miền phải trỏ tới địa chỉ Internet công khai (không phải localhost, 10.x, 192.168.x, 172.16–31.x...).</summary>
+    private static async Task<bool> IsPublicHostAsync(string host)
+    {
+        var addresses = await Dns.GetHostAddressesAsync(host);   // tên miền sai → SocketException, bắt ở trên
+        return addresses.Length > 0 && addresses.All(IsPublicAddress);
+    }
+
+    private static bool IsPublicAddress(IPAddress ip)
+    {
+        if (ip.IsIPv4MappedToIPv6) ip = ip.MapToIPv4();
+        if (IPAddress.IsLoopback(ip) || ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || ip.IsIPv6UniqueLocal) return false;
+        if (ip.AddressFamily != AddressFamily.InterNetwork) return true;
+        var b = ip.GetAddressBytes();
+        return !(b[0] == 0 || b[0] == 10 || b[0] == 127
+            || (b[0] == 100 && b[1] >= 64 && b[1] <= 127)
+            || (b[0] == 169 && b[1] == 254)
+            || (b[0] == 172 && b[1] >= 16 && b[1] <= 31)
+            || (b[0] == 192 && b[1] == 168));
+    }
+
+    /// <summary>Upload ảnh vào GridFS bucket "covers", metadata ghi contentType và bookId. Trả về id file.</summary>
+    private async Task<string> UploadCoverAsync(CoverData cover, string bookId)
+    {
+        using var stream = new MemoryStream(cover.Bytes);
+        return await UploadCoverStreamAsync(stream, cover.FileName, cover.ContentType, bookId, _db.Covers);
     }
 
     /// <summary>Dùng chung cho form và seed (DbInitializer).</summary>

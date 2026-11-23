@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Options;
 using LibraryManagement.Web.Models;
+using LibraryManagement.Web.Options;
 using LibraryManagement.Web.Services;
 using LibraryManagement.Web.ViewModels.Books;
+using LibraryManagement.Web.ViewModels.Home;
 
 namespace LibraryManagement.Web.Controllers;
 
@@ -22,23 +24,20 @@ public class CatalogController : Controller
         _categoryService = categoryService;
     }
 
-    // GET: /Catalog
+    // GET: /Catalog — trang chủ độc giả theo thiết kế Antigravity (partial _BookShowcase), giữ menu bên trái của layout.
+    // Tải toàn bộ sách một lần, lọc theo thể loại / từ khóa ngay trên trình duyệt; ?search= vẫn dùng được làm từ khóa ban đầu.
     [HttpGet]
-    public async Task<IActionResult> Index(string? search, string? categoryId)
+    public async Task<IActionResult> Index(string? search, [FromServices] IOptions<LibraryRules> rules)
     {
-        ViewBag.Search = search;
-        ViewBag.CategoryId = categoryId;
-
-        var categories = await _categoryService.GetAllWithBookCountAsync();
-        ViewBag.Categories = categories.Select(c => new SelectListItem
+        var vm = new BookShowcaseVM
         {
-            Value = c.Id,
-            Text = c.Name,
-            Selected = c.Id == categoryId
-        }).ToList();
-
-        var list = await _bookService.GetAllAsync(search, categoryId);
-        return View(list);
+            Books = await _bookService.GetAllAsync(),
+            Categories = await _categoryService.GetAllWithBookCountAsync(),
+            Rules = rules.Value,
+            IsGuest = false,
+            InitialSearch = search
+        };
+        return View(vm);
     }
 
     // GET: /Catalog/Details/{id}

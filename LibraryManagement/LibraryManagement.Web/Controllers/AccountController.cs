@@ -85,7 +85,8 @@ public class AccountController : Controller
 
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
-        return RedirectToAction(nameof(Login));   // bước 3, và bước 1a khi phiên đã hết hạn
+        // Bước 3, và bước 1a khi phiên đã hết hạn: về trang chủ công khai (từ đó bấm "Đăng nhập" để vào lại)
+        return RedirectToAction("Index", "Home");
     }
 
     // UC03

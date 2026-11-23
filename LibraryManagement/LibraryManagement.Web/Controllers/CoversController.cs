@@ -5,8 +5,9 @@ using LibraryManagement.Web.Services;
 namespace LibraryManagement.Web.Controllers;
 
 // UC04, UC13: trả ảnh bìa sách lưu trong GridFS (mục 7.5 thiết kế kỹ thuật).
-// Dùng chung cho Thủ thư (Quản lý sách) và Độc giả (Tìm sách), nên chỉ yêu cầu đã đăng nhập.
-[Authorize]
+// Dùng chung cho Thủ thư (Quản lý sách), Độc giả (Tìm sách) và trang chủ công khai trước khi đăng nhập,
+// nên ai cũng xem được. Ảnh bìa không phải dữ liệu riêng tư; mọi trang quản lý khác vẫn yêu cầu đăng nhập.
+[AllowAnonymous]
 public class CoversController : Controller
 {
     private readonly BookService _books;

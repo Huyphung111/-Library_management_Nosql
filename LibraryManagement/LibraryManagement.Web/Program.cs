@@ -32,6 +32,13 @@ builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<ReportService>();
 // LoanService và ReservationService gọi lẫn nhau: LoanService nhận Lazy<ReservationService> để tránh vòng phụ thuộc.
 builder.Services.AddScoped(sp => new Lazy<ReservationService>(() => sp.GetRequiredService<ReservationService>()));
+// Tải ảnh bìa từ đường dẫn (BookService). Tắt tự chuyển hướng để BookService kiểm tra từng địa chỉ trước khi theo.
+builder.Services.AddHttpClient(BookService.CoverHttpClient, c =>
+    {
+        c.Timeout = TimeSpan.FromSeconds(15);
+        c.DefaultRequestHeaders.UserAgent.ParseAdd("LibraryManagement/1.0");
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 // Chạy nền: hủy đặt giữ quá hạn nhận, trả sách về kho
 builder.Services.AddHostedService<HoldExpiryService>();
 

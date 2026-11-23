@@ -1,0 +1,377 @@
+@* Khối trưng bày sách theo thiết kế Antigravity: cột danh mục + banner + lưới sách.
+   Dùng chung cho trang chủ khách (Home/Landing) và trang chủ độc giả (Catalog/Index).
+   Trang chứa phải có ô tìm kiếm <form id="searchForm"> và <input id="searchInput">, và nạp ~/css/showcase.css.
+   Sách, thể loại, số còn lại lấy thật từ MongoDB; ảnh bìa qua /Covers/{id} (GridFS). *@
+@model LibraryManagement.Web.ViewModels.Home.BookShowcaseVM
+@using System.Text.Json
+@using LibraryManagement.Web.ViewModels.Books
+@{
+    var rules = Model.Rules;
+    var guest = Model.IsGuest;
+
+    // Ảnh cho 3 slide banner: ưu tiên sách có ảnh bìa trong thể loại của slide, thiếu thì lấy sách mới nhất có ảnh
+    var used = new HashSet<string>();
+    List<BookListVM> Pick(string? category)
+    {
+        var withCover = Model.Books.Where(b => !string.IsNullOrEmpty(b.CoverImageId) && !used.Contains(b.Id));
+        var picked = withCover.Where(b => category == null || b.CategoryNames.Contains(category)).Take(3).ToList();
+        if (picked.Count < 3)
+            picked.AddRange(withCover.Where(b => !picked.Contains(b)).Take(3 - picked.Count));
+        foreach (var b in picked) used.Add(b.Id);
+        return picked;
+    }
+    var slide1 = Pick(null);
+    var slide2 = Pick("Kỹ năng sống");
+    var slide3 = Pick("Văn học");
+
+    // Dữ liệu cho JS. JsonSerializer mặc định mã hóa < > & ' nên nhúng thẳng vào <script> an toàn.
+    var booksJson = JsonSerializer.Serialize(Model.Books.Select(b => new
+    {
+        id = b.Id,
+        title = b.Title,
+        authors = b.Authors,
+        publisher = b.Publisher,
+        year = b.PublishYear,
+        categories = b.CategoryNames,
+        available = b.AvailableQuantity,
+        total = b.TotalQuantity,
+        cover = string.IsNullOrEmpty(b.CoverImageId) ? null : "/Covers/" + b.CoverImageId
+    }));
+    var categoriesJson = JsonSerializer.Serialize(Model.Categories.Select(c => new { name = c.Name, count = c.BookCount }));
+    var initialSearchJson = JsonSerializer.Serialize(Model.InitialSearch ?? "");
+}
+
+<div class="pub-showcase">
+  <!-- HERO: CỘT DANH MỤC TRÁI + BANNER SLIDER PHẢI -->
+  <section class="pub-hero">
+    <aside class="pub-cat-list" id="categoryList"></aside>
+
+    <div class="pub-banner" id="heroBanner">
+      <div class="pub-slide slide-1 active">
+        <div>
+          <div class="slide-tag"><i class="bi bi-stars"></i> Gợi ý đọc tuần này</div>
+          <h1 class="slide-title">Khám phá <span>@Model.Books.Count đầu sách</span> chọn lọc tại Thư viện</h1>
+          <p class="slide-desc">Tra cứu nhanh tình trạng sách còn trên kệ, xem thông tin tác giả và đặt giữ sách trực tuyến trước khi đến quầy.</p>
+          <a href="#booksSection" class="slide-cta"><i class="bi bi-book"></i> Xem sách mới</a>
+        </div>
+        <div class="slide-books">
+          @foreach (var b in slide1) { <img src="/Covers/@b.CoverImageId" alt="@b.Title" /> }
+        </div>
+      </div>
+
+      <div class="pub-slide slide-2">
+        <div>
+          <div class="slide-tag"><i class="bi bi-bookmark-check"></i> Tiện ích độc giả</div>
+          <h1 class="slide-title">Đặt giữ online — <span>Nhận sách trong @rules.HoldDays ngày</span></h1>
+          @if (guest)
+          {
+            <p class="slide-desc">Đăng nhập bằng mã thẻ độc giả để đặt giữ tối đa @rules.MaxHolds cuốn đang có sẵn trên kệ hoặc đăng ký hàng chờ khi sách đã hết.</p>
+            <a asp-controller="Account" asp-action="Login" class="slide-cta">Đăng nhập ngay</a>
+          }
+          else
+          {
+            <p class="slide-desc">Bấm vào cuốn sách còn trên kệ để đặt giữ (tối đa @rules.MaxHolds cuốn), hoặc đăng ký hàng chờ khi sách đã hết.</p>
+            <a asp-controller="MyReservations" asp-action="Index" class="slide-cta"><i class="bi bi-bookmark-star"></i> Xem đặt trước của tôi</a>
+          }
+        </div>
+        <div class="slide-books">
+          @foreach (var b in slide2) { <img src="/Covers/@b.CoverImageId" alt="@b.Title" /> }
+        </div>
+      </div>
+
+      <div class="pub-slide slide-3">
+        <div>
+          <div class="slide-tag"><i class="bi bi-award"></i> Tủ sách kinh điển</div>
+          <h1 class="slide-title">Văn học &amp; Khoa học — <span>Mượn tối đa @rules.LoanDays ngày</span></h1>
+          <p class="slide-desc">Mỗi độc giả được mượn cùng lúc đến @rules.MaxBooksPerReader cuốn và hỗ trợ gia hạn trực tuyến thêm @rules.RenewalDays ngày mỗi lần (tối đa @rules.MaxRenewals lần).</p>
+          <a href="#booksSection" class="slide-cta" data-category="Văn học"><i class="bi bi-collection"></i> Xem tủ sách Văn học</a>
+        </div>
+        <div class="slide-books">
+          @foreach (var b in slide3) { <img src="/Covers/@b.CoverImageId" alt="@b.Title" /> }
+        </div>
+      </div>
+
+      <button type="button" class="banner-arrow prev" id="prevSlide" aria-label="Slide trước"><i class="bi bi-chevron-left"></i></button>
+      <button type="button" class="banner-arrow next" id="nextSlide" aria-label="Slide tiếp"><i class="bi bi-chevron-right"></i></button>
+
+      <div class="banner-dots" id="bannerDots">
+        <button type="button" class="banner-dot active" data-index="0" aria-label="Slide 1"></button>
+        <button type="button" class="banner-dot" data-index="1" aria-label="Slide 2"></button>
+        <button type="button" class="banner-dot" data-index="2" aria-label="Slide 3"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DANH SÁCH SÁCH -->
+  <section class="pub-section" id="booksSection">
+    <div class="section-bar">
+      <div class="section-ribbon" id="sectionTitle"><i class="bi bi-book-fill"></i> Sách Mới</div>
+      <div class="section-meta">
+        <button type="button" class="btn-clear-filter" id="clearFilterBtn" style="display: none;"><i class="bi bi-x-lg"></i> Bỏ lọc</button>
+      </div>
+    </div>
+    <div class="pub-book-grid" id="bookGrid"></div>
+
+    <!-- PHÂN TRANG: 12 sách / trang (4 x 3), có ô nhập số trang -->
+    <nav class="pub-pager" id="pager" aria-label="Phân trang sách"></nav>
+  </section>
+
+  @if (guest)
+  {
+    <!-- POPUP CHI TIẾT SÁCH (khách): mời đăng nhập để đặt sách -->
+    <div class="modal-backdrop-custom" id="bookModal">
+      <div class="modal-card">
+        <div class="modal-head">
+          <strong>Thông tin chi tiết sách</strong>
+          <button type="button" class="modal-close" id="closeModal" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body-grid">
+          <div class="modal-cover" id="modalCoverBox"></div>
+          <div>
+            <div class="pub-book-cat" id="modalCategory"></div>
+            <h3 style="margin: 0 0 10px; font-size: 1.15rem; color: var(--lib-primary);" id="modalTitle"></h3>
+            <div class="modal-info-row"><strong>Tác giả:</strong> <span id="modalAuthor"></span></div>
+            <div class="modal-info-row"><strong>Nhà xuất bản:</strong> <span id="modalPublisher"></span></div>
+            <div class="modal-info-row"><strong>Năm xuất bản:</strong> <span id="modalYear"></span></div>
+            <div class="modal-info-row"><strong>Tình trạng kho:</strong> <span id="modalStock"></span></div>
+            <div class="modal-actions">
+              <span style="font-size: 0.8rem; color: var(--lib-muted);">Đăng nhập bằng mã thẻ độc giả để mượn hoặc đặt giữ sách.</span>
+              <a asp-controller="Account" asp-action="Login" class="slide-cta">Đăng nhập để đặt sách</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<script>
+  (function () {
+    // Dữ liệu thật từ MongoDB
+    const CATEGORIES = @Html.Raw(categoriesJson);
+    const BOOKS = @Html.Raw(booksJson);
+    const IS_GUEST = @(guest ? "true" : "false");
+
+    const PAGE_SIZE = 12;   // 4 cột x 3 hàng
+
+    let activeCategory = "";
+    let searchKeyword = @Html.Raw(initialSearchJson);
+    // Trang ban đầu lấy từ ?page= trên địa chỉ (giữ trang khi tải lại); không hợp lệ thì về trang 1
+    let currentPage = Number(new URLSearchParams(window.location.search).get("page") || 1);
+    if (!Number.isInteger(currentPage)) currentPage = 1;
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) searchInput.value = searchKeyword;
+
+    // Tên sách, tác giả do Thủ thư nhập: luôn mã hóa trước khi chèn vào HTML
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const coverHtml = b => b.cover
+      ? `<img src="${esc(b.cover)}" alt="${esc(b.title)}" loading="lazy" />`
+      : `<div class="pub-cover-empty"><i class="bi bi-book-half"></i></div>`;
+
+    function renderCategories() {
+      const item = (value, label, count) => `
+        <button type="button" class="pub-cat-item ${activeCategory === value ? "active" : ""}" data-category="${esc(value)}">
+          <span>${esc(label)}</span><span class="pub-cat-count">${count}</span>
+        </button>`;
+      document.getElementById("categoryList").innerHTML = item("", "Tất cả thể loại", BOOKS.length)
+        + CATEGORIES.map(c => item(c.name, c.name, c.count)).join("");
+    }
+
+    function renderBooks() {
+      const grid = document.getElementById("bookGrid");
+      const titleEl = document.getElementById("sectionTitle");
+      const kw = searchKeyword.trim().toLowerCase();
+      const filtered = BOOKS.filter(b =>
+        (!activeCategory || b.categories.includes(activeCategory)) &&
+        (!kw || b.title.toLowerCase().includes(kw) || b.authors.toLowerCase().includes(kw)));
+
+      if (activeCategory && kw) titleEl.innerHTML = `<i class="bi bi-funnel-fill"></i> ${esc(activeCategory)} — "${esc(searchKeyword)}"`;
+      else if (activeCategory) titleEl.innerHTML = `<i class="bi bi-tag-fill"></i> ${esc(activeCategory)}`;
+      else if (kw) titleEl.innerHTML = `<i class="bi bi-search"></i> Kết quả tìm kiếm: "${esc(searchKeyword)}"`;
+      else titleEl.innerHTML = `<i class="bi bi-book-fill"></i> Sách Mới`;
+
+      document.getElementById("clearFilterBtn").style.display = (activeCategory || kw) ? "inline-block" : "none";
+
+      const emptyBox = (title, hint) => `
+          <div class="pub-empty" style="grid-column: 1 / -1;">
+            <i class="bi bi-journal-x"></i>
+            <strong>${title}</strong>
+            <div style="margin-top: 4px; font-size: 0.85rem;">${hint}</div>
+          </div>`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = emptyBox("Không tìm thấy cuốn sách nào phù hợp.", 'Thử nhập từ khóa khác hoặc chọn "Tất cả thể loại".');
+        renderPager(0, 0);
+        return;
+      }
+
+      // Trang không tồn tại (nhập số trang quá lớn, 0 hoặc số âm): báo không có sách, vẫn giữ thanh phân trang để quay lại
+      const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+      if (currentPage < 1 || currentPage > totalPages) {
+        grid.innerHTML = emptyBox(`Trang ${esc(currentPage)} không có sách nào.`,
+          `Hiện có ${totalPages} trang, vui lòng chọn trang từ 1 đến ${totalPages}.`);
+        renderPager(totalPages, filtered.length);
+        return;
+      }
+
+      const pageBooks = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+      // Khách: thẻ mở popup. Độc giả: thẻ là link tới trang chi tiết (có nút Đặt giữ / Đặt trước)
+      grid.innerHTML = pageBooks.map(b => {
+        const open = IS_GUEST
+          ? `<article class="pub-book-card" data-book="${esc(b.id)}">`
+          : `<a class="pub-book-card" href="/Catalog/Details/${encodeURIComponent(b.id)}">`;
+        const close = IS_GUEST ? `</article>` : `</a>`;
+        return `${open}
+          <div class="pub-book-cover">
+            ${coverHtml(b)}
+            <span class="pub-book-badge ${b.available > 0 ? "in" : "out"}">${b.available > 0 ? `Còn ${b.available} cuốn` : "Hết sách"}</span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">${esc(b.categories[0] ?? "")}</div>
+            <h3 class="pub-book-title" title="${esc(b.title)}">${esc(b.title)}</h3>
+            <div class="pub-book-author"><i class="bi bi-person"></i> ${esc(b.authors)}</div>
+          </div>
+        ${close}`;
+      }).join("");
+      renderPager(totalPages, filtered.length);
+    }
+
+    // Thanh phân trang: Trước / số trang / Sau, dòng "Trang X / N", ô nhập số trang
+    function renderPager(totalPages, count) {
+      const pager = document.getElementById("pager");
+      if (totalPages === 0) { pager.innerHTML = ""; return; }
+
+      const valid = currentPage >= 1 && currentPage <= totalPages;
+      const btn = (page, label, { disabled = false, active = false, aria = "" } = {}) =>
+        `<button type="button" class="pager-btn ${active ? "active" : ""}" data-page="${page}"
+                 ${disabled ? "disabled" : ""} ${active ? 'aria-current="page"' : ""} aria-label="${aria || label}">${label}</button>`;
+
+      // Số trang: luôn hiện trang đầu, trang cuối và 2 trang quanh trang hiện tại; chỗ bị lược hiện "…"
+      let numbers = "", last = 0;
+      for (let p = 1; p <= totalPages; p++) {
+        if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 2) continue;
+        if (p - last > 1) numbers += `<span class="pager-gap">…</span>`;
+        numbers += btn(p, String(p), { active: p === currentPage, aria: `Trang ${p}` });
+        last = p;
+      }
+
+      // Đang ở trang không tồn tại: "Trước" về trang cuối (nếu vượt quá), "Sau" về trang 1 (nếu nhỏ hơn 1)
+      const prev = currentPage > totalPages ? totalPages : currentPage - 1;
+      const next = currentPage < 1 ? 1 : currentPage + 1;
+
+      // Giống mẫu: các ô số canh giữa ngay dưới lưới sách, « / » chỉ hiện khi bấm được
+      pager.innerHTML = `
+        <div class="pager-buttons">
+          ${prev >= 1 ? btn(prev, "&laquo;", { aria: "Trang trước" }) : ""}
+          ${numbers}
+          ${next <= totalPages ? btn(next, "&raquo;", { aria: "Trang sau" }) : ""}
+        </div>
+        <form class="pager-jump" id="pagerJump" novalidate>
+          <label for="pageInput">Đến trang</label>
+          <input type="number" id="pageInput" inputmode="numeric" step="1" placeholder="Số" value="${valid ? currentPage : ""}" />
+          <button type="submit">Đi</button>
+        </form>`;
+    }
+
+    // Chuyển trang: vẽ lại lưới, ghi ?page= lên địa chỉ (tải lại trang vẫn giữ trang), cuộn tới đầu lưới sách
+    function goPage(page, scroll = true) {
+      currentPage = page;
+      renderBooks();
+      try {
+        const url = new URL(window.location.href);
+        if (page === 1) url.searchParams.delete("page"); else url.searchParams.set("page", page);
+        history.replaceState(null, "", url);
+      } catch { /* trình duyệt cũ: bỏ qua */ }
+      if (scroll) document.getElementById("booksSection").scrollIntoView({ behavior: "smooth" });
+    }
+
+    const pagerEl = document.getElementById("pager");
+    pagerEl.addEventListener("click", e => {
+      const b = e.target.closest("[data-page]");
+      if (b && !b.disabled) goPage(Number(b.dataset.page));
+    });
+    pagerEl.addEventListener("submit", e => {
+      e.preventDefault();
+      const input = document.getElementById("pageInput");
+      const page = Number(input.value);
+      if (input.value.trim() === "" || !Number.isInteger(page)) {
+        input.classList.add("invalid");
+        input.focus();
+        return;
+      }
+      goPage(page);
+    });
+
+    function selectCategory(cat) {
+      activeCategory = cat;
+      renderCategories();
+      goPage(1, false);   // đổi thể loại thì về trang 1
+    }
+
+    function resetFilters() {
+      activeCategory = "";
+      searchKeyword = "";
+      if (searchInput) searchInput.value = "";
+      renderCategories();
+      goPage(1, false);
+    }
+    window.resetShowcaseFilters = resetFilters;   // logo ở trang khách gọi để về trạng thái ban đầu
+
+    // Chọn thể loại: cột trái và nút "Xem tủ sách Văn học" trên banner
+    document.addEventListener("click", e => {
+      const el = e.target.closest("[data-category]");
+      if (el) selectCategory(el.dataset.category);
+    });
+
+    const searchForm = document.getElementById("searchForm");
+    if (searchForm) searchForm.addEventListener("submit", e => {
+      e.preventDefault();
+      searchKeyword = searchInput ? searchInput.value : "";
+      goPage(1);   // tìm kiếm mới thì về trang 1
+    });
+
+    document.getElementById("clearFilterBtn").addEventListener("click", resetFilters);
+
+    // Popup chi tiết sách (chỉ trang khách)
+    const modal = document.getElementById("bookModal");
+    if (modal) {
+      document.getElementById("bookGrid").addEventListener("click", e => {
+        const card = e.target.closest("[data-book]");
+        const b = card && BOOKS.find(x => x.id === card.dataset.book);
+        if (!b) return;
+        document.getElementById("modalCoverBox").innerHTML = coverHtml(b);
+        document.getElementById("modalCategory").textContent = b.categories.join(", ");
+        document.getElementById("modalTitle").textContent = b.title;
+        document.getElementById("modalAuthor").textContent = b.authors;
+        document.getElementById("modalPublisher").textContent = b.publisher;
+        document.getElementById("modalYear").textContent = b.year ?? "Chưa cập nhật";
+        document.getElementById("modalStock").innerHTML = b.available > 0
+          ? `<span style="color:#137333;font-weight:700;">Còn ${b.available}/${b.total} cuốn trên kệ</span>`
+          : `<span style="color:#c5221f;font-weight:700;">Tạm hết sách (có thể đặt trước)</span>`;
+        modal.classList.add("open");
+      });
+      document.getElementById("closeModal").addEventListener("click", () => modal.classList.remove("open"));
+      modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+    }
+
+    // Banner tự chuyển slide
+    const slides = document.querySelectorAll(".pub-slide");
+    const dots = document.querySelectorAll(".banner-dot");
+    let currentSlide = 0;
+    function goSlide(n) {
+      slides[currentSlide].classList.remove("active");
+      dots[currentSlide].classList.remove("active");
+      currentSlide = (n + slides.length) % slides.length;
+      slides[currentSlide].classList.add("active");
+      dots[currentSlide].classList.add("active");
+    }
+    document.getElementById("prevSlide").addEventListener("click", () => goSlide(currentSlide - 1));
+    document.getElementById("nextSlide").addEventListener("click", () => goSlide(currentSlide + 1));
+    dots.forEach(d => d.addEventListener("click", () => goSlide(Number(d.dataset.index))));
+    setInterval(() => goSlide(currentSlide + 1), 5500);
+
+    renderCategories();
+    renderBooks();
+  })();
+</script>

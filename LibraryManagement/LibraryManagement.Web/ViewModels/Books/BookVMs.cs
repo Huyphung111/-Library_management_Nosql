@@ -67,6 +67,12 @@ public class BookFormVM
     [Display(Name = "Ảnh bìa")]
     public Microsoft.AspNetCore.Http.IFormFile? CoverFile { get; set; }
 
+    /// <summary>Cách thứ hai: dán đường dẫn ảnh. Server tải ảnh về, kiểm tra như file upload rồi lưu vào GridFS.
+    /// Chọn cả file lẫn đường dẫn thì ưu tiên file.</summary>
+    [StringLength(2000, ErrorMessage = "Đường dẫn ảnh quá dài.")]
+    [Display(Name = "Hoặc dán đường dẫn ảnh")]
+    public string? CoverUrl { get; set; }
+
     /// <summary>Khi sửa: tick để bỏ ảnh bìa hiện tại.</summary>
     public bool RemoveCover { get; set; }
 
