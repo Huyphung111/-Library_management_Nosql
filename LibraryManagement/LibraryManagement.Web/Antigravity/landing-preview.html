@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thư viện - Trang chủ tra cứu sách (Bản xem trước)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="landing-preview.css" />
+</head>
+<body>
+
+  <!-- 1. HEADER CHÍNH -->
+  <header class="pub-header">
+    <div class="pub-container pub-header-inner">
+      <a href="#" class="pub-brand" id="resetHome">
+        <img src="huit-logo.jpg" alt="Logo HUIT" class="pub-brand-logo" />
+        <div>
+          <div class="pub-brand-title">THƯ VIỆN HUIT</div>
+          <div class="pub-brand-sub">Hệ thống quản lý mượn trả sách</div>
+        </div>
+      </a>
+
+      <form class="pub-search" id="searchForm">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Tìm theo tên sách hoặc tác giả..."
+          autocomplete="off"
+        />
+        <button type="submit">
+          <i class="bi bi-search"></i> Tìm
+        </button>
+      </form>
+
+      <a href="#login" class="pub-login-btn" id="loginBtn">
+        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. THANH DANH MỤC + HOTLINE -->
+  <div class="pub-subbar">
+    <div class="pub-container pub-subbar-inner">
+      <div class="pub-cat-heading">
+        <i class="bi bi-list"></i> DANH MỤC SÁCH
+      </div>
+      <div class="pub-hotline-group">
+        <div class="pub-hotline">
+          <i class="bi bi-clock-fill"></i>
+          Giờ mở cửa: <span>07:30 – 20:00 (T2 – T7)</span>
+        </div>
+        <div class="pub-hotline">
+          <i class="bi bi-telephone-fill"></i>
+          Hotline: <span>0243.3323.6714</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NỘI DUNG CHÍNH -->
+  <main class="pub-container">
+
+    <!-- 3. HERO: CỘT DANH MỤC TRÁI + BANNER SLIDER PHẢI -->
+    <section class="pub-hero">
+      <aside class="pub-cat-list" id="categoryList">
+        <!-- Render bằng JS từ 6 thể loại thật trong MongoDB -->
+      </aside>
+
+      <div class="pub-banner" id="heroBanner">
+        <!-- Slide 1 -->
+        <div class="pub-slide slide-1 active">
+          <div>
+            <div class="slide-tag"><i class="bi bi-stars"></i> Gợi ý đọc tuần này</div>
+            <h1 class="slide-title">
+              Khám phá <span>28+ đầu sách</span> chọn lọc tại Thư viện
+            </h1>
+            <p class="slide-desc">
+              Tra cứu nhanh tình trạng sách còn trên kệ, xem thông tin tác giả và đặt giữ sách trực tuyến trước khi đến quầy.
+            </p>
+            <a href="#booksSection" class="slide-cta">
+              <i class="bi bi-book"></i> Xem sách mới
+            </a>
+          </div>
+          <div class="slide-books">
+            <img src="../Data/SeedCovers/clean-code-ma-sach.jpg" alt="Clean Code" />
+            <img src="../Data/SeedCovers/dac-nhan-tam.jpg" alt="Đắc Nhân Tâm" />
+            <img src="../Data/SeedCovers/sapiens-luoc-su-loai-nguoi.jpg" alt="Sapiens" />
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="pub-slide slide-2">
+          <div>
+            <div class="slide-tag"><i class="bi bi-bookmark-check"></i> Tiện ích độc giả</div>
+            <h1 class="slide-title">
+              Đặt giữ online — <span>Nhận sách trong 3 ngày</span>
+            </h1>
+            <p class="slide-desc">
+              Đăng nhập bằng mã thẻ độc giả để đặt giữ tối đa 2 cuốn đang có sẵn trên kệ hoặc đăng ký hàng chờ khi sách đã hết.
+            </p>
+            <button type="button" class="slide-cta" onclick="showLoginNotice()">
+              <i class="bi bi-box-arrow-in-right"></i> Đăng nhập ngay
+            </button>
+          </div>
+          <div class="slide-books">
+            <img src="../Data/SeedCovers/7-thoi-quen-de-thanh-dat.jpg" alt="7 Thói Quen" />
+            <img src="../Data/SeedCovers/tu-duy-nhanh-va-cham.jpg" alt="Tư Duy Nhanh và Chậm" />
+            <img src="../Data/SeedCovers/cha-giau-cha-ngheo-rich-dad-poor-dad.jpg" alt="Cha Giàu Cha Nghèo" />
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="pub-slide slide-3">
+          <div>
+            <div class="slide-tag"><i class="bi bi-award"></i> Tủ sách kinh điển</div>
+            <h1 class="slide-title">
+              Văn học &amp; Khoa học — <span>Mượn tối đa 14 ngày</span>
+            </h1>
+            <p class="slide-desc">
+              Mỗi độc giả được mượn cùng lúc đến 5 cuốn và hỗ trợ gia hạn trực tuyến thêm 7 ngày mỗi lần (tối đa 2 lần).
+            </p>
+            <a href="#booksSection" class="slide-cta" onclick="selectCategory('Văn học')">
+              <i class="bi bi-collection"></i> Xem tủ sách Văn học
+            </a>
+          </div>
+          <div class="slide-books">
+            <img src="../Data/SeedCovers/nha-gia-kim.jpg" alt="Nhà Giả Kim" />
+            <img src="../Data/SeedCovers/luoc-su-thoi-gian.jpg" alt="Lược Sử Thời Gian" />
+            <img src="../Data/SeedCovers/mat-biec.jpg" alt="Mắt Biếc" />
+          </div>
+        </div>
+
+        <button class="banner-arrow prev" id="prevSlide" aria-label="Slide trước">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="banner-arrow next" id="nextSlide" aria-label="Slide tiếp">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <div class="banner-dots" id="bannerDots">
+          <button class="banner-dot active" data-index="0" aria-label="Slide 1"></button>
+          <button class="banner-dot" data-index="1" aria-label="Slide 2"></button>
+          <button class="banner-dot" data-index="2" aria-label="Slide 3"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DANH SÁCH SÁCH (THANH RIBBON "Sách Mới" + LƯỚI SÁCH) -->
+    <section class="pub-section" id="booksSection">
+      <div class="section-bar">
+        <div class="section-ribbon" id="sectionTitle">
+          <i class="bi bi-book-fill"></i> Sách Mới
+        </div>
+        <div class="section-meta">
+          <button type="button" class="btn-clear-filter" id="clearFilterBtn" style="display: none;">
+            <i class="bi bi-x-lg"></i> Bỏ lọc
+          </button>
+        </div>
+      </div>
+
+      <div class="pub-book-grid" id="bookGrid">
+        <!-- Render bằng JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="pub-footer">
+    <div class="pub-container pub-footer-inner">
+      <div>
+        <strong>THƯ VIỆN TRUNG TÂM</strong> — Hệ thống quản lý mượn trả sách (ASP.NET Core MVC &amp; MongoDB)
+      </div>
+      <div>
+        Chưa có thẻ độc giả? Vui lòng mang CCCD đến quầy thủ thư để được cấp thẻ.
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL XEM CHI TIẾT SÁCH -->
+  <div class="modal-backdrop-custom" id="bookModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong id="modalHeaderTitle">Thông tin chi tiết sách</strong>
+        <button class="modal-close" id="closeModal" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body-grid">
+        <div class="modal-cover">
+          <img id="modalCover" src="" alt="" />
+        </div>
+        <div>
+          <div class="pub-book-cat" id="modalCategory"></div>
+          <h3 style="margin: 0 0 10px; font-size: 1.15rem; color: var(--lib-primary);" id="modalTitle"></h3>
+          <div class="modal-info-row"><strong>Tác giả:</strong> <span id="modalAuthor"></span></div>
+          <div class="modal-info-row"><strong>Nhà xuất bản:</strong> <span id="modalPublisher"></span></div>
+          <div class="modal-info-row"><strong>Năm xuất bản:</strong> <span id="modalYear"></span></div>
+          <div class="modal-info-row"><strong>Tình trạng kho:</strong> <span id="modalStock"></span></div>
+          <div class="modal-actions">
+            <span style="font-size: 0.8rem; color: var(--lib-muted);">
+              Đăng nhập bằng mã thẻ độc giả để mượn hoặc đặt giữ sách.
+            </span>
+            <button type="button" class="slide-cta" onclick="showLoginNotice()">
+              <i class="bi bi-box-arrow-in-right"></i> Đăng nhập để đặt sách
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dữ liệu mẫu khớp với MongoData/categories.json & books.json + SeedCovers
+    const CATEGORIES = [
+      "Công nghệ thông tin",
+      "Kỹ năng sống",
+      "Văn học",
+      "Kinh tế & Quản trị",
+      "Khoa học tự nhiên",
+      "Lịch sử & Triết học"
+    ];
+
+    const BOOKS = [
+      { title: "Clean Code - Mã Sạch", authors: "Robert C. Martin", publisher: "NXB Thông tin và Truyền thông", year: 2021, category: "Công nghệ thông tin", available: 3, total: 4, cover: "../Data/SeedCovers/clean-code-ma-sach.jpg" },
+      { title: "Lập Trình C# 12 & .NET 8 Toàn Tập", authors: "Mark J. Price", publisher: "NXB Thế Giới", year: 2024, category: "Công nghệ thông tin", available: 3, total: 3, cover: "../Data/SeedCovers/lap-trinh-c-12-net-8-toan-tap.jpg" },
+      { title: "Cơ Sở Dữ Liệu NoSQL & Phân Tích Dữ Liệu Lớn", authors: "Pramod J. Sadalage, Martin Fowler", publisher: "NXB Khoa học và Kỹ thuật", year: 2023, category: "Công nghệ thông tin", available: 0, total: 2, cover: "../Data/SeedCovers/co-so-du-lieu-nosql-phan-tich-du-lieu-lon.jpg" },
+      { title: "Design Patterns - Mẫu Thiết Kế Hướng Đối Tượng", authors: "Erich Gamma, Richard Helm", publisher: "NXB Khoa học và Kỹ thuật", year: 2020, category: "Công nghệ thông tin", available: 3, total: 3, cover: "../Data/SeedCovers/design-patterns-mau-thiet-ke-huong-doi-tuong.jpg" },
+      { title: "7 Thói Quen Để Thành Đạt", authors: "Stephen R. Covey", publisher: "NXB Trẻ", year: 2022, category: "Kỹ năng sống", available: 3, total: 3, cover: "../Data/SeedCovers/7-thoi-quen-de-thanh-dat.jpg" },
+      { title: "Đắc Nhân Tâm", authors: "Dale Carnegie", publisher: "NXB Tổng hợp TP.HCM", year: 2021, category: "Kỹ năng sống", available: 4, total: 5, cover: "../Data/SeedCovers/dac-nhan-tam.jpg" },
+      { title: "Tư Duy Nhanh và Chậm", authors: "Daniel Kahneman", publisher: "NXB Thế Giới", year: 2021, category: "Kỹ năng sống", available: 3, total: 3, cover: "../Data/SeedCovers/tu-duy-nhanh-va-cham.jpg" },
+      { title: "Dám Bị Ghét", authors: "Koga Fumitake, Kishimi Ichiro", publisher: "NXB Lao Động", year: 2023, category: "Kỹ năng sống", available: 0, total: 3, cover: "../Data/SeedCovers/dam-bi-ghet.jpg" },
+      { title: "Nhà Giả Kim", authors: "Paulo Coelho", publisher: "NXB Hội Nhà Văn", year: 2020, category: "Văn học", available: 4, total: 5, cover: "../Data/SeedCovers/nha-gia-kim.jpg" },
+      { title: "Mắt Biếc", authors: "Nguyễn Nhật Ánh", publisher: "NXB Trẻ", year: 2020, category: "Văn học", available: 3, total: 3, cover: "../Data/SeedCovers/mat-biec.jpg" },
+      { title: "Cho Tôi Xin Một Vé Đi Tuổi Thơ", authors: "Nguyễn Nhật Ánh", publisher: "NXB Trẻ", year: 2021, category: "Văn học", available: 4, total: 4, cover: "../Data/SeedCovers/cho-toi-xin-mot-ve-di-tuoi-tho.jpg" },
+      { title: "Cha Giàu Cha Nghèo (Rich Dad Poor Dad)", authors: "Robert T. Kiyosaki", publisher: "NXB Trẻ", year: 2021, category: "Kinh tế & Quản trị", available: 4, total: 4, cover: "../Data/SeedCovers/cha-giau-cha-ngheo-rich-dad-poor-dad.jpg" },
+      { title: "Tâm Lý Học Về Tiền", authors: "Morgan Housel", publisher: "NXB Dân Trí", year: 2023, category: "Kinh tế & Quản trị", available: 0, total: 3, cover: "../Data/SeedCovers/tam-ly-hoc-ve-tien.jpg" },
+      { title: "Lược Sử Thời Gian", authors: "Stephen Hawking", publisher: "NXB Trẻ", year: 2020, category: "Khoa học tự nhiên", available: 3, total: 3, cover: "../Data/SeedCovers/luoc-su-thoi-gian.jpg" },
+      { title: "Sapiens - Lược Sử Loài Người", authors: "Yuval Noah Harari", publisher: "NXB Tri Thức", year: 2021, category: "Lịch sử & Triết học", available: 3, total: 4, cover: "../Data/SeedCovers/sapiens-luoc-su-loai-nguoi.jpg" }
+    ];
+
+    let activeCategory = "";
+    let searchKeyword = "";
+
+    // Render danh mục bên trái
+    function renderCategories() {
+      const container = document.getElementById("categoryList");
+      const allBtn = `
+        <button class="pub-cat-item ${activeCategory === "" ? "active" : ""}" onclick="selectCategory('')">
+          <span>Tất cả thể loại</span>
+          <span class="pub-cat-count">${BOOKS.length}</span>
+        </button>`;
+      const items = CATEGORIES.map(cat => {
+        const count = BOOKS.filter(b => b.category === cat).length;
+        return `
+          <button class="pub-cat-item ${activeCategory === cat ? "active" : ""}" onclick="selectCategory('${cat}')">
+            <span>${cat}</span>
+            <span class="pub-cat-count">${count}</span>
+          </button>`;
+      }).join("");
+      container.innerHTML = allBtn + items;
+    }
+
+    // Render lưới sách
+    function renderBooks() {
+      const grid = document.getElementById("bookGrid");
+      const titleEl = document.getElementById("sectionTitle");
+      const clearBtn = document.getElementById("clearFilterBtn");
+
+      const kw = searchKeyword.trim().toLowerCase();
+      const filtered = BOOKS.filter(b => {
+        const matchCat = !activeCategory || b.category === activeCategory;
+        const matchKw = !kw || b.title.toLowerCase().includes(kw) || b.authors.toLowerCase().includes(kw);
+        return matchCat && matchKw;
+      });
+
+      if (activeCategory && kw) {
+        titleEl.innerHTML = `<i class="bi bi-funnel-fill"></i> ${activeCategory} — "${searchKeyword}"`;
+      } else if (activeCategory) {
+        titleEl.innerHTML = `<i class="bi bi-tag-fill"></i> ${activeCategory}`;
+      } else if (kw) {
+        titleEl.innerHTML = `<i class="bi bi-search"></i> Kết quả tìm kiếm: "${searchKeyword}"`;
+      } else {
+        titleEl.innerHTML = `<i class="bi bi-book-fill"></i> Sách Mới`;
+      }
+
+      clearBtn.style.display = (activeCategory || kw) ? "inline-block" : "none";
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="pub-empty" style="grid-column: 1 / -1;">
+            <i class="bi bi-journal-x"></i>
+            <strong>Không tìm thấy cuốn sách nào phù hợp.</strong>
+            <div style="margin-top: 4px; font-size: 0.85rem;">Thử nhập từ khóa khác hoặc chọn "Tất cả thể loại".</div>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map((b, idx) => `
+        <article class="pub-book-card" onclick="openBookModal(${BOOKS.indexOf(b)})">
+          <div class="pub-book-cover">
+            <img src="${b.cover}" alt="${b.title}" loading="lazy" />
+            <span class="pub-book-badge ${b.available > 0 ? "in" : "out"}">
+              ${b.available > 0 ? `Còn ${b.available} cuốn` : "Hết sách"}
+            </span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">${b.category}</div>
+            <h3 class="pub-book-title" title="${b.title}">${b.title}</h3>
+            <div class="pub-book-author"><i class="bi bi-person"></i> ${b.authors}</div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function selectCategory(cat) {
+      activeCategory = cat;
+      renderCategories();
+      renderBooks();
+    }
+
+    // Tìm kiếm
+    document.getElementById("searchForm").addEventListener("submit", e => {
+      e.preventDefault();
+      searchKeyword = document.getElementById("searchInput").value;
+      renderBooks();
+      document.getElementById("booksSection").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("clearFilterBtn").addEventListener("click", () => {
+      activeCategory = "";
+      searchKeyword = "";
+      document.getElementById("searchInput").value = "";
+      renderCategories();
+      renderBooks();
+    });
+
+    document.getElementById("resetHome").addEventListener("click", e => {
+      e.preventDefault();
+      activeCategory = "";
+      searchKeyword = "";
+      document.getElementById("searchInput").value = "";
+      renderCategories();
+      renderBooks();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // Modal chi tiết sách
+    const modal = document.getElementById("bookModal");
+    function openBookModal(index) {
+      const b = BOOKS[index];
+      document.getElementById("modalCover").src = b.cover;
+      document.getElementById("modalCategory").textContent = b.category;
+      document.getElementById("modalTitle").textContent = b.title;
+      document.getElementById("modalAuthor").textContent = b.authors;
+      document.getElementById("modalPublisher").textContent = b.publisher;
+      document.getElementById("modalYear").textContent = b.year;
+      document.getElementById("modalStock").innerHTML = b.available > 0
+        ? `<span style="color:#137333;font-weight:700;">Còn ${b.available}/${b.total} cuốn trên kệ</span>`
+        : `<span style="color:#c5221f;font-weight:700;">Tạm hết sách (có thể đặt trước)</span>`;
+      modal.classList.add("open");
+    }
+
+    document.getElementById("closeModal").addEventListener("click", () => modal.classList.remove("open"));
+    modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+
+    // Demo nút đăng nhập
+    function showLoginNotice() {
+      alert("Khi tích hợp vào ASP.NET Core MVC, nút này sẽ chuyển thẳng sang trang /Account/Login của đồ án!");
+    }
+    document.getElementById("loginBtn").addEventListener("click", e => {
+      e.preventDefault();
+      showLoginNotice();
+    });
+
+    // Carousel Banner
+    const slides = document.querySelectorAll(".pub-slide");
+    const dots = document.querySelectorAll(".banner-dot");
+    let currentSlide = 0;
+
+    function goSlide(n) {
+      slides[currentSlide].classList.remove("active");
+      dots[currentSlide].classList.remove("active");
+      currentSlide = (n + slides.length) % slides.length;
+      slides[currentSlide].classList.add("active");
+      dots[currentSlide].classList.add("active");
+    }
+
+    document.getElementById("prevSlide").addEventListener("click", () => goSlide(currentSlide - 1));
+    document.getElementById("nextSlide").addEventListener("click", () => goSlide(currentSlide + 1));
+    dots.forEach(d => d.addEventListener("click", () => goSlide(Number(d.dataset.index))));
+    setInterval(() => goSlide(currentSlide + 1), 5500);
+
+    // Khởi tạo
+    renderCategories();
+    renderBooks();
+  </script>
+</body>
+</html>
