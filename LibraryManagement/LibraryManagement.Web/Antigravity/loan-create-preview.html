@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xem trước Trang Lập Phiếu Mượn - Thư viện HUIT</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    :root {
+      --lib-primary: #1e3a5f;
+      --lib-primary-dark: #0f2a47;
+      --lib-accent: #c8963e;
+      --lib-bg: #f4f6fa;
+      --lib-surface: #ffffff;
+      --lib-border: #e3e6ee;
+      --lib-text: #1f2a37;
+      --lib-muted: #6b7280;
+      --lib-radius: 10px;
+      --lib-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      font-size: 14.5px;
+      background: var(--lib-bg);
+      color: var(--lib-text);
+      line-height: 1.5;
+    }
+
+    /* ===== HEADER + SIDEBAR ĐỒNG BỘ GIAO DIỆN HIỆN TẠI ===== */
+    .admin-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 58px;
+      background: var(--lib-primary-dark);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+    .admin-header-left { display: flex; align-items: center; gap: 12px; }
+    .admin-header img { height: 42px; display: block; }
+    .admin-user { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #e5edf7; }
+
+    .admin-sidebar {
+      position: fixed;
+      top: 58px;
+      left: 0;
+      bottom: 0;
+      width: 225px;
+      background: #17304d;
+      color: #c9d4e3;
+      padding: 14px 0;
+    }
+    .sb-head {
+      padding: 10px 18px 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #8ca0ba;
+    }
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      font-size: 0.88rem;
+      color: #c9d4e3;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+    .sb-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-left-color: var(--lib-accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .admin-main {
+      margin-top: 58px;
+      margin-left: 225px;
+      padding: 22px 28px 40px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--lib-primary);
+      margin: 0;
+    }
+
+    /* ===== KHỐI NHẬP MÃ THẺ KIỂM TRA ===== */
+    .card-box {
+      background: var(--lib-surface);
+      border: 1px solid var(--lib-border);
+      border-radius: var(--lib-radius);
+      box-shadow: var(--lib-shadow);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    .check-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .check-input-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 380px;
+    }
+    .check-input-wrap input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid #cfd6e2;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .check-input-wrap input:focus {
+      border-color: var(--lib-primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+    }
+
+    .btn-lib {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-lib-primary { background: var(--lib-primary); color: #fff; }
+    .btn-lib-primary:hover { background: var(--lib-primary-dark); }
+    .btn-lib-outline { background: #fff; color: var(--lib-primary); border-color: #cfd6e2; }
+    .btn-lib-outline:hover { background: #edf2f9; }
+    .btn-lib-sm { height: 32px; padding: 0 12px; font-size: 0.82rem; border-radius: 6px; }
+
+    /* Dòng quy định mượn nhanh ngay dưới ô nhập */
+    .rules-line {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #eef1f6;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      font-size: 0.82rem;
+      color: var(--lib-muted);
+    }
+    .rules-line span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rules-line i { color: var(--lib-accent); }
+
+    /* ===== PHẦN GỢI Ý KHI CHƯA NHẬP MÃ THẺ (HẾT TRỐNG TRẢI) ===== */
+    .idle-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--lib-primary);
+      margin: 0;
+    }
+    .panel-count {
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: #e8f1fb;
+      color: var(--lib-primary);
+    }
+
+    table.compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    table.compact-table th {
+      text-align: left;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--lib-muted);
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--lib-border);
+      background: #f8f9fc;
+    }
+    table.compact-table td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #eef1f6;
+      vertical-align: middle;
+    }
+    table.compact-table tr:last-child td { border-bottom: none; }
+    table.compact-table tbody tr:hover { background: #f9fbfe; }
+
+    .sub-txt { font-size: 0.78rem; color: var(--lib-muted); }
+
+    .badge-soft {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .badge-hold { background: #e0f4fc; color: #0b5170; }
+    .badge-ok   { background: #e6f4ea; color: #137333; }
+    .badge-warn { background: #fff3d6; color: #9a6700; }
+
+    /* ===== PHẦN SAU KHI BẤM KIỂM TRA (BUNG THÔNG TIN ĐỘC GIẢ + CHỌN SÁCH) ===== */
+    .borrower-area { display: none; }
+    .borrower-area.active { display: block; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--lib-border);
+      border-radius: var(--lib-radius);
+      padding: 13px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stat-ico {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .ico-navy  { background: var(--lib-primary); }
+    .ico-gold  { background: var(--lib-accent); }
+    .ico-green { background: #198754; }
+    .stat-main { font-weight: 700; font-size: 0.95rem; }
+
+    .hold-banner {
+      background: #e0f4fc;
+      border: 1px solid #b6e3f7;
+      color: #0b5170;
+      border-radius: 7px;
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .idle-grid { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 800px) {
+      .admin-sidebar { display: none; }
+      .admin-main { margin-left: 0; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER & SIDEBAR -->
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <i class="bi bi-list" style="font-size:1.3rem;"></i>
+      <img src="../wwwroot/images/huit-library-brand.jpg" alt="Thư viện HUIT" />
+    </div>
+    <div class="admin-user">
+      <i class="bi bi-person-circle"></i>
+      <span>Quản trị viên · Thủ thư</span>
+    </div>
+  </header>
+
+  <aside class="admin-sidebar">
+    <div class="sb-head">DASHBOARD</div>
+    <div class="sb-head">MƯỢN TRẢ</div>
+    <a href="#" class="sb-item active" onclick="resetToIdle(); return false;"><i class="bi bi-journal-plus"></i> Lập phiếu mượn</a>
+    <a href="#" class="sb-item" onclick="return false;"><i class="bi bi-journal-arrow-down"></i> Nhận trả sách</a>
+    <a href="#" class="sb-item" onclick="return false;"><i class="bi bi-calendar-plus"></i> Gia hạn</a>
+    <a href="#" class="sb-item" onclick="return false;"><i class="bi bi-bookmark-star"></i> Đặt trước</a>
+    <a href="#" class="sb-item" onclick="return false;"><i class="bi bi-receipt"></i> Tra cứu phiếu mượn</a>
+  </aside>
+
+  <!-- NỘI DUNG CHÍNH -->
+  <main class="admin-main">
+    <div class="page-head">
+      <h1 class="page-title">Lập phiếu mượn</h1>
+      <button type="button" class="btn-lib btn-lib-outline btn-lib-sm" id="backIdleBtn" style="display:none;" onclick="resetToIdle()">
+        Đổi độc giả
+      </button>
+    </div>
+
+    <!-- 1. KHỐI NHẬP MÃ THẺ KIỂM TRA -->
+    <div class="card-box">
+      <form class="check-form" onsubmit="handleCheck(event)">
+        <div class="check-input-wrap">
+          <input type="text" id="cardInput" placeholder="Nhập mã thẻ (vd: DG000001) hoặc tên độc giả..." autocomplete="off" />
+        </div>
+        <button type="submit" class="btn-lib btn-lib-primary">Kiểm tra</button>
+      </form>
+
+      <div class="rules-line">
+        <span><i class="bi bi-book"></i> Tối đa <strong>5 cuốn</strong> / độc giả</span>
+        <span><i class="bi bi-calendar-check"></i> Hạn mượn mặc định <strong>14 ngày</strong></span>
+        <span><i class="bi bi-shield-check"></i> Thẻ đang hoạt động và không có phiếu quá hạn</span>
+      </div>
+    </div>
+
+    <!-- 2. TRẠNG THÁI MỚI MỞ TRANG (KHÔNG CÒN TRỐNG TRẢI) -->
+    <div class="idle-grid" id="idlePanels">
+
+      <!-- Cột trái: Độc giả đang đặt giữ online chờ đến nhận -->
+      <div class="card-box" style="margin-bottom:0;">
+        <div class="panel-head">
+          <h2 class="panel-title">Độc giả đặt giữ sách chờ nhận</h2>
+          <span class="panel-count">2 độc giả</span>
+        </div>
+
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Độc giả</th>
+              <th>Sách đang giữ</th>
+              <th>Hạn giữ</th>
+              <th style="text-align:right;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Nguyễn Văn An</strong>
+                <div class="sub-txt">DG000001 · 0901234567</div>
+              </td>
+              <td>
+                <span class="badge-soft badge-hold">2 cuốn</span>
+                <div class="sub-txt">Tâm Lý Học Về Tiền, Đại Việt Sử Ký...</div>
+              </td>
+              <td>25/11/2026</td>
+              <td style="text-align:right;">
+                <button type="button" class="btn-lib btn-lib-primary btn-lib-sm" onclick="pickReader('DG000001')">Chọn</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Trần Thị Bình</strong>
+                <div class="sub-txt">DG000002 · 0912345678</div>
+              </td>
+              <td>
+                <span class="badge-soft badge-hold">1 cuốn</span>
+                <div class="sub-txt">Clean Code - Mã Sạch</div>
+              </td>
+              <td>24/11/2026</td>
+              <td style="text-align:right;">
+                <button type="button" class="btn-lib btn-lib-primary btn-lib-sm" onclick="pickReader('DG000002')">Chọn</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Cột phải: Phiếu mượn vừa lập gần đây -->
+      <div class="card-box" style="margin-bottom:0;">
+        <div class="panel-head">
+          <h2 class="panel-title">Phiếu mượn gần đây</h2>
+          <a href="#" style="font-size:0.82rem; color:var(--lib-primary); text-decoration:none; font-weight:600;" onclick="return false;">Xem tất cả</a>
+        </div>
+
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Mã phiếu</th>
+              <th>Độc giả</th>
+              <th>Số cuốn</th>
+              <th>Hạn trả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PM000009</strong></td>
+              <td>
+                Phạm Quốc Dũng
+                <div class="sub-txt">DG000004</div>
+              </td>
+              <td>3 cuốn</td>
+              <td>07/12/2026</td>
+            </tr>
+            <tr>
+              <td><strong>PM000008</strong></td>
+              <td>
+                Lê Minh Châu
+                <div class="sub-txt">DG000003</div>
+              </td>
+              <td>2 cuốn</td>
+              <td>05/12/2026</td>
+            </tr>
+            <tr>
+              <td><strong>PM000007</strong></td>
+              <td>
+                Hoàng Thị Em
+                <div class="sub-txt">DG000005</div>
+              </td>
+              <td>1 cuốn</td>
+              <td>04/12/2026</td>
+            </tr>
+            <tr>
+              <td><strong>PM000006</strong></td>
+              <td>
+                Võ Minh Khang
+                <div class="sub-txt">DG000006</div>
+              </td>
+              <td>2 cuốn</td>
+              <td>01/12/2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. TRẠNG THÁI SAU KHI ĐÃ KIỂM TRA ĐỘC GIẢ -->
+    <div class="borrower-area" id="borrowerArea">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-ico ico-navy"><i class="bi bi-person"></i></div>
+          <div>
+            <div class="stat-main" id="rName">Nguyễn Văn An</div>
+            <div class="sub-txt" id="rCard">DG000001 · xem hồ sơ</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ico ico-gold"><i class="bi bi-book"></i></div>
+          <div>
+            <div class="stat-main">0 / 5</div>
+            <div class="sub-txt" id="rHoldNote">Đang mượn (đang giữ 2 cuốn)</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ico ico-green"><i class="bi bi-alarm"></i></div>
+          <div>
+            <div class="stat-main">0</div>
+            <div class="sub-txt">Phiếu quá hạn</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ico ico-green"><i class="bi bi-credit-card"></i></div>
+          <div>
+            <div class="stat-main">21/11/2027</div>
+            <div class="sub-txt">Hạn thẻ · <span style="color:#198754;font-weight:600;">Hoạt động</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-box">
+        <div class="hold-banner" id="rHoldBanner">
+          Thư viện đang giữ <strong>2 cuốn</strong> cho độc giả này (đặt giữ online), đã được chọn sẵn bên dưới.
+        </div>
+        <p style="margin:0; color:var(--lib-muted); font-size:0.88rem;">
+          (Danh sách chọn sách &amp; nút <strong>Lập phiếu</strong> hiện ra ở đây như trang hiện tại — bấm <strong>Đổi độc giả</strong> ở góc trên phải để quay lại màn hình ban đầu.)
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const READERS = {
+      DG000001: { name: "Nguyễn Văn An", held: 2 },
+      DG000002: { name: "Trần Thị Bình", held: 1 }
+    };
+
+    function pickReader(code) {
+      document.getElementById("cardInput").value = code;
+      showBorrower(code);
+    }
+
+    function handleCheck(e) {
+      e.preventDefault();
+      const raw = document.getElementById("cardInput").value.trim().toUpperCase();
+      if (!raw) {
+        alert("Vui lòng nhập mã thẻ (ví dụ DG000001) hoặc bấm Chọn ở bảng bên dưới.");
+        return;
+      }
+      showBorrower(READERS[raw] ? raw : "DG000001");
+    }
+
+    function showBorrower(code) {
+      const r = READERS[code] || { name: "Độc giả " + code, held: 0 };
+      document.getElementById("rName").textContent = r.name;
+      document.getElementById("rCard").textContent = `${code} · xem hồ sơ`;
+      document.getElementById("rHoldNote").textContent = r.held > 0
+        ? `Đang mượn (đang giữ ${r.held} cuốn)`
+        : "Đang mượn (còn được mượn 5)";
+      document.getElementById("rHoldBanner").style.display = r.held > 0 ? "block" : "none";
+      document.getElementById("rHoldBanner").innerHTML =
+        `Thư viện đang giữ <strong>${r.held} cuốn</strong> cho độc giả này (đặt giữ online), đã được chọn sẵn bên dưới.`;
+
+      document.getElementById("idlePanels").style.display = "none";
+      document.getElementById("borrowerArea").classList.add("active");
+      document.getElementById("backIdleBtn").style.display = "inline-flex";
+    }
+
+    function resetToIdle() {
+      document.getElementById("cardInput").value = "";
+      document.getElementById("idlePanels").style.display = "grid";
+      document.getElementById("borrowerArea").classList.remove("active");
+      document.getElementById("backIdleBtn").style.display = "none";
+    }
+  </script>
+</body>
+</html>

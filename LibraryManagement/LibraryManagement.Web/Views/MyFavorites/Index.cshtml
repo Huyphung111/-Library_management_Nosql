@@ -1,0 +1,88 @@
+@* Trang "Sách yêu thích" của Độc giả (thiết kế: Antigravity/favorites-preview.html).
+   Nút Đặt giữ / Đặt trước mở hộp xác nhận (a[data-reserve]); nút Xóa bỏ yêu thích tại chỗ (data-fav-toggle).
+   Cả hai do wwwroot/js/reader.js xử lý; không có JS thì link Đặt giữ vẫn mở trang xác nhận. *@
+@model List<LibraryManagement.Web.ViewModels.Favorites.FavoriteBookVM>
+@using LibraryManagement.Web.Models
+@{
+    ViewData["Title"] = "Sách yêu thích";
+    ViewData["HidePageHeader"] = true;   // tiêu đề căn giữa riêng của trang
+}
+
+<div class="fav-page-head">
+    <h1 class="fav-page-title"><i class="bi bi-heart-fill"></i> Sách yêu thích</h1>
+    <div class="fav-page-sub" id="favSubText">Bạn có <strong>@Model.Count</strong> cuốn sách yêu thích</div>
+</div>
+
+<div class="fav-empty @(Model.Count == 0 ? "" : "d-none")" id="favEmpty">
+    <i class="bi bi-heart"></i>
+    <strong>Bạn chưa có cuốn sách yêu thích nào.</strong>
+    <div class="mt-1" style="font-size: 0.86rem;">Hãy rê chuột vào thẻ sách ở Trang chủ và bấm nút trái tim để lưu sách muốn đọc sau.</div>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary mt-3">Khám phá kho sách</a>
+</div>
+
+@if (Model.Count > 0)
+{
+    <div class="books-grid-4" id="favGrid">
+        @foreach (var b in Model)
+        {
+            var inStock = b.AvailableQuantity > 0;
+            <article class="book-card-fav" data-fav-card="@b.BookId">
+                <a class="book-cover-box" asp-controller="Catalog" asp-action="Details" asp-route-id="@b.BookId">
+                    @if (!string.IsNullOrEmpty(b.CoverImageId))
+                    {
+                        <img src="/Covers/@b.CoverImageId" alt="@b.Title" loading="lazy" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-book-half cover-empty"></i>
+                    }
+                    <span class="stock-pill @(inStock ? "in" : "out")">@(inStock ? $"Còn {b.AvailableQuantity} cuốn" : "Hết sách")</span>
+                </a>
+                <div class="book-card-body">
+                    <div class="book-card-cat">@b.FirstCategory</div>
+                    <h3 class="book-card-title" title="@b.Title">
+                        <a asp-controller="Catalog" asp-action="Details" asp-route-id="@b.BookId">@b.Title</a>
+                    </h3>
+                    <div class="book-card-author">@b.Authors</div>
+                    <div class="fav-card-actions">
+                        @if (b.ActiveReservation is ReservationStatus status)
+                        {
+                            @* Đã có yêu cầu còn hiệu lực (QĐ08): không đặt thêm, dẫn tới trang theo dõi *@
+                            <a class="btn-pill btn-pill-done" asp-controller="MyReservations" asp-action="Index"
+                               title="Xem trong mục Đặt trước của tôi">
+                                <i class="bi bi-check2-circle"></i> @(status == ReservationStatus.Held ? "Đang giữ cho bạn" : "Đã đặt trước")
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn-pill @(inStock ? "btn-pill-hold" : "btn-pill-reserve")" data-reserve
+                               asp-controller="MyReservations" asp-action="Create" asp-route-bookId="@b.BookId">
+                                <i class="bi @(inStock ? "bi-bookmark-check" : "bi-bookmark-plus")"></i> @(inStock ? "Đặt giữ" : "Đặt trước")
+                            </a>
+                        }
+                        <button type="button" class="btn-pill btn-pill-remove" data-fav-toggle aria-pressed="true"
+                                data-book-id="@b.BookId" data-book-title="@b.Title">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Bỏ yêu thích ngay trên trang: gỡ thẻ sách, cập nhật số lượng, hết sách thì hiện ô trống
+        document.addEventListener("fav:changed", e => {
+            if (e.detail.favorite) return;
+            document.querySelector(`[data-fav-card="${CSS.escape(e.detail.bookId)}"]`)?.remove();
+            const left = document.querySelectorAll("[data-fav-card]").length;
+            document.getElementById("favSubText").innerHTML = `Bạn có <strong>${left}</strong> cuốn sách yêu thích`;
+            if (left === 0) {
+                document.getElementById("favGrid")?.remove();
+                document.getElementById("favEmpty").classList.remove("d-none");
+            }
+        });
+    </script>
+}

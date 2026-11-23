@@ -121,6 +121,79 @@ public class LoanService
         });
     }
 
+    // UC07 bước 1 (tab "Danh sách độc giả"): mọi độc giả kèm số đang mượn, sách đang giữ và tình trạng.
+    // 3 truy vấn gộp (đang mượn, quá hạn, đặt giữ) thay vì kiểm tra từng độc giả.
+    public async Task<List<ReaderBoardRowVM>> GetReaderBoardAsync()
+    {
+        await _reservations.Value.ExpireHoldsAsync();   // trả về kho các bản giữ quá hạn trước khi đếm
+        var readers = await _db.Readers.Find(_ => true).ToListAsync();
+
+        // Số cuốn chưa trả theo độc giả: $match → $unwind items → $match chưa trả → $group
+        var borrowing = (await _db.Loans.Aggregate<BsonDocument>(new[]
+        {
+            new BsonDocument("$match", new BsonDocument("status", LoanStatus.Borrowing.ToString())),
+            new BsonDocument("$unwind", "$items"),
+            new BsonDocument("$match", new BsonDocument("items.returnDate", BsonNull.Value)),
+            new BsonDocument("$group", new BsonDocument { { "_id", "$reader.readerId" }, { "n", new BsonDocument("$sum", 1) } })
+        }).ToListAsync()).ToDictionary(d => d["_id"].ToString()!, d => d["n"].ToInt32());
+
+        // Độc giả có phiếu quá hạn
+        var overdue = (await _db.Loans.Find(l => l.Status == LoanStatus.Borrowing && l.DueDate < DateHelper.StartOfTodayVnUtc())
+            .Project(l => l.Reader.ReaderId).ToListAsync()).ToHashSet();
+
+        // Sách đang giữ: số cuốn và hạn nhận sớm nhất theo độc giả
+        var holds = (await _db.Reservations.Find(r => r.Status == ReservationStatus.Held).ToListAsync())
+            .GroupBy(r => r.ReaderId)
+            .ToDictionary(g => g.Key, g => (Count: g.Count(), Until: g.Min(r => r.HoldUntil)));
+
+        return readers.Select(r =>
+            {
+                var n = borrowing.GetValueOrDefault(r.Id!);
+                var hold = holds.GetValueOrDefault(r.Id!);
+                var state = r.CardStatus == CardStatus.Locked ? BoardReaderState.Locked
+                    : r.IsExpired ? BoardReaderState.Expired
+                    : overdue.Contains(r.Id!) ? BoardReaderState.Overdue
+                    : n >= _rules.MaxBooksPerReader ? BoardReaderState.Full
+                    : BoardReaderState.Active;
+                return new ReaderBoardRowVM
+                {
+                    CardNumber = r.CardNumber,
+                    FullName = r.FullName,
+                    Phone = r.Phone,
+                    BorrowingBooks = n,
+                    MaxBooks = _rules.MaxBooksPerReader,
+                    HeldCount = hold.Count,
+                    EarliestHoldUntil = hold.Until,
+                    State = state
+                };
+            })
+            .OrderBy(x => x.Rank)
+            .ThenByDescending(x => x.Rank == 0 ? x.HeldCount : 0)
+            .ThenBy(x => x.CardNumber)
+            .ToList();
+    }
+
+    // UC07 (tab "Phiếu mượn gần đây"): các phiếu mới lập nhất.
+    public async Task<List<RecentLoanVM>> GetRecentLoansAsync(int limit = 50)
+    {
+        var loans = await _db.Loans.Find(_ => true)
+            .SortByDescending(l => l.BorrowDate).ThenByDescending(l => l.LoanCode)
+            .Limit(limit)
+            .ToListAsync();
+
+        return loans.Select(l => new RecentLoanVM
+        {
+            Id = l.Id!,
+            LoanCode = l.LoanCode,
+            CardNumber = l.Reader.CardNumber,
+            ReaderName = l.Reader.FullName,
+            Titles = l.Items.Select(i => i.Title).ToList(),
+            BorrowDate = l.BorrowDate,
+            DueDate = l.DueDate,
+            Status = l.Status == LoanStatus.Returned ? "returned" : l.IsOverdue ? "overdue" : "borrowing"
+        }).ToList();
+    }
+
     // UC07 bước 4: danh sách đầu sách để chọn (kèm số còn lại).
     public async Task<List<BookOptionVM>> GetBookOptionsAsync()
     {
@@ -150,10 +223,14 @@ public class LoanService
         if (ids.Count == 0)
             return ServiceResult<Loan>.Fail("Vui lòng chọn ít nhất một sách.", nameof(CreateLoanVM.BookIds));
 
-        // Bước 5b (QĐ02)
-        if (borrower.BorrowingBooks + ids.Count > _rules.MaxBooksPerReader)
-            return ServiceResult<Loan>.Fail(
-                $"Độc giả đang mượn {borrower.BorrowingBooks} cuốn, chỉ còn được mượn thêm {borrower.Remaining} cuốn (tối đa {_rules.MaxBooksPerReader}).",
+        // Bước 5b (QĐ02). Sách thư viện đang giữ cho độc giả mà lần này KHÔNG mượn vẫn chiếm kho,
+        // nên tính vào giới hạn: tránh bỏ tick sách đang giữ rồi chọn sách khác để vượt tổng MaxBooksPerReader.
+        var unpickedHeld = borrower.HeldBookIds.Count(h => !ids.Contains(h));
+        if (borrower.BorrowingBooks + ids.Count + unpickedHeld > _rules.MaxBooksPerReader)
+            return ServiceResult<Loan>.Fail(unpickedHeld == 0
+                ? $"Độc giả đang mượn {borrower.BorrowingBooks} cuốn, chỉ còn được mượn thêm {borrower.Remaining} cuốn (tối đa {_rules.MaxBooksPerReader})."
+                : $"Độc giả đang mượn {borrower.BorrowingBooks} cuốn và thư viện đang giữ {unpickedHeld} cuốn khác chưa nhận, " +
+                  $"tổng không quá {_rules.MaxBooksPerReader} cuốn. Hãy bỏ bớt sách, chọn sách đang giữ hoặc hủy đặt giữ trước.",
                 nameof(CreateLoanVM.BookIds));
 
         // Bước 7a

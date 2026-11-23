@@ -47,8 +47,17 @@ public class MyReservationsController : Controller
         if (vm == null)
             return NotFound();
 
+        // Mở từ nút Đặt giữ / Đặt trước (wwwroot/js/reader.js): chỉ trả nội dung hộp xác nhận, không chuyển trang
+        if (IsAjax)
+        {
+            ViewData["InModal"] = true;
+            return PartialView("_ConfirmBox", vm);
+        }
+
         return View(vm);
     }
+
+    private bool IsAjax => Request.Headers.XRequestedWith == "XMLHttpRequest";
 
     /// <summary>
     /// Thực hiện gửi yêu cầu đặt trước sách (UC16 bước 4, 5).
@@ -62,6 +71,16 @@ public class MyReservationsController : Controller
             return Forbid();
 
         var result = await _reservations.CreateAsync(readerId, bookId);
+
+        // Gửi từ hộp xác nhận: lỗi hiện ngay trong hộp; thành công thì trang tự tải lại và hiện thông báo
+        if (IsAjax)
+        {
+            if (!result.Success)
+                return BadRequest(new { success = false, message = result.Message });
+            TempData["Success"] = result.Message;
+            return Json(new { success = true, message = result.Message });
+        }
+
         if (!result.Success)
         {
             TempData["Error"] = result.Message;

@@ -26,4 +26,7 @@ public class BookShowcaseVM
 
     /// <summary>Từ khóa có sẵn khi mở trang (ví dụ /Catalog?search=abc).</summary>
     public string? InitialSearch { get; init; }
+
+    /// <summary>Id sách yêu thích của độc giả (tô đỏ nút trái tim trên thẻ sách). Khách: rỗng.</summary>
+    public HashSet<string> FavoriteBookIds { get; init; } = new();
 }

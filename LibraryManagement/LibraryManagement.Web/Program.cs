@@ -28,6 +28,7 @@ builder.Services.AddScoped<LoanService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ReservationService>();
+builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<ReportService>();
 // LoanService và ReservationService gọi lẫn nhau: LoanService nhận Lazy<ReservationService> để tránh vòng phụ thuộc.

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xem trước Header (SĐT & Giờ mở cửa) - Thư viện HUIT</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="../wwwroot/css/landing.css" />
+  <link rel="stylesheet" href="../wwwroot/css/showcase.css" />
+  <style>
+    /* ======================================================================
+       3 PHƯƠNG ÁN ĐƯA SĐT & GIỜ MỞ CỬA LÊN CÙNG HEADER (#0f2a47)
+       ====================================================================== */
+
+    /* Khi đã đưa SĐT & Giờ lên header, bỏ thanh trắng pub-subbar thừa,
+       đặt tiêu đề "DANH MỤC SÁCH" gọn ngay đầu cột trái */
+    .cat-box-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      color: var(--lib-primary);
+      padding: 11px 14px;
+      background: #f0f3f8;
+      border-bottom: 1px solid var(--lib-border);
+      border-left: 3px solid var(--lib-accent);
+      border-radius: var(--lib-radius) var(--lib-radius) 0 0;
+    }
+
+    .pub-cat-list {
+      padding-top: 0;
+      overflow: hidden;
+    }
+
+    /* ---------- PHƯƠNG ÁN 1: 1 HÀNG GỌN NGAY TRONG HEADER ---------- */
+    .hdr-opt1 .pub-header-inner {
+      gap: 18px;
+    }
+    .hdr-opt1 .pub-search {
+      max-width: 440px;
+    }
+    .hdr-info-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.8rem;
+      line-height: 1.25;
+      color: #dbe5f1;
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
+      padding-left: 16px;
+      flex-shrink: 0;
+    }
+    .hdr-info-stack .hdr-info-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .hdr-info-stack i {
+      color: var(--lib-accent);
+      font-size: 0.85rem;
+    }
+    .hdr-info-stack strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ---------- PHƯƠNG ÁN 2: THANH TIỆN ÍCH MỎNG TRÊN ĐẦU HEADER ---------- */
+    .hdr-topbar {
+      background: #091d33;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.78rem;
+      color: #cfdbe9;
+      padding: 5px 0;
+    }
+    .hdr-topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .hdr-topbar-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .hdr-topbar-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .hdr-topbar-item i {
+      color: var(--lib-accent);
+    }
+    .hdr-topbar-item strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ---------- PHƯƠNG ÁN 3: SĐT & GIỜ NẰM TRÊN Ô TÌM KIẾM TRONG HEADER ---------- */
+    .hdr-center-stack {
+      flex: 1;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .hdr-center-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: #d4e0ee;
+      padding: 0 2px;
+    }
+    .hdr-center-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .hdr-center-meta i {
+      color: var(--lib-accent);
+    }
+    .hdr-center-meta strong {
+      color: #fff;
+    }
+    .hdr-opt3 .pub-header {
+      padding: 10px 0 12px;
+    }
+    .hdr-opt3 .pub-search {
+      max-width: 100%;
+    }
+
+    /* Ẩn/hiện theo phương án đang chọn */
+    .header-variant { display: none; }
+    .header-variant.active { display: block; }
+
+    /* Thanh nổi nhỏ góc dưới phải để chuyển nhanh 3 phương án */
+    .preview-switcher {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2000;
+      background: #0f2a47;
+      color: #fff;
+      border: 1px solid rgba(200, 150, 62, 0.55);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+    .preview-switcher-title {
+      font-weight: 700;
+      color: #f4c66c;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .preview-switcher-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .preview-switcher button {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .preview-switcher button.active {
+      background: var(--lib-accent);
+      border-color: var(--lib-accent);
+      color: #fff;
+    }
+
+    @media (max-width: 960px) {
+      .hdr-info-stack,
+      .hdr-topbar-addr,
+      .hdr-center-meta {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PHƯƠNG ÁN 1: 1 HÀNG GỌN TRONG HEADER ==================== -->
+  <div class="header-variant hdr-opt1 active" id="opt-1">
+    <header class="pub-header">
+      <div class="pub-container pub-header-inner">
+        <a href="#" class="pub-brand">
+          <img src="../wwwroot/images/huit-library-brand.jpg" alt="Thư viện HUIT" class="pub-brand-img" />
+        </a>
+
+        <form class="pub-search" onsubmit="return false;">
+          <input type="text" placeholder="Tìm theo tên sách hoặc tác giả..." autocomplete="off" />
+          <button type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+        </form>
+
+        <div class="hdr-info-stack">
+          <div class="hdr-info-line">
+            <i class="bi bi-clock-fill"></i>
+            <span>07:30 – 20:00 (T2 – T7)</span>
+          </div>
+          <div class="hdr-info-line">
+            <i class="bi bi-telephone-fill"></i>
+            <strong>028 3816 1673 - 137</strong>
+          </div>
+        </div>
+
+        <a href="#login" class="pub-login-btn" onclick="alert('Chuyển sang /Account/Login'); return false;">
+          Đăng nhập
+        </a>
+      </div>
+    </header>
+  </div>
+
+  <!-- ==================== PHƯƠNG ÁN 2: THANH TIỆN ÍCH MỎNG TRÊN ĐẦU HEADER ==================== -->
+  <div class="header-variant hdr-opt2" id="opt-2">
+    <div style="position: sticky; top: 0; z-index: 1000;">
+      <div class="hdr-topbar">
+        <div class="pub-container hdr-topbar-inner">
+          <div class="hdr-topbar-item hdr-topbar-addr">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>140 Lê Trọng Tấn, Tân Phú, TP. Hồ Chí Minh</span>
+          </div>
+          <div class="hdr-topbar-group">
+            <div class="hdr-topbar-item">
+              <i class="bi bi-clock-fill"></i>
+              <span>Giờ mở cửa: <strong>07:30 – 20:00 (T2 – T7)</strong></span>
+            </div>
+            <div class="hdr-topbar-item">
+              <i class="bi bi-telephone-fill"></i>
+              <span>Hotline: <strong>028 3816 1673 - 137</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <header class="pub-header" style="position: static;">
+        <div class="pub-container pub-header-inner">
+          <a href="#" class="pub-brand">
+            <img src="../wwwroot/images/huit-library-brand.jpg" alt="Thư viện HUIT" class="pub-brand-img" />
+          </a>
+
+          <form class="pub-search" onsubmit="return false;">
+            <input type="text" placeholder="Tìm theo tên sách hoặc tác giả..." autocomplete="off" />
+            <button type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+          </form>
+
+          <a href="#login" class="pub-login-btn" onclick="alert('Chuyển sang /Account/Login'); return false;">
+            Đăng nhập
+          </a>
+        </div>
+      </header>
+    </div>
+  </div>
+
+  <!-- ==================== PHƯƠNG ÁN 3: SĐT & GIỜ NẰM TRÊN Ô TÌM KIẾM ==================== -->
+  <div class="header-variant hdr-opt3" id="opt-3">
+    <header class="pub-header">
+      <div class="pub-container pub-header-inner">
+        <a href="#" class="pub-brand">
+          <img src="../wwwroot/images/huit-library-brand.jpg" alt="Thư viện HUIT" class="pub-brand-img" />
+        </a>
+
+        <div class="hdr-center-stack">
+          <div class="hdr-center-meta">
+            <span><i class="bi bi-clock-fill"></i> Giờ mở cửa: <strong>07:30 – 20:00 (T2 – T7)</strong></span>
+            <span><i class="bi bi-telephone-fill"></i> Hotline: <strong>028 3816 1673 - 137</strong></span>
+          </div>
+          <form class="pub-search" onsubmit="return false;">
+            <input type="text" placeholder="Tìm theo tên sách hoặc tác giả..." autocomplete="off" />
+            <button type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+          </form>
+        </div>
+
+        <a href="#login" class="pub-login-btn" onclick="alert('Chuyển sang /Account/Login'); return false;">
+          Đăng nhập
+        </a>
+      </div>
+    </header>
+  </div>
+
+  <!-- ==================== PHẦN NỘI DUNG TRANG CHỦ GIỐNG BẢN THẬT ==================== -->
+  <main class="pub-container">
+    <section class="pub-hero">
+      <aside class="pub-cat-list">
+        <div class="cat-box-head"><i class="bi bi-list"></i> DANH MỤC SÁCH</div>
+        <button class="pub-cat-item active">Tất cả thể loại</button>
+        <button class="pub-cat-item">Công nghệ thông tin</button>
+        <button class="pub-cat-item">Khoa học tự nhiên</button>
+        <button class="pub-cat-item">Kinh tế &amp; Quản trị</button>
+        <button class="pub-cat-item">Kỹ năng sống</button>
+        <button class="pub-cat-item">Lịch sử &amp; Triết học</button>
+        <button class="pub-cat-item">Văn học</button>
+      </aside>
+
+      <div class="pub-banner">
+        <div class="pub-slide slide-3 active">
+          <div>
+            <div class="slide-tag"><i class="bi bi-award"></i> Tủ sách kinh điển</div>
+            <h1 class="slide-title">Văn học &amp; Khoa học — <span>Mượn tối đa 14 ngày</span></h1>
+            <p class="slide-desc">
+              Mỗi độc giả được mượn cùng lúc đến 5 cuốn và hỗ trợ gia hạn trực tuyến thêm 7 ngày mỗi lần (tối đa 2 lần).
+            </p>
+            <a href="#books" class="slide-cta"><i class="bi bi-collection"></i> Xem tủ sách Văn học</a>
+          </div>
+          <div class="slide-books">
+            <img src="BookCovers/ong-gia-va-bien-ca.jpg" alt="Ông Già và Biển Cả" />
+            <img src="BookCovers/hoang-tu-be.jpg" alt="Hoàng Tử Bé" />
+            <img src="BookCovers/toi-thay-hoa-vang-tren-co-xanh.jpg" alt="Tôi Thấy Hoa Vàng Trên Cỏ Xanh" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pub-section" id="books">
+      <div class="section-bar">
+        <div class="section-ribbon"><i class="bi bi-book-fill"></i> Sách Mới</div>
+      </div>
+
+      <div class="pub-book-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+        <article class="pub-book-card">
+          <div class="pub-book-cover">
+            <img src="../Data/SeedCovers/ban-ve-tu-do.jpg" alt="Bàn Về Tự Do" />
+            <span class="pub-book-badge in">Còn 2 cuốn</span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">Lịch sử &amp; Triết học</div>
+            <h3 class="pub-book-title">Bàn Về Tự Do</h3>
+            <div class="pub-book-author">John Stuart Mill</div>
+          </div>
+        </article>
+
+        <article class="pub-book-card">
+          <div class="pub-book-cover">
+            <img src="../Data/SeedCovers/dai-viet-su-ky-toan-thu.jpg" alt="Đại Việt Sử Ký Toàn Thư" />
+            <span class="pub-book-badge in">Còn 2 cuốn</span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">Lịch sử &amp; Triết học</div>
+            <h3 class="pub-book-title">Đại Việt Sử Ký Toàn Thư</h3>
+            <div class="pub-book-author">Ngô Sĩ Liên</div>
+          </div>
+        </article>
+
+        <article class="pub-book-card">
+          <div class="pub-book-cover">
+            <img src="../Data/SeedCovers/homo-deus-luoc-su-tuong-lai.jpg" alt="Homo Deus" />
+            <span class="pub-book-badge in">Còn 3 cuốn</span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">Lịch sử &amp; Triết học</div>
+            <h3 class="pub-book-title">Homo Deus - Lược Sử Tương Lai</h3>
+            <div class="pub-book-author">Yuval Noah Harari</div>
+          </div>
+        </article>
+
+        <article class="pub-book-card">
+          <div class="pub-book-cover">
+            <img src="../Data/SeedCovers/sapiens-luoc-su-loai-nguoi.jpg" alt="Sapiens" />
+            <span class="pub-book-badge in">Còn 3 cuốn</span>
+          </div>
+          <div class="pub-book-body">
+            <div class="pub-book-cat">Lịch sử &amp; Triết học</div>
+            <h3 class="pub-book-title">Sapiens - Lược Sử Loài Người</h3>
+            <div class="pub-book-author">Yuval Noah Harari</div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- BỘ CHUYỂN 3 PHƯƠNG ÁN ĐỂ SO SÁNH TRỰC TIẾP -->
+  <div class="preview-switcher">
+    <div class="preview-switcher-title">Chọn kiểu Header để xem thử</div>
+    <div class="preview-switcher-btns">
+      <button type="button" class="active" onclick="setOpt(1, this)">1. Cùng 1 hàng (Gọn)</button>
+      <button type="button" onclick="setOpt(2, this)">2. Thanh mỏng trên đầu</button>
+      <button type="button" onclick="setOpt(3, this)">3. Trên ô tìm kiếm</button>
+    </div>
+  </div>
+
+  <script>
+    function setOpt(n, btn) {
+      document.querySelectorAll(".header-variant").forEach(el => el.classList.remove("active"));
+      document.getElementById("opt-" + n).classList.add("active");
+      document.querySelectorAll(".preview-switcher button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+  </script>
+</body>
+</html>

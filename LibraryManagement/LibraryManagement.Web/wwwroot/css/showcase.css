@@ -25,9 +25,25 @@
   border: 1px solid var(--lib-border);
   border-radius: var(--lib-radius);
   box-shadow: var(--lib-shadow);
-  padding: 6px 0;
+  padding: 0 0 6px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Tiêu đề "≡ DANH MỤC SÁCH" ở đầu cột danh mục (các mục bên dưới do JS vẽ vào #categoryList) */
+.cat-box-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  color: var(--lib-primary);
+  padding: 11px 14px;
+  background: #f0f3f8;
+  border-bottom: 1px solid var(--lib-border);
+  border-left: 3px solid var(--lib-accent);
 }
 
 .pub-cat-item {
@@ -104,6 +120,21 @@
 
 .pub-slide.slide-3 {
   background: linear-gradient(125deg, #13253d 0%, #1e3a5f 50%, #2d5f5d 100%);
+}
+
+/* Slide 4: ảnh banner phủ kín khung, không padding/lưới chữ */
+.pub-slide.slide-4 {
+  display: block;
+  padding: 0;
+  background: #4fb6ea;
+}
+
+.pub-slide.slide-4 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .slide-tag {

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xem trước tính năng Sách yêu thích - Thư viện HUIT</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="../wwwroot/css/showcase.css" />
+  <style>
+    :root {
+      --lib-primary: #1e3a5f;
+      --lib-primary-dark: #0f2a47;
+      --lib-accent: #c8963e;
+      --lib-bg: #f5f6fa;
+      --lib-surface: #ffffff;
+      --lib-border: #e3e6ee;
+      --lib-text: #1f2a37;
+      --lib-muted: #6b7280;
+      --lib-radius: 10px;
+      --lib-shadow: 0 2px 10px rgba(17, 24, 39, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      font-size: 15px;
+      background: var(--lib-bg);
+      color: var(--lib-text);
+    }
+
+    /* ===== HEADER ĐỘC GIẢ GIỐNG BẢN HIỆN TẠI ===== */
+    .reader-header {
+      position: sticky;
+      top: 0;
+      z-index: 1050;
+      height: 64px;
+      background: var(--lib-primary-dark);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px;
+      box-shadow: 0 2px 8px rgba(15, 29, 48, 0.18);
+    }
+
+    .reader-brand {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .reader-brand img {
+      height: 46px;
+      width: auto;
+      display: block;
+    }
+
+    .reader-search {
+      flex: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .reader-search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 8px 14px;
+      font-size: 0.92rem;
+    }
+    .reader-search button {
+      border: none;
+      background: transparent;
+      color: var(--lib-text);
+      padding: 0 12px;
+      font-size: 1.05rem;
+      cursor: pointer;
+    }
+
+    /* Menu tài khoản Độc giả (Ảnh 1 + Ảnh 3) */
+    .user-menu-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .reader-user-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .reader-user-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    .reader-user-btn .role-txt { font-weight: 400; font-size: 0.82rem; color: #cfdbe9; }
+
+    .user-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 235px;
+      background: #fff;
+      border: 1px solid var(--lib-border);
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(15, 29, 48, 0.18);
+      padding: 6px;
+      display: none;
+    }
+    .user-dropdown.open { display: block; }
+
+    .dd-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      color: var(--lib-text);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .dd-item:hover { background: #f2f5fa; color: var(--lib-primary); }
+
+    /* Mục "Danh sách yêu thích (N)" nổi bật trong dropdown (giống Ảnh 3, đổi sang Navy) */
+    .dd-item.dd-fav {
+      background: var(--lib-primary);
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .dd-item.dd-fav:hover {
+      background: var(--lib-primary-dark);
+      color: #fff;
+    }
+    .dd-item.dd-fav i { color: #f6d591; }
+
+    .dd-divider {
+      height: 1px;
+      background: #eef1f6;
+      margin: 4px 6px;
+    }
+    .dd-item.dd-danger { color: #dc3545; }
+    .dd-item.dd-danger:hover { background: #fef2f2; color: #b91c1c; }
+
+    /* ===== LAYOUT NỘI DUNG ===== */
+    .page-wrap {
+      max-width: 1180px;
+      margin: 22px auto 48px;
+      padding: 0 16px;
+    }
+
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* ===== CARD SÁCH + NÚT TRÁI TIM KHI HOVER (Ảnh 2) ===== */
+    .books-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .book-card-fav {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--lib-border);
+      border-radius: var(--lib-radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--lib-shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .book-card-fav:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(30, 58, 95, 0.12);
+    }
+
+    .book-cover-box {
+      position: relative;
+      height: 245px;
+      background: #f1f4f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+    .book-cover-box img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+      transition: transform 0.25s ease;
+    }
+    .book-card-fav:hover .book-cover-box img {
+      transform: scale(1.03);
+    }
+
+    .stock-pill {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+    .stock-pill.in  { background: #e6f4ea; color: #137333; }
+    .stock-pill.out { background: #fce8e6; color: #c5221f; }
+
+    /* --- NÚT TRÁI TIM HIỆN KHI HOVER CARD + TOOLTIP MŨI TÊN (giống Ảnh 2) --- */
+    .fav-btn-wrap {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+    }
+
+    /* Khi chuột lướt tới card sách -> hiện nút trái tim */
+    .book-card-fav:hover .fav-btn-wrap,
+    .book-card-fav.is-fav .fav-btn-wrap {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .fav-circle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: var(--lib-primary);
+      color: #fff;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(15, 29, 48, 0.25);
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .fav-circle-btn:hover {
+      background: var(--lib-primary-dark);
+      transform: scale(1.08);
+    }
+    .book-card-fav.is-fav .fav-circle-btn {
+      background: #e11d48;
+      color: #fff;
+    }
+
+    /* Tooltip "Thêm vào yêu thích ▶" hiện khi hover vào nút trái tim */
+    .fav-tooltip {
+      position: absolute;
+      right: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%) translateX(4px);
+      background: #4b5563;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 11px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }
+    .fav-tooltip::after {
+      content: "";
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-left-color: #4b5563;
+    }
+    .fav-btn-wrap:hover .fav-tooltip {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    .book-card-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      text-align: center;
+    }
+    .book-card-cat {
+      font-size: 0.74rem;
+      color: #a67622;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .book-card-title {
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--lib-text);
+      margin: 0 0 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.7em;
+    }
+    .book-card-author {
+      font-size: 0.82rem;
+      color: var(--lib-muted);
+      margin-top: auto;
+    }
+
+    /* ===== TRANG "SÁCH YÊU THÍCH" (Ảnh 4) ===== */
+    .fav-page-head {
+      text-align: center;
+      margin: 10px 0 26px;
+    }
+    .fav-page-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--lib-primary);
+      margin: 0 0 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fav-page-title i { color: #e11d48; }
+    .fav-page-sub {
+      font-size: 0.92rem;
+      color: var(--lib-muted);
+    }
+
+    .fav-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #eef1f6;
+    }
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: none;
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .btn-pill:hover { filter: brightness(0.95); }
+    .btn-pill-hold {
+      background: #e8f1fb;
+      color: var(--lib-primary);
+    }
+    .btn-pill-reserve {
+      background: #fdf3dc;
+      color: #9a6700;
+    }
+    .btn-pill-remove {
+      background: #fce8e6;
+      color: #c5221f;
+    }
+
+    .fav-empty {
+      background: #fff;
+      border: 1px dashed #cfd6e2;
+      border-radius: 12px;
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--lib-muted);
+    }
+    .fav-empty i {
+      font-size: 2.8rem;
+      color: #cbd5e1;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .btn-explore {
+      margin-top: 14px;
+      background: var(--lib-primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 9px 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Toast thông báo góc dưới */
+    .toast-msg {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--lib-primary-dark);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 3000;
+    }
+    .toast-msg.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 960px) { .books-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .books-grid-4 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER ĐỘC GIẢ -->
+  <header class="reader-header">
+    <a href="#" class="reader-brand" onclick="showView('catalog'); return false;">
+      <img src="../wwwroot/images/huit-library-brand.jpg" alt="Thư viện HUIT" />
+    </a>
+
+    <form class="reader-search" onsubmit="return false;">
+      <input type="text" id="searchInput" placeholder="Tìm theo tên sách hoặc tác giả..." oninput="renderCatalog()" />
+      <button type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+    </form>
+
+    <!-- MENU NGƯỜI DÙNG (Ảnh 1 + thêm nút Danh sách yêu thích như Ảnh 3) -->
+    <div class="user-menu-wrap">
+      <button class="reader-user-btn" id="userBtn" type="button">
+        <i class="bi bi-person-circle" style="font-size: 1.25rem;"></i>
+        <span>Nguyễn Văn An</span>
+        <span class="role-txt">Độc giả</span>
+        <i class="bi bi-caret-down-fill" style="font-size: 0.65rem;"></i>
+      </button>
+
+      <div class="user-dropdown" id="userDropdown">
+        <button type="button" class="dd-item dd-fav" onclick="showView('favorites')">
+          <i class="bi bi-heart"></i>
+          <span>Danh sách yêu thích (<span id="ddFavCount">3</span>)</span>
+        </button>
+        <a href="#" class="dd-item" onclick="alert('Mở /Account/ChangePassword'); return false;">
+          <i class="bi bi-key"></i> Đổi mật khẩu
+        </a>
+        <div class="dd-divider"></div>
+        <a href="#" class="dd-item dd-danger" onclick="alert('Đăng xuất'); return false;">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-wrap">
+    <!-- ==================== VIEW 1: DANH MỤC SÁCH ==================== -->
+    <section class="view-section active" id="view-catalog">
+      <div class="books-grid-4" id="catalogGrid"></div>
+    </section>
+
+    <!-- ==================== VIEW 2: TRANG SÁCH YÊU THÍCH (Ảnh 4) ==================== -->
+    <section class="view-section" id="view-favorites">
+      <div class="fav-page-head">
+        <h1 class="fav-page-title"><i class="bi bi-heart-fill"></i> Sách yêu thích</h1>
+        <div class="fav-page-sub" id="favSubText">Bạn có <strong>3</strong> cuốn sách yêu thích</div>
+      </div>
+
+      <div id="favGridWrap"></div>
+    </section>
+  </main>
+
+  <div class="toast-msg" id="toastMsg"></div>
+
+  <script>
+    const BOOKS = [
+      { id: 1, title: "Clean Code - Mã Sạch", author: "Robert C. Martin", cat: "Công nghệ thông tin", avail: 3, img: "../Data/SeedCovers/clean-code-ma-sach.jpg" },
+      { id: 2, title: "Đắc Nhân Tâm", author: "Dale Carnegie", cat: "Kỹ năng sống", avail: 4, img: "../Data/SeedCovers/dac-nhan-tam.jpg" },
+      { id: 3, title: "Nhà Giả Kim", author: "Paulo Coelho", cat: "Văn học", avail: 4, img: "../Data/SeedCovers/nha-gia-kim.jpg" },
+      { id: 4, title: "Cơ Sở Dữ Liệu NoSQL & Phân Tích Dữ Liệu Lớn", author: "Pramod J. Sadalage", cat: "Công nghệ thông tin", avail: 0, img: "../Data/SeedCovers/co-so-du-lieu-nosql-phan-tich-du-lieu-lon.jpg" },
+      { id: 5, title: "Hoàng Tử Bé", author: "Antoine de Saint-Exupéry", cat: "Văn học", avail: 3, img: "BookCovers/hoang-tu-be.jpg" },
+      { id: 6, title: "Tái Cấu Trúc Mã Nguồn (Refactoring)", author: "Martin Fowler", cat: "Công nghệ thông tin", avail: 2, img: "BookCovers/tai-cau-truc-ma-nguon-refactoring.jpg" },
+      { id: 7, title: "Sapiens - Lược Sử Loài Người", author: "Yuval Noah Harari", cat: "Lịch sử & Triết học", avail: 3, img: "../Data/SeedCovers/sapiens-luoc-su-loai-nguoi.jpg" },
+      { id: 8, title: "Tâm Lý Học Về Tiền", author: "Morgan Housel", cat: "Kinh tế & Quản trị", avail: 0, img: "../Data/SeedCovers/tam-ly-hoc-ve-tien.jpg" }
+    ];
+
+    // Sẵn 3 cuốn yêu thích để xem ngay Trang Sách yêu thích
+    const favIds = new Set([1, 3, 5]);
+
+    const userBtn = document.getElementById("userBtn");
+    const userDropdown = document.getElementById("userDropdown");
+    userBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      userDropdown.classList.toggle("open");
+    });
+    document.addEventListener("click", () => userDropdown.classList.remove("open"));
+
+    let toastTimer;
+    function showToast(msg) {
+      const el = document.getElementById("toastMsg");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+    }
+
+    function updateCounts() {
+      document.getElementById("ddFavCount").textContent = favIds.size;
+      document.getElementById("favSubText").innerHTML = `Bạn có <strong>${favIds.size}</strong> cuốn sách yêu thích`;
+    }
+
+    function toggleFav(id, e) {
+      if (e) e.stopPropagation();
+      const b = BOOKS.find(x => x.id === id);
+      if (favIds.has(id)) {
+        favIds.delete(id);
+        showToast(`Đã xóa "${b.title}" khỏi danh sách yêu thích`);
+      } else {
+        favIds.add(id);
+        showToast(`Đã thêm "${b.title}" vào danh sách yêu thích`);
+      }
+      updateCounts();
+      renderCatalog();
+      renderFavorites();
+    }
+
+    function showView(view) {
+      userDropdown.classList.remove("open");
+      document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+      document.getElementById("view-" + view).classList.add("active");
+    }
+
+    function renderCatalog() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const list = BOOKS.filter(b => !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+      document.getElementById("catalogGrid").innerHTML = list.map(b => {
+        const isFav = favIds.has(b.id);
+        return `
+          <article class="book-card-fav ${isFav ? "is-fav" : ""}">
+            <div class="book-cover-box">
+              <img src="${b.img}" alt="${b.title}" />
+              <span class="stock-pill ${b.avail > 0 ? "in" : "out"}">
+                ${b.avail > 0 ? `Còn ${b.avail} cuốn` : "Hết sách"}
+              </span>
+              <div class="fav-btn-wrap">
+                <span class="fav-tooltip">${isFav ? "Bỏ yêu thích" : "Thêm vào yêu thích"}</span>
+                <button type="button" class="fav-circle-btn" onclick="toggleFav(${b.id}, event)" aria-label="Yêu thích">
+                  <i class="bi ${isFav ? "bi-heart-fill" : "bi-heart"}"></i>
+                </button>
+              </div>
+            </div>
+            <div class="book-card-body">
+              <div class="book-card-cat">${b.cat}</div>
+              <h3 class="book-card-title">${b.title}</h3>
+              <div class="book-card-author">${b.author}</div>
+            </div>
+          </article>`;
+      }).join("");
+    }
+
+    function renderFavorites() {
+      const wrap = document.getElementById("favGridWrap");
+      const list = BOOKS.filter(b => favIds.has(b.id));
+      if (list.length === 0) {
+        wrap.innerHTML = `
+          <div class="fav-empty">
+            <i class="bi bi-heart"></i>
+            <strong>Bạn chưa có cuốn sách yêu thích nào.</strong>
+            <div style="margin-top:4px;font-size:0.86rem;">Hãy rê chuột vào thẻ sách và bấm nút trái tim để lưu sách muốn đọc sau.</div>
+            <button type="button" class="btn-explore" onclick="showView('catalog')">Khám phá kho sách</button>
+          </div>`;
+        return;
+      }
+
+      wrap.innerHTML = `<div class="books-grid-4">` + list.map(b => `
+        <article class="book-card-fav">
+          <div class="book-cover-box">
+            <img src="${b.img}" alt="${b.title}" />
+            <span class="stock-pill ${b.avail > 0 ? "in" : "out"}">
+              ${b.avail > 0 ? `Còn ${b.avail} cuốn` : "Hết sách"}
+            </span>
+          </div>
+          <div class="book-card-body">
+            <div class="book-card-cat">${b.cat}</div>
+            <h3 class="book-card-title">${b.title}</h3>
+            <div class="book-card-author">${b.author}</div>
+            <div class="fav-card-actions">
+              <button type="button" class="btn-pill ${b.avail > 0 ? "btn-pill-hold" : "btn-pill-reserve"}"
+                      onclick="alert('${b.avail > 0 ? "Đi tới trang đặt giữ sách" : "Đi tới trang đặt trước sách"}: ${b.title}')">
+                <i class="bi ${b.avail > 0 ? "bi-bookmark-check" : "bi-bookmark-plus"}"></i>
+                ${b.avail > 0 ? "Đặt giữ" : "Đặt trước"}
+              </button>
+              <button type="button" class="btn-pill btn-pill-remove" onclick="toggleFav(${b.id}, event)">
+                <i class="bi bi-trash"></i> Xóa
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join("") + `</div>`;
+    }
+
+    updateCounts();
+    renderCatalog();
+    renderFavorites();
+  </script>
+</body>
+</html>

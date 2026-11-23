@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,22 +28,25 @@ public class CatalogController : Controller
     // GET: /Catalog — trang chủ độc giả theo thiết kế Antigravity (partial _BookShowcase), giữ menu bên trái của layout.
     // Tải toàn bộ sách một lần, lọc theo thể loại / từ khóa ngay trên trình duyệt; ?search= vẫn dùng được làm từ khóa ban đầu.
     [HttpGet]
-    public async Task<IActionResult> Index(string? search, [FromServices] IOptions<LibraryRules> rules)
+    public async Task<IActionResult> Index(string? search, [FromServices] IOptions<LibraryRules> rules,
+        [FromServices] FavoriteService favorites)
     {
+        var readerId = User.FindFirstValue("ReaderId");
         var vm = new BookShowcaseVM
         {
             Books = await _bookService.GetAllAsync(),
             Categories = await _categoryService.GetAllWithBookCountAsync(),
             Rules = rules.Value,
             IsGuest = false,
-            InitialSearch = search
+            InitialSearch = search,
+            FavoriteBookIds = string.IsNullOrEmpty(readerId) ? new() : await favorites.GetIdsAsync(readerId)
         };
         return View(vm);
     }
 
     // GET: /Catalog/Details/{id}
     [HttpGet]
-    public async Task<IActionResult> Details(string id)
+    public async Task<IActionResult> Details(string id, [FromServices] FavoriteService favorites)
     {
         var book = await _bookService.GetByIdAsync(id);
         if (book == null)
@@ -69,6 +73,8 @@ public class CatalogController : Controller
             CoverImageId = book.CoverImageId
         };
 
+        var readerId = User.FindFirstValue("ReaderId");
+        ViewData["IsFavorite"] = !string.IsNullOrEmpty(readerId) && await favorites.IsFavoriteAsync(readerId, book.Id!);
         return View(vm);
     }
 }

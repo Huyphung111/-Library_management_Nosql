@@ -24,12 +24,14 @@ public class LoansController : Controller
         _rules = rules.Value;
     }
 
-    // UC07 bước 1–6. Nhập mã thẻ (gửi GET ?cardNumber=) → hiện thông tin độc giả và kết quả kiểm tra → chọn sách, hạn trả.
+    // UC07 bước 1–6. Trang có 2 tab (Danh sách độc giả, Phiếu mượn gần đây); chọn một độc giả thì gọi CheckReader (AJAX)
+    // để mở phần chọn sách. ?cardNumber=DG... (ví dụ từ trang Đặt trước) mở thẳng phần chọn sách của độc giả đó.
     [HttpGet]
     public async Task<IActionResult> Create(string? cardNumber)
     {
         var vm = new CreateLoanVM { CardNumber = cardNumber };
         await FillCreateAsync(vm, checkReader: !string.IsNullOrWhiteSpace(cardNumber));
+        await FillListsAsync(vm);
         vm.DueDate = vm.BorrowDate.AddDays(_rules.LoanDays);   // bước 6: đề xuất hạn trả (QĐ03)
         return View(vm);
     }
@@ -50,6 +52,7 @@ public class LoansController : Controller
         ModelState.Clear();   // chỉ hiện lỗi nghiệp vụ, tránh trùng với lỗi binding
         ModelState.AddModelError(result.Field ?? string.Empty, result.Message!);
         await FillCreateAsync(model, checkReader: true);
+        await FillListsAsync(model);
         // Bước 5a: bỏ các sách đã hết khỏi danh sách đã chọn
         var held = model.Borrower?.HeldBookIds ?? new List<string>();
         var available = model.Books.Where(b => b.AvailableQuantity > 0 || held.Contains(b.Id)).Select(b => b.Id).ToHashSet();
@@ -67,6 +70,13 @@ public class LoansController : Controller
         vm.DueDate = vm.BorrowDate.AddDays(_rules.LoanDays);
         ViewData["Ajax"] = true;
         return PartialView("_Borrower", vm);
+    }
+
+    // Hai tab đầu trang: danh sách độc giả (đặt giữ lên đầu) và phiếu mượn gần đây
+    private async Task FillListsAsync(CreateLoanVM vm)
+    {
+        vm.Readers = await _loans.GetReaderBoardAsync();
+        vm.RecentLoans = await _loans.GetRecentLoansAsync();
     }
 
     private async Task FillCreateAsync(CreateLoanVM vm, bool checkReader)

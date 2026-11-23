@@ -1,10 +1,16 @@
-﻿@* Layout dùng chung cho cả hai vai trò (mục 6.5 thiết kế kỹ thuật).
+﻿@inject LibraryManagement.Web.Services.FavoriteService FavoriteService
+@* Layout dùng chung cho cả hai vai trò (mục 6.5 thiết kế kỹ thuật).
    Đã đăng nhập: sidebar + thanh trên + nội dung. Chưa đăng nhập: một khung trắng giữa nền navy. *@
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var isLibrarian = User.IsInRole(nameof(Role.Librarian));
     var isReader = isAuthenticated && !isLibrarian;
     var cardNotice = User.FindFirst("CardNotice")?.Value;
+
+    // Độc giả: số sách yêu thích hiện trên menu tài khoản (reader.js cập nhật khi bấm trái tim)
+    var readerId = isReader ? User.FindFirst("ReaderId")?.Value : null;
+    var favoriteCount = string.IsNullOrEmpty(readerId) ? 0 : (await FavoriteService.GetIdsAsync(readerId)).Count;
+    var hidePageHeader = ViewData["HidePageHeader"] as bool? == true;
 
     // Nút tên người dùng + menu Đổi mật khẩu / Đăng xuất trên header
     async Task UserMenu(string buttonClass)
@@ -17,6 +23,14 @@
                 <span class="topbar-role">@(isLibrarian ? "Thủ thư" : "Độc giả")</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
+                @if (isReader)
+                {
+                    <li>
+                        <a class="dropdown-item dd-fav" asp-controller="MyFavorites" asp-action="Index">
+                            <i class="bi bi-heart"></i> Danh sách yêu thích (<span id="ddFavCount">@favoriteCount</span>)
+                        </a>
+                    </li>
+                }
                 <li>
                     <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
                         <i class="bi bi-key"></i> Đổi mật khẩu
@@ -43,6 +57,10 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (isReader)
+    {
+        <link rel="stylesheet" href="~/css/favorites.css" asp-append-version="true" />
+    }
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="@(isAuthenticated ? "app-body has-app-header" : "auth-body")">
@@ -55,11 +73,7 @@
             <i class="bi bi-list"></i>
         </button>
         <a class="app-brand" asp-controller="Home" asp-action="Index">
-            <img src="~/images/huit-logo.jpg" alt="Logo HUIT" class="app-brand-logo" />
-            <div>
-                <div class="app-brand-title">THƯ VIỆN HUIT</div>
-                <div class="app-brand-sub">@(isLibrarian ? "Cổng quản trị Thủ thư" : "Hệ thống quản lý mượn trả sách")</div>
-            </div>
+            <img src="~/images/huit-library-brand.jpg" alt="Đại học Công Thương TP. Hồ Chí Minh - Trung tâm Thông tin - Thư viện" class="app-brand-img" />
         </a>
         @if (isReader)
         {
@@ -96,13 +110,20 @@
         <main role="main" class="app-content">
             <partial name="_Alert" />
 
-            <div class="page-header">
-                <h1 class="page-title">@ViewData["Title"]</h1>
-                @if (IsSectionDefined("PageActions"))
-                {
-                    <div class="page-actions">@RenderSection("PageActions")</div>
-                }
-            </div>
+            @if (!hidePageHeader)
+            {
+                <div class="page-header">
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                    @if (IsSectionDefined("PageActions"))
+                    {
+                        <div class="page-actions">@RenderSection("PageActions")</div>
+                    }
+                </div>
+            }
+            else if (IsSectionDefined("PageActions"))
+            {
+                IgnoreSection("PageActions");
+            }
 
             @RenderBody()
         </main>
@@ -132,6 +153,12 @@ else
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (isReader)
+    {
+        @* Mã chống giả mạo cho nút yêu thích (reader.js gửi kèm khi POST bằng fetch) *@
+        <div id="libAfToken" hidden>@Html.AntiForgeryToken()</div>
+        <script src="~/js/reader.js" asp-append-version="true"></script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

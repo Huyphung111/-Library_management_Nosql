@@ -1,77 +1,388 @@
-@* UC07 Lập phiếu mượn: bước 2 nhập mã thẻ → bước 3 kiểm tra → bước 4–7 chọn sách, hạn trả → bước 8 lập phiếu *@
+@* UC07 Lập phiếu mượn (thiết kế: Antigravity/loan-create-final-preview.html).
+   Hai tab trên cùng một trang: "Danh sách độc giả" (mặc định) và "Phiếu mượn gần đây".
+   Bấm một độc giả → AJAX CheckReader trả về partial _Borrower (chọn sách) → nút "Lập phiếu" mở hộp Phiếu mượn (Mẫu 1)
+   → "Xác nhận lập phiếu" gửi POST thật lên Create. ?cardNumber=DG... mở thẳng phần chọn sách. *@
 @model LibraryManagement.Web.ViewModels.Loans.CreateLoanVM
-<div class="content-card">
-    <form method="get" asp-action="Create" class="toolbar mb-0" novalidate id="cardForm" data-check-url="@Url.Action("CheckReader")">
-        <input asp-for="CardNumber" class="form-control" placeholder="Nhập mã thẻ, ví dụ DG000001" autofocus />
-        <button type="submit" class="btn btn-primary"><i class="bi bi-person-check"></i> Kiểm tra</button>
-    </form>
-    <span asp-validation-for="CardNumber" class="text-danger small"></span>
-</div>
+@using LibraryManagement.Web.ViewModels.Loans
+@{
+    // Có mã thẻ (từ URL, hoặc lập phiếu lỗi quay lại) thì mở thẳng phần chọn sách
+    var startInPick = !string.IsNullOrWhiteSpace(Model.CardNumber);
 
-<div id="borrowerArea">
-    <partial name="_Borrower" model="Model" />
-</div>
+    string StateBadge(BoardReaderState s) => s switch
+    {
+        BoardReaderState.Active => "<span class=\"badge-soft badge-ok\">Hoạt động</span>",
+        BoardReaderState.Overdue => "<span class=\"badge-soft badge-warn\">Quá hạn</span>",
+        BoardReaderState.Full => "<span class=\"badge-soft badge-warn\">Đủ hạn mức</span>",
+        BoardReaderState.Locked => "<span class=\"badge-soft badge-danger\">Bị khóa</span>",
+        _ => "<span class=\"badge-soft badge-danger\">Hết hạn</span>"
+    };
+
+    string LoanBadge(string status) => status switch
+    {
+        "overdue" => "<span class=\"badge-soft badge-danger\">Quá hạn</span>",
+        "returned" => "<span class=\"badge-soft badge-ok\">Đã trả</span>",
+        _ => "<span class=\"badge-soft badge-info\">Đang mượn</span>"
+    };
+}
+
+@section PageActions {
+    <div class="view-switcher @(startInPick ? "d-none" : "")" id="mainSwitcher" role="tablist">
+        <button type="button" class="sw-btn active" data-tab="readers" role="tab" aria-selected="true">
+            <i class="bi bi-people"></i> Danh sách độc giả <span class="sw-badge">@Model.Readers.Count</span>
+        </button>
+        <button type="button" class="sw-btn" data-tab="recent" role="tab" aria-selected="false">
+            <i class="bi bi-clock-history"></i> Phiếu mượn gần đây <span class="sw-badge">@Model.RecentLoans.Count</span>
+        </button>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm @(startInPick ? "" : "d-none")" id="backListBtn">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách độc giả
+    </button>
+}
+
+@* ==================== TAB 1: DANH SÁCH ĐỘC GIẢ ==================== *@
+<section class="lc-pane @(startInPick ? "d-none" : "")" id="pane-readers">
+    <div class="lc-toolbar">
+        <div class="search-box">
+            <input type="text" id="readerSearch" placeholder="Tìm theo mã thẻ (DG...), họ tên hoặc SĐT..." autocomplete="off" />
+            <i class="bi bi-search"></i>
+        </div>
+        <div class="rules-hint">
+            Độc giả đang <strong>đặt giữ sách</strong> tự động hiển thị lên hàng đầu · Bấm vào dòng để lập phiếu
+        </div>
+    </div>
+
+    <div class="reader-list-card" id="readerList">
+        <div class="reader-row head-row">
+            <div>Mã thẻ</div>
+            <div>Độc giả</div>
+            <div>Đang mượn</div>
+            <div>Đặt giữ online</div>
+            <div>Trạng thái</div>
+            <div class="rr-action">Thao tác</div>
+        </div>
+        @foreach (var r in Model.Readers)
+        {
+            var highlight = !r.Blocked && r.HeldCount > 0;
+            <div class="reader-row @(highlight ? "has-hold" : "") @(r.Blocked ? "is-blocked" : "")"
+                 data-search="@($"{r.CardNumber} {r.FullName} {r.Phone}".ToLowerInvariant())"
+                 data-card="@(r.Blocked ? null : r.CardNumber)" role="@(r.Blocked ? null : "button")"
+                 tabindex="@(r.Blocked ? null : "0")" aria-label="@(r.Blocked ? null : $"Lập phiếu cho {r.FullName}")">
+                <div class="rr-code">@r.CardNumber</div>
+                <div>
+                    <div class="rr-name">@r.FullName</div>
+                    <div class="rr-phone">@(string.IsNullOrEmpty(r.Phone) ? "—" : r.Phone)</div>
+                </div>
+                <div><strong>@r.BorrowingBooks</strong> / @r.MaxBooks cuốn</div>
+                <div>
+                    @if (r.HeldCount > 0)
+                    {
+                        <span class="badge-soft badge-hold">Đang giữ @r.HeldCount cuốn</span>
+                        @if (r.EarliestHoldUntil is DateTime until)
+                        {
+                            <div class="rr-hold-note">Hạn nhận: @until.ToVnDateText()</div>
+                        }
+                    }
+                    else
+                    {
+                        <span class="sub-txt">—</span>
+                    }
+                </div>
+                <div>@Html.Raw(StateBadge(r.State))</div>
+                <div class="rr-action">
+                    @if (r.Blocked)
+                    {
+                        <span class="sub-txt">Không đủ ĐK</span>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-primary btn-sm" data-card="@r.CardNumber">Lập phiếu</button>
+                    }
+                </div>
+            </div>
+        }
+        <div class="reader-empty @(Model.Readers.Count == 0 ? "" : "d-none")" id="readerEmpty">Không tìm thấy độc giả phù hợp.</div>
+    </div>
+</section>
+
+@* ==================== TAB 2: PHIẾU MƯỢN GẦN ĐÂY ==================== *@
+<section class="lc-pane d-none" id="pane-recent">
+    <div class="content-card">
+        <div class="lc-toolbar">
+            <div class="search-box" style="max-width: 320px;">
+                <input type="text" id="loanSearch" placeholder="Tìm mã phiếu PM..., mã thẻ hoặc tên..." autocomplete="off" />
+                <i class="bi bi-search"></i>
+            </div>
+            <div class="filter-pills" id="loanFilters">
+                <button type="button" class="pill-filter active" data-filter="all">Tất cả</button>
+                <button type="button" class="pill-filter" data-filter="borrowing">Đang mượn</button>
+                <button type="button" class="pill-filter" data-filter="overdue">Quá hạn</button>
+                <button type="button" class="pill-filter" data-filter="returned">Đã trả</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="lib-table">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Độc giả</th>
+                        <th>Sách mượn</th>
+                        <th>Ngày mượn</th>
+                        <th>Hạn trả</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody id="recentLoansBody">
+                    @foreach (var l in Model.RecentLoans)
+                    {
+                        <tr data-status="@l.Status" data-search="@($"{l.LoanCode} {l.CardNumber} {l.ReaderName}".ToLowerInvariant())">
+                            <td><strong>@l.LoanCode</strong></td>
+                            <td>@l.ReaderName <div class="sub-txt">@l.CardNumber</div></td>
+                            <td>@l.Titles.Count cuốn <div class="sub-txt">@string.Join(", ", l.Titles)</div></td>
+                            <td>@l.BorrowDate.ToVnDateText()</td>
+                            <td>@l.DueDate.ToVnDateText()</td>
+                            <td>@Html.Raw(LoanBadge(l.Status))</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@l.Id" class="btn btn-outline-primary btn-sm">Xem</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="reader-empty @(Model.RecentLoans.Count == 0 ? "" : "d-none")" id="loanEmpty">Không có phiếu mượn phù hợp.</div>
+    </div>
+</section>
+
+@* ==================== MÀN CHỌN SÁCH CỦA MỘT ĐỘC GIẢ ==================== *@
+<section class="lc-pane @(startInPick ? "" : "d-none")" id="pane-pick">
+    <div id="borrowerArea" data-check-url="@Url.Action("CheckReader")">
+        @if (startInPick)
+        {
+            <partial name="_Borrower" model="Model" />
+        }
+    </div>
+</section>
 
 @section Scripts {
     <script>
-        // Bảng chọn sách: lọc theo tên / tác giả và đếm số cuốn đã chọn. Gọi lại sau mỗi lần AJAX thay nội dung.
-        function initBookPicker() {
-            const filter = document.getElementById("bookFilter");
-            if (!filter) return;
-            const rows = document.querySelectorAll("#bookTable tbody tr");
-            const count = document.getElementById("pickedCount");
-            filter.addEventListener("input", () => {
-                const q = filter.value.trim().toLowerCase();
-                rows.forEach(r => r.style.display = r.dataset.search.includes(q) ? "" : "none");
-            });
-            const update = () => count.textContent = document.querySelectorAll("#bookTable input:checked").length;
-            document.querySelectorAll("#bookTable input").forEach(c => c.addEventListener("change", update));
-            update();
-        }
-
-        // UC07 bước 2–3 bằng AJAX: gọi CheckReader, thay khối thông tin độc giả mà không tải lại trang.
-        // Trình duyệt tắt JavaScript thì form vẫn gửi GET ?cardNumber= như bình thường.
         (function () {
-            const form = document.getElementById("cardForm");
-            const input = document.getElementById("CardNumber");
-            const area = document.getElementById("borrowerArea");
-            const fieldError = document.querySelector('[data-valmsg-for="CardNumber"]');
-            let lastChecked = input.value.trim().toUpperCase();
-            let pending = null;
+            const $ = id => document.getElementById(id);
+            const panes = { readers: $("pane-readers"), recent: $("pane-recent"), pick: $("pane-pick") };
+            const area = $("borrowerArea");
+            const show = (el, on) => el.classList.toggle("d-none", !on);
+            const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-            async function check(code) {
-                if (pending) pending.abort();
-                pending = new AbortController();
-                area.classList.add("opacity-50");
+            // ---------- Chuyển tab / chuyển sang màn chọn sách ----------
+            function switchTab(tab) {
+                Object.entries(panes).forEach(([k, el]) => show(el, k === tab));
+                document.querySelectorAll("#mainSwitcher .sw-btn").forEach(b => {
+                    const on = b.dataset.tab === tab;
+                    b.classList.toggle("active", on);
+                    b.setAttribute("aria-selected", on);
+                });
+            }
+
+            function enterPick() {
+                show($("mainSwitcher"), false);
+                show($("backListBtn"), true);
+                Object.entries(panes).forEach(([k, el]) => show(el, k === "pick"));
+                window.scrollTo({ top: 0 });
+            }
+
+            function backToList() {
+                closeSlip();
+                area.innerHTML = "";
+                show($("mainSwitcher"), true);
+                show($("backListBtn"), false);
+                switchTab("readers");
+                history.replaceState(null, "", location.pathname);
+            }
+
+            // Bấm một độc giả: lấy phần chọn sách bằng AJAX (CheckReader), không tải lại trang.
+            // Lỗi mạng thì quay về cách mở trang ?cardNumber= như cũ.
+            async function openReader(card) {
+                enterPick();
+                area.innerHTML = `<div class="content-card text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Đang kiểm tra độc giả ${esc(card)}...</div>`;
                 try {
-                    const res = await fetch(form.dataset.checkUrl + "?cardNumber=" + encodeURIComponent(code), {
-                        headers: { "X-Requested-With": "XMLHttpRequest" },
-                        signal: pending.signal
-                    });
+                    const res = await fetch(area.dataset.checkUrl + "?cardNumber=" + encodeURIComponent(card),
+                        { headers: { "X-Requested-With": "XMLHttpRequest" } });
                     if (!res.ok) throw new Error(res.status);
                     area.innerHTML = await res.text();
-                    if (fieldError) fieldError.textContent = "";
-                    lastChecked = code;
-                    history.replaceState(null, "", "?cardNumber=" + encodeURIComponent(code));
-                    initBookPicker();
-                } catch (e) {
-                    if (e.name !== "AbortError") form.submit();   // lỗi mạng: quay về cách tải lại trang
-                } finally {
-                    area.classList.remove("opacity-50");
+                    history.replaceState(null, "", "?cardNumber=" + encodeURIComponent(card));
+                    initPicker();
+                } catch {
+                    location.href = "?cardNumber=" + encodeURIComponent(card);
                 }
             }
 
-            form.addEventListener("submit", e => {
-                e.preventDefault();
-                const code = input.value.trim().toUpperCase();
-                if (code) check(code);
+            document.querySelectorAll("#mainSwitcher .sw-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+            $("backListBtn").addEventListener("click", backToList);
+
+            // Hàng không đủ điều kiện có data-card rỗng (Razor luôn in thuộc tính data-*): bỏ qua
+            $("readerList").addEventListener("click", e => {
+                const row = e.target.closest("[data-card]");
+                if (row && row.dataset.card) openReader(row.dataset.card);
             });
-            // Gõ đủ mã thẻ dạng DG + 6 số thì tự kiểm tra
-            input.addEventListener("input", () => {
-                const code = input.value.trim().toUpperCase();
-                if (/^DG\d{6}$/.test(code) && code !== lastChecked) check(code);
+            $("readerList").addEventListener("keydown", e => {
+                if ((e.key === "Enter" || e.key === " ") && e.target.matches(".reader-row[data-card]")) {
+                    e.preventDefault();
+                    openReader(e.target.dataset.card);
+                }
             });
-            initBookPicker();
+
+            // ---------- Tìm nhanh độc giả ----------
+            $("readerSearch").addEventListener("input", e => {
+                const q = e.target.value.trim().toLowerCase();
+                let shown = 0;
+                document.querySelectorAll("#readerList .reader-row:not(.head-row)").forEach(r => {
+                    const ok = !q || r.dataset.search.includes(q);
+                    r.classList.toggle("d-none", !ok);
+                    if (ok) shown++;
+                });
+                show($("readerEmpty"), shown === 0);
+            });
+
+            // ---------- Phiếu mượn gần đây: tìm nhanh + lọc ----------
+            let loanFilter = "all";
+            function renderLoans() {
+                const q = $("loanSearch").value.trim().toLowerCase();
+                let shown = 0;
+                document.querySelectorAll("#recentLoansBody tr").forEach(tr => {
+                    const ok = (loanFilter === "all" || tr.dataset.status === loanFilter) && (!q || tr.dataset.search.includes(q));
+                    tr.classList.toggle("d-none", !ok);
+                    if (ok) shown++;
+                });
+                show($("loanEmpty"), shown === 0);
+            }
+            $("loanSearch").addEventListener("input", renderLoans);
+            $("loanFilters").addEventListener("click", e => {
+                const btn = e.target.closest("[data-filter]");
+                if (!btn) return;
+                loanFilter = btn.dataset.filter;
+                document.querySelectorAll("#loanFilters .pill-filter").forEach(b => b.classList.toggle("active", b === btn));
+                renderLoans();
+            });
+
+            // ---------- Chọn sách (partial _Borrower) ----------
+            // Giới hạn: đang mượn + đã chọn + sách đang giữ chưa chọn ≤ tối đa (server kiểm tra lại trong LoanService.CreateAsync)
+            const form = () => $("loanForm");
+            const boxes = () => [...document.querySelectorAll("#bookTable input[name='BookIds']")];
+            const checked = () => boxes().filter(c => c.checked);
+
+            function pickMessage(text) {
+                const el = $("pickError");
+                if (!el) return;
+                el.textContent = text || "";
+                show(el, !!text);
+            }
+
+            function onPickChange(box) {
+                const f = form();
+                const borrowing = Number(f.dataset.borrowing), max = Number(f.dataset.max);
+                const unpickedHeld = boxes().filter(c => c.dataset.held === "true" && !c.checked).length;
+                if (box && box.checked && borrowing + checked().length + unpickedHeld > max) {
+                    box.checked = false;
+                    pickMessage(unpickedHeld > 0
+                        ? `Độc giả đang mượn ${borrowing} cuốn và thư viện đang giữ ${unpickedHeld} cuốn chưa chọn, tổng không quá ${max} cuốn.`
+                        : `Độc giả chỉ còn được mượn thêm ${max - borrowing} cuốn.`);
+                } else {
+                    pickMessage("");
+                }
+                $("pickedCount").textContent = checked().length;
+                if ($("slipModal")?.classList.contains("open")) renderSlip();
+            }
+
+            function initPicker() {
+                if (!form()) return;
+                $("bookFilter").addEventListener("input", e => {
+                    const q = e.target.value.trim().toLowerCase();
+                    document.querySelectorAll("#bookTable tbody tr").forEach(r => r.classList.toggle("d-none", !r.dataset.search.includes(q)));
+                });
+                $("bookTable").addEventListener("change", e => { if (e.target.name === "BookIds") onPickChange(e.target); });
+                $("openSlipBtn").addEventListener("click", openSlip);
+                $("DueDate").addEventListener("change", updateDue);
+                $("slipModal").addEventListener("click", e => {
+                    if (e.target === $("slipModal") || e.target.closest("[data-slip-close]")) closeSlip();
+                    const rm = e.target.closest("[data-remove-book]");
+                    if (rm) {
+                        const box = boxes().find(c => c.value === rm.dataset.removeBook);
+                        if (box) { box.checked = false; onPickChange(box); }
+                    }
+                });
+                form().addEventListener("submit", e => {
+                    if (checked().length === 0 || $("confirmBtn").disabled) { e.preventDefault(); return; }
+                    $("confirmBtn").disabled = true;   // tránh bấm hai lần
+                });
+                onPickChange(null);
+            }
+
+            // ---------- Hộp Phiếu mượn (Mẫu 1) ----------
+            function openSlip() {
+                if (checked().length === 0) { pickMessage("Vui lòng chọn ít nhất 1 cuốn sách."); return; }
+                renderSlip();
+                $("slipModal").classList.add("open");
+                document.body.classList.add("slip-open");
+                $("confirmBtn").focus();
+            }
+
+            function closeSlip() {
+                const m = $("slipModal");
+                if (!m) return;
+                m.classList.remove("open");
+                document.body.classList.remove("slip-open");
+            }
+
+            function renderSlip() {
+                const list = checked();
+                const f = form();
+                $("sBookCount").textContent = list.length;
+                $("sQuota").textContent = `${Number(f.dataset.borrowing) + list.length} / ${f.dataset.max} cuốn`;
+                $("sBookList").innerHTML = list.length === 0
+                    ? `<div class="slip-book-empty">Chưa chọn sách nào.</div>`
+                    : list.map((c, i) => `
+                        <div class="slip-book-row">
+                          <div class="book-left">
+                            <div class="book-num">${i + 1}</div>
+                            <div>
+                              <div class="slip-book-title">${esc(c.dataset.title)}</div>
+                              <div class="sub-txt">${esc(c.dataset.authors)}</div>
+                            </div>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            ${c.dataset.held === "true" ? `<span class="badge-soft badge-hold">Đặt giữ</span>` : ""}
+                            <button type="button" class="slip-rm" data-remove-book="${esc(c.value)}" aria-label="Bỏ ${esc(c.dataset.title)}" title="Bỏ khỏi phiếu">&times;</button>
+                          </div>
+                        </div>`).join("");
+                updateDue();
+            }
+
+            // Hạn trả: hiện dd/MM/yyyy, tính số ngày mượn, chặn ngày không sau ngày mượn
+            function updateDue() {
+                const iso = $("DueDate").value;
+                const daysEl = $("dueDays");
+                const btn = $("confirmBtn");
+                const toUtc = s => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+                if (!iso) {
+                    $("dueText").textContent = "Chọn ngày";
+                    daysEl.textContent = "Vui lòng chọn hạn trả";
+                    daysEl.classList.add("text-danger");
+                    btn.disabled = true;
+                    return;
+                }
+                const [y, m, d] = iso.split("-");
+                $("dueText").textContent = `${d}/${m}/${y}`;
+                const days = Math.round((toUtc(iso) - toUtc(form().dataset.borrowIso)) / 86400000);
+                const bad = days <= 0;
+                daysEl.textContent = bad ? "Phải sau ngày mượn" : `Thời hạn: ${days} ngày`;
+                daysEl.classList.toggle("text-danger", bad);
+                btn.disabled = bad || checked().length === 0;
+            }
+
+            document.addEventListener("keydown", e => { if (e.key === "Escape") closeSlip(); });
+
+            initPicker();
         })();
     </script>
 }

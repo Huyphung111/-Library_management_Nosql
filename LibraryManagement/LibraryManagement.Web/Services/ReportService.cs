@@ -79,6 +79,16 @@ public class ReportService
             vm.ReadyReservations = approvedReservations.Count(id => inStockSet.Contains(id));
         }
 
+        // 8. Sách đang giữ chờ độc giả đến nhận (đặt giữ online). Bỏ qua bản đã quá ngày nhận
+        //    (HoldExpiryService sẽ trả về kho trong vài phút); đếm riêng số cuốn hôm nay là ngày nhận cuối.
+        var tomorrowUtc = todayUtc.AddDays(1);
+        var holdUntilList = await _db.Reservations
+            .Find(r => r.Status == ReservationStatus.Held && r.HoldUntil >= todayUtc)
+            .Project(r => r.HoldUntil)
+            .ToListAsync();
+        vm.HeldReservations = holdUntilList.Count;
+        vm.HeldExpiringToday = holdUntilList.Count(d => d < tomorrowUtc);
+
         return vm;
     }
 

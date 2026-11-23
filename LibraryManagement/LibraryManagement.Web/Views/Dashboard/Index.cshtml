@@ -74,46 +74,41 @@
                 <strong>Yêu cầu gia hạn online</strong>
                 <div class="text-muted small">Các phiếu mượn do độc giả gửi yêu cầu xin gia hạn thêm ngày</div>
             </div>
-            @if (Model.PendingRenewals > 0)
-            {
-                <span class="text-warning-emphasis fw-semibold">@Model.PendingRenewals chờ duyệt</span>
-            }
-            else
-            {
-                <span class="text-muted">0 yêu cầu</span>
-            }
+            @* Số bằng 0 vẫn ghi rõ loại việc ("0 chờ duyệt"), tránh hiểu là hệ thống không có yêu cầu nào *@
+            <span class="@(Model.PendingRenewals > 0 ? "text-warning-emphasis fw-semibold" : "text-muted")">@Model.PendingRenewals chờ duyệt</span>
         </a>
 
-        <a asp-controller="Reservations" asp-action="Index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+        <a asp-controller="Reservations" asp-action="Index" asp-route-tab="pending" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
             <div>
                 <i class="bi bi-bookmark-star text-primary me-2"></i>
                 <strong>Yêu cầu đặt trước sách</strong>
-                <div class="text-muted small">Độc giả đăng ký chờ khi sách trong thư viện đang hết</div>
+                <div class="text-muted small">Độc giả đăng ký chờ khi sách trong thư viện đang hết, cần duyệt hoặc từ chối</div>
             </div>
-            @if (Model.PendingReservations > 0)
-            {
-                <span class="text-warning-emphasis fw-semibold">@Model.PendingReservations chờ duyệt</span>
-            }
-            else
-            {
-                <span class="text-muted">0 yêu cầu</span>
-            }
+            <span class="@(Model.PendingReservations > 0 ? "text-warning-emphasis fw-semibold" : "text-muted")">@Model.PendingReservations chờ duyệt</span>
         </a>
 
-        <a asp-controller="Reservations" asp-action="Index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+        <a asp-controller="Reservations" asp-action="Index" asp-route-tab="held" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+                <i class="bi bi-bookmark-check text-primary me-2"></i>
+                <strong>Sách đang giữ chờ độc giả nhận</strong>
+                <div class="text-muted small">Độc giả đặt giữ online, thư viện đã để riêng sách; khi độc giả đến quầy thì lập phiếu mượn</div>
+            </div>
+            <span class="text-end">
+                <span class="@(Model.HeldReservations > 0 ? "text-info-emphasis fw-semibold" : "text-muted")">@Model.HeldReservations đang giữ</span>
+                @if (Model.HeldExpiringToday > 0)
+                {
+                    <span class="d-block small text-danger">@Model.HeldExpiringToday cuốn hết hạn nhận hôm nay</span>
+                }
+            </span>
+        </a>
+
+        <a asp-controller="Reservations" asp-action="Index" asp-route-tab="ready" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
             <div>
                 <i class="bi bi-telephone-outbound text-success me-2"></i>
                 <strong>Sách đặt trước đã về kho</strong>
                 <div class="text-muted small">Yêu cầu đã duyệt và sách đã có sẵn, cần liên hệ độc giả đến mượn</div>
             </div>
-            @if (Model.ReadyReservations > 0)
-            {
-                <span class="text-success fw-semibold">@Model.ReadyReservations cần liên hệ</span>
-            }
-            else
-            {
-                <span class="text-muted">0 yêu cầu</span>
-            }
+            <span class="@(Model.ReadyReservations > 0 ? "text-success fw-semibold" : "text-muted")">@Model.ReadyReservations cần liên hệ</span>
         </a>
     </div>
 </div>

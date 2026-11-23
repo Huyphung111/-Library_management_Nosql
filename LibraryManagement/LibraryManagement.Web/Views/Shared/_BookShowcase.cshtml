@@ -38,13 +38,17 @@
         cover = string.IsNullOrEmpty(b.CoverImageId) ? null : "/Covers/" + b.CoverImageId
     }));
     var categoriesJson = JsonSerializer.Serialize(Model.Categories.Select(c => new { name = c.Name, count = c.BookCount }));
+    var favoritesJson = JsonSerializer.Serialize(Model.FavoriteBookIds);
     var initialSearchJson = JsonSerializer.Serialize(Model.InitialSearch ?? "");
 }
 
 <div class="pub-showcase">
   <!-- HERO: CỘT DANH MỤC TRÁI + BANNER SLIDER PHẢI -->
   <section class="pub-hero">
-    <aside class="pub-cat-list" id="categoryList"></aside>
+    <aside class="pub-cat-list">
+      <div class="cat-box-head"><i class="bi bi-list"></i> DANH MỤC SÁCH</div>
+      <div id="categoryList"></div>
+    </aside>
 
     <div class="pub-banner" id="heroBanner">
       <div class="pub-slide slide-1 active">
@@ -91,6 +95,11 @@
         </div>
       </div>
 
+      <!-- Slide 4: ảnh banner HUIT Library (chỉ ảnh, không chữ) -->
+      <div class="pub-slide slide-4">
+        <img src="~/images/huit-library-banner.jpg" alt="HUIT Library - Thư viện Trường Đại học Công Thương TP.HCM" />
+      </div>
+
       <button type="button" class="banner-arrow prev" id="prevSlide" aria-label="Slide trước"><i class="bi bi-chevron-left"></i></button>
       <button type="button" class="banner-arrow next" id="nextSlide" aria-label="Slide tiếp"><i class="bi bi-chevron-right"></i></button>
 
@@ -98,6 +107,7 @@
         <button type="button" class="banner-dot active" data-index="0" aria-label="Slide 1"></button>
         <button type="button" class="banner-dot" data-index="1" aria-label="Slide 2"></button>
         <button type="button" class="banner-dot" data-index="2" aria-label="Slide 3"></button>
+        <button type="button" class="banner-dot" data-index="3" aria-label="Slide 4"></button>
       </div>
     </div>
   </section>
@@ -151,6 +161,8 @@
     const CATEGORIES = @Html.Raw(categoriesJson);
     const BOOKS = @Html.Raw(booksJson);
     const IS_GUEST = @(guest ? "true" : "false");
+    // Sách yêu thích của độc giả; nút trái tim do wwwroot/js/reader.js xử lý, báo lại qua sự kiện "fav:changed"
+    const FAVS = new Set(@Html.Raw(favoritesJson));
 
     const PAGE_SIZE = 12;   // 4 cột x 3 hàng
 
@@ -216,12 +228,23 @@
 
       const pageBooks = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-      // Khách: thẻ mở popup. Độc giả: thẻ là link tới trang chi tiết (có nút Đặt giữ / Đặt trước)
+      // Khách: thẻ mở popup. Độc giả: thẻ là link tới trang chi tiết (có nút Đặt giữ / Đặt trước),
+      // kèm nút trái tim nằm ngoài link (hiện khi rê chuột, luôn hiện khi đã yêu thích)
       grid.innerHTML = pageBooks.map(b => {
+        const fav = FAVS.has(b.id);
         const open = IS_GUEST
           ? `<article class="pub-book-card" data-book="${esc(b.id)}">`
-          : `<a class="pub-book-card" href="/Catalog/Details/${encodeURIComponent(b.id)}">`;
-        const close = IS_GUEST ? `</article>` : `</a>`;
+          : `<div class="pub-card-wrap ${fav ? "is-fav" : ""}" data-fav-scope>
+             <a class="pub-book-card" href="/Catalog/Details/${encodeURIComponent(b.id)}">`;
+        const close = IS_GUEST ? `</article>` : `</a>
+             <div class="fav-btn-wrap">
+               <span class="fav-tooltip" data-label-on="Bỏ yêu thích" data-label-off="Thêm vào yêu thích">${fav ? "Bỏ yêu thích" : "Thêm vào yêu thích"}</span>
+               <button type="button" class="fav-circle-btn" data-fav-toggle data-book-id="${esc(b.id)}" data-book-title="${esc(b.title)}"
+                       aria-pressed="${fav}" aria-label="Yêu thích: ${esc(b.title)}">
+                 <i class="bi ${fav ? "bi-heart-fill" : "bi-heart"}" data-fav-icon></i>
+               </button>
+             </div>
+           </div>`;
         return `${open}
           <div class="pub-book-cover">
             ${coverHtml(b)}
@@ -316,6 +339,11 @@
       goPage(1, false);
     }
     window.resetShowcaseFilters = resetFilters;   // logo ở trang khách gọi để về trạng thái ban đầu
+
+    // Giữ danh sách yêu thích khớp với nút trái tim khi chuyển trang / lọc lại
+    document.addEventListener("fav:changed", e => {
+      if (e.detail.favorite) FAVS.add(e.detail.bookId); else FAVS.delete(e.detail.bookId);
+    });
 
     // Chọn thể loại: cột trái và nút "Xem tủ sách Văn học" trên banner
     document.addEventListener("click", e => {

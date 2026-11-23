@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3 Mẫu thiết kế hàng Ngày mượn / Hạn trả trong Phiếu Mượn</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    :root {
+      --lib-primary: #1e3a5f;
+      --lib-primary-dark: #0f2a47;
+      --lib-accent: #c8963e;
+      --lib-bg: #eef2f7;
+      --lib-border: #e3e6ee;
+      --lib-text: #1f2a37;
+      --lib-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 48px;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      font-size: 14.5px;
+      background: var(--lib-bg);
+      color: var(--lib-text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Thanh chọn 3 mẫu ở trên cùng */
+    .style-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: #fff;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--lib-border);
+      box-shadow: 0 2px 10px rgba(15, 29, 48, 0.06);
+    }
+    .style-tab {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--lib-text);
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .style-tab:hover { background: #f2f5fa; }
+    .style-tab.active {
+      background: var(--lib-primary);
+      color: #fff;
+    }
+
+    /* ===== HỘP PHIẾU MƯỢN CHUNG ===== */
+    .slip-box {
+      width: 100%;
+      max-width: 580px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 18px 46px rgba(15, 29, 48, 0.16);
+      border: 1px solid #dde3ec;
+    }
+
+    .slip-header {
+      background: var(--lib-primary-dark);
+      color: #fff;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--lib-accent);
+    }
+    .slip-header-brand { display: flex; align-items: center; gap: 11px; }
+    .slip-header-logo {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #fff; padding: 2px; object-fit: contain;
+    }
+    .slip-header-title { font-size: 1rem; font-weight: 800; letter-spacing: 0.04em; line-height: 1.15; }
+    .slip-header-sub { font-size: 0.74rem; color: #c9d4e3; }
+
+    .slip-body { padding: 18px 22px 16px; }
+    .slip-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--lib-muted);
+      margin: 0 0 8px;
+    }
+
+    .slip-reader {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 16px;
+      background: #f7f9fc;
+      border: 1px solid var(--lib-border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      margin-bottom: 15px;
+    }
+    .kv-k { font-size: 0.74rem; color: var(--lib-muted); }
+    .kv-v { font-size: 0.9rem; font-weight: 700; }
+    .tag-ok {
+      font-size: 0.72rem; font-weight: 600; color: #137333;
+      background: #e6f4ea; padding: 1px 7px; border-radius: 999px; margin-left: 4px;
+    }
+
+    .slip-books {
+      border: 1px solid var(--lib-border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .slip-book-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 13px; border-bottom: 1px solid #eef1f6;
+    }
+    .slip-book-row:last-child { border-bottom: none; }
+    .book-left { display: flex; align-items: center; gap: 10px; }
+    .book-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #edf2f9; color: var(--lib-primary);
+      font-size: 0.76rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .book-title { font-weight: 600; font-size: 0.89rem; }
+    .book-author { font-size: 0.77rem; color: var(--lib-muted); }
+    .tag-held {
+      font-size: 0.72rem; font-weight: 600;
+      background: #e0f4fc; color: #0b5170;
+      padding: 2px 8px; border-radius: 999px;
+    }
+
+    .date-zone {
+      padding-top: 14px;
+      border-top: 1px dashed #cfd6e2;
+    }
+    .variant { display: none; }
+    .variant.active { display: block; }
+
+    /* Widget chọn ngày hiển thị dd/MM/yyyy chuẩn VN (ẩn input date gốc bên trong) */
+    .vn-date-picker {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .vn-date-picker input[type="date"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ======================================================================
+       MẪU 1: 3 Ô THẲNG HÀNG TUYỆT ĐỐI (CÙNG BASELINE, CÙNG ĐỘ CAO)
+       ====================================================================== */
+    .m1-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .m1-cell {
+      background: #f8fafd;
+      border: 1px solid #e3e7f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .m1-cell.is-editable {
+      background: #fff;
+      border-color: #b9c7db;
+    }
+    .m1-label {
+      font-size: 0.74rem;
+      color: var(--lib-muted);
+      line-height: 1.2;
+    }
+    .m1-val {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--lib-primary);
+      margin: 4px 0 2px;
+    }
+    .m1-val i {
+      font-size: 0.88rem;
+      color: var(--lib-accent);
+    }
+    .m1-sub {
+      font-size: 0.74rem;
+      color: var(--lib-muted);
+      line-height: 1.2;
+    }
+
+    /* ======================================================================
+       MẪU 2: THANH GỘP NGANG 1 KHỐI LIỀN MẠCH + NÚT CHỌN NHANH SỐ NGÀY
+       ====================================================================== */
+    .m2-bar {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr 1fr;
+      background: #f8fafd;
+      border: 1px solid var(--lib-border);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .m2-col {
+      padding: 10px 14px;
+      border-right: 1px solid #e5e9f2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .m2-col:last-child { border-right: none; }
+    .m2-col-label { font-size: 0.73rem; color: var(--lib-muted); }
+    .m2-col-val {
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--lib-primary);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .m2-due-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #c6d1e1;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--lib-primary);
+    }
+    .m2-quick-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 9px;
+      font-size: 0.78rem;
+      color: var(--lib-muted);
+    }
+    .m2-chips { display: flex; gap: 6px; }
+    .m2-chip {
+      border: 1px solid #d4dce8;
+      background: #fff;
+      color: var(--lib-primary);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .m2-chip.active, .m2-chip:hover {
+      background: var(--lib-primary);
+      border-color: var(--lib-primary);
+      color: #fff;
+    }
+
+    /* ======================================================================
+       MẪU 3: DÒNG THỜI HẠN CÓ MŨI TÊN (NGÀY MƯỢN → HẠN TRẢ) + CHÂN PHIẾU
+       ====================================================================== */
+    .m3-timeline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #f8fafd;
+      border: 1px solid var(--lib-border);
+      border-radius: 9px;
+      padding: 12px 16px;
+    }
+    .m3-side { flex: 1; }
+    .m3-side.right { text-align: right; }
+    .m3-k { font-size: 0.74rem; color: var(--lib-muted); }
+    .m3-v {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--lib-primary);
+      margin-top: 2px;
+    }
+    .m3-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: var(--lib-accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .m3-arrow-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #9aa7b8;
+    }
+    .m3-edit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #bfd0e6;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.94rem;
+      font-weight: 800;
+      color: var(--lib-primary);
+    }
+    .m3-edit-btn i { font-size: 0.85rem; color: var(--lib-accent); }
+    .m3-meta-line {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--lib-muted);
+    }
+
+    /* Chân phiếu */
+    .slip-footer {
+      padding: 13px 22px;
+      background: #f8f9fc;
+      border-top: 1px solid var(--lib-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-cancel {
+      height: 36px; padding: 0 16px; border-radius: 7px;
+      border: 1px solid #cfd6e2; background: #fff; color: var(--lib-text);
+      font-weight: 600; font-size: 0.86rem; cursor: pointer;
+    }
+    .btn-confirm {
+      height: 36px; padding: 0 20px; border-radius: 7px;
+      border: none; background: var(--lib-primary); color: #fff;
+      font-weight: 700; font-size: 0.86rem; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CHỌN XEM 3 MẪU -->
+  <div class="style-tabs">
+    <button type="button" class="style-tab active" onclick="setStyle(1, this)">Mẫu 1: 3 ô thẳng hàng chuẩn</button>
+    <button type="button" class="style-tab" onclick="setStyle(2, this)">Mẫu 2: Thanh gộp + chọn nhanh ngày</button>
+    <button type="button" class="style-tab" onclick="setStyle(3, this)">Mẫu 3: Mũi tên Ngày mượn → Hạn trả</button>
+  </div>
+
+  <!-- HỘP PHIẾU MƯỢN -->
+  <div class="slip-box">
+    <div class="slip-header">
+      <div class="slip-header-brand">
+        <img src="huit-logo.jpg" alt="Logo HUIT" class="slip-header-logo" />
+        <div>
+          <div class="slip-header-title">PHIẾU MƯỢN SÁCH</div>
+          <div class="slip-header-sub">Trung tâm Thông tin - Thư viện HUIT</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slip-body">
+      <div class="slip-label">Thông tin độc giả</div>
+      <div class="slip-reader">
+        <div>
+          <div class="kv-k">Họ và tên</div>
+          <div class="kv-v">Nguyễn Văn An</div>
+        </div>
+        <div>
+          <div class="kv-k">Mã thẻ độc giả</div>
+          <div class="kv-v">DG000001 <span class="tag-ok">Hoạt động</span></div>
+        </div>
+      </div>
+
+      <div class="slip-label">Sách mượn (2 cuốn)</div>
+      <div class="slip-books">
+        <div class="slip-book-row">
+          <div class="book-left">
+            <div class="book-num">1</div>
+            <div>
+              <div class="book-title">Tâm Lý Học Về Tiền</div>
+              <div class="book-author">Morgan Housel</div>
+            </div>
+          </div>
+          <span class="tag-held">Đặt giữ</span>
+        </div>
+        <div class="slip-book-row">
+          <div class="book-left">
+            <div class="book-num">2</div>
+            <div>
+              <div class="book-title">Đại Việt Sử Ký Toàn Thư</div>
+              <div class="book-author">Ngô Sĩ Liên</div>
+            </div>
+          </div>
+          <span class="tag-held">Đặt giữ</span>
+        </div>
+      </div>
+
+      <!-- KHU VỰC THIẾT LẬP NGÀY MƯỢN / HẠN TRẢ (3 MẪU) -->
+      <div class="date-zone">
+
+        <!-- MẪU 1: 3 Ô CÙNG HÀNG THẲNG BASELINE -->
+        <div class="variant active" id="v-1">
+          <div class="m1-grid">
+            <div class="m1-cell">
+              <div class="m1-label">Ngày mượn</div>
+              <div class="m1-val"><span>23/11/2026</span></div>
+              <div class="m1-sub">Hôm nay</div>
+            </div>
+
+            <div class="m1-cell is-editable">
+              <div class="m1-label">Hạn trả</div>
+              <div class="m1-val vn-date-picker" title="Bấm để đổi hạn trả">
+                <span class="due-text">07/12/2026</span>
+                <i class="bi bi-calendar3"></i>
+                <input type="date" class="due-native" value="2026-12-07" min="2026-11-24" onchange="syncDate(this.value)" />
+              </div>
+              <div class="m1-sub due-days">Thời hạn: 14 ngày</div>
+            </div>
+
+            <div class="m1-cell">
+              <div class="m1-label">Thủ thư lập</div>
+              <div class="m1-val"><span>Quản trị viên</span></div>
+              <div class="m1-sub">Tại quầy</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MẪU 2: THANH GỘP NGANG + CHỌN NHANH 7 / 14 / 21 NGÀY -->
+        <div class="variant" id="v-2">
+          <div class="m2-bar">
+            <div class="m2-col">
+              <div class="m2-col-label">Ngày mượn</div>
+              <div class="m2-col-val">23/11/2026</div>
+            </div>
+
+            <div class="m2-col">
+              <div class="m2-col-label">Hạn trả</div>
+              <div class="m2-col-val">
+                <span class="m2-due-pill vn-date-picker" title="Bấm để đổi ngày">
+                  <span class="due-text">07/12/2026</span>
+                  <i class="bi bi-calendar3" style="font-size:0.82rem; color:var(--lib-accent);"></i>
+                  <input type="date" class="due-native" value="2026-12-07" min="2026-11-24" onchange="syncDate(this.value)" />
+                </span>
+              </div>
+            </div>
+
+            <div class="m2-col">
+              <div class="m2-col-label">Thủ thư lập</div>
+              <div class="m2-col-val">Quản trị viên</div>
+            </div>
+          </div>
+
+          <div class="m2-quick-row">
+            <span class="due-days">Thời hạn: 14 ngày</span>
+            <div class="m2-chips">
+              <button type="button" class="m2-chip" onclick="addDays(7)">7 ngày</button>
+              <button type="button" class="m2-chip active" onclick="addDays(14)">14 ngày</button>
+              <button type="button" class="m2-chip" onclick="addDays(21)">21 ngày</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MẪU 3: MŨI TÊN NGÀY MƯỢN → HẠN TRẢ + DÒNG CHÂN PHIẾU -->
+        <div class="variant" id="v-3">
+          <div class="m3-timeline">
+            <div class="m3-side">
+              <div class="m3-k">Ngày mượn</div>
+              <div class="m3-v">23/11/2026</div>
+            </div>
+
+            <div class="m3-arrow">
+              <span class="due-days-short">14 ngày</span>
+              <div class="m3-arrow-line">
+                <span>────</span><i class="bi bi-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="m3-side right">
+              <div class="m3-k">Hạn trả (bấm để chỉnh)</div>
+              <div style="margin-top:3px;">
+                <span class="m3-edit-btn vn-date-picker">
+                  <span class="due-text">07/12/2026</span>
+                  <i class="bi bi-calendar3"></i>
+                  <input type="date" class="due-native" value="2026-12-07" min="2026-11-24" onchange="syncDate(this.value)" />
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="m3-meta-line">
+            <span>Thủ thư lập phiếu: <strong>Quản trị viên</strong></span>
+            <span>Hình thức: <strong>Tại quầy</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="slip-footer">
+      <button type="button" class="btn-cancel">Quay lại</button>
+      <button type="button" class="btn-confirm">Xác nhận lập phiếu</button>
+    </div>
+  </div>
+
+  <script>
+    const BORROW = new Date("2026-11-23T00:00:00");
+
+    function setStyle(n, btn) {
+      document.querySelectorAll(".variant").forEach(v => v.classList.remove("active"));
+      document.getElementById("v-" + n).classList.add("active");
+      document.querySelectorAll(".style-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function syncDate(iso) {
+      if (!iso) return;
+      const [y, m, d] = iso.split("-");
+      const vn = `${d}/${m}/${y}`;
+      const days = Math.round((new Date(iso + "T00:00:00") - BORROW) / 86400000);
+
+      document.querySelectorAll(".due-native").forEach(el => el.value = iso);
+      document.querySelectorAll(".due-text").forEach(el => el.textContent = vn);
+      document.querySelectorAll(".due-days").forEach(el => el.textContent = `Thời hạn: ${days} ngày`);
+      document.querySelectorAll(".due-days-short").forEach(el => el.textContent = `${days} ngày`);
+
+      document.querySelectorAll(".m2-chip").forEach(c => {
+        c.classList.toggle("active", c.textContent.startsWith(days + " "));
+      });
+    }
+
+    function addDays(n) {
+      const dt = new Date(BORROW.getTime() + n * 86400000);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2, "0");
+      const d = String(dt.getDate()).padStart(2, "0");
+      syncDate(`${y}-${m}-${d}`);
+    }
+  </script>
+</body>
+</html>

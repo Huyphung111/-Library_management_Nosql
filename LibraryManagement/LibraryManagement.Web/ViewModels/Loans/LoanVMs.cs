@@ -56,6 +56,52 @@ public class CreateLoanVM
     public List<BookOptionVM> Books { get; set; } = new();
     public DateTime BorrowDate { get; set; }
     public int LoanDays { get; set; }
+
+    /// <summary>Tab "Danh sách độc giả": đã sắp theo thứ tự ưu tiên (đang đặt giữ → hoạt động → không đủ điều kiện).</summary>
+    public List<ReaderBoardRowVM> Readers { get; set; } = new();
+
+    /// <summary>Tab "Phiếu mượn gần đây": mới lập lên đầu.</summary>
+    public List<RecentLoanVM> RecentLoans { get; set; } = new();
+}
+
+/// <summary>Tình trạng mượn của một độc giả trên danh sách lập phiếu.</summary>
+public enum BoardReaderState { Active, Overdue, Full, Locked, Expired }
+
+/// <summary>Một hàng trong tab "Danh sách độc giả" của trang Lập phiếu mượn.</summary>
+public class ReaderBoardRowVM
+{
+    public string CardNumber { get; init; } = string.Empty;
+    public string FullName { get; init; } = string.Empty;
+    public string? Phone { get; init; }
+    public int BorrowingBooks { get; init; }
+    public int MaxBooks { get; init; }
+
+    /// <summary>Số cuốn thư viện đang giữ (đặt giữ online) và hạn nhận sớm nhất (giờ UTC như trong database).</summary>
+    public int HeldCount { get; init; }
+    public DateTime? EarliestHoldUntil { get; init; }
+
+    public BoardReaderState State { get; init; }
+
+    /// <summary>Thẻ khóa / hết hạn / có phiếu quá hạn / đã mượn đủ: không cho lập phiếu.</summary>
+    public bool Blocked => State != BoardReaderState.Active;
+
+    /// <summary>Thứ tự ưu tiên: 0 đang đặt giữ, 1 hoạt động, 2 không đủ điều kiện.</summary>
+    public int Rank => Blocked ? 2 : HeldCount > 0 ? 0 : 1;
+}
+
+/// <summary>Một phiếu trong tab "Phiếu mượn gần đây".</summary>
+public class RecentLoanVM
+{
+    public string Id { get; init; } = string.Empty;
+    public string LoanCode { get; init; } = string.Empty;
+    public string CardNumber { get; init; } = string.Empty;
+    public string ReaderName { get; init; } = string.Empty;
+    public List<string> Titles { get; init; } = new();
+    public DateTime BorrowDate { get; init; }
+    public DateTime DueDate { get; init; }
+
+    /// <summary>"borrowing", "overdue" hoặc "returned" (khớp bộ lọc nhanh trên trang).</summary>
+    public string Status { get; init; } = "borrowing";
 }
 
 // ---------------------------------------------------------------- UC08 Nhận trả sách

@@ -1,8 +1,10 @@
-@* UC07 bước 3–7: thông tin độc giả, kết quả kiểm tra và form chọn sách.
-   Dùng chung cho trang Create (tải lại trang) và LoansController.CheckReader (AJAX, trả về đúng khối HTML này). *@
+@* UC07 bước 3–7: thông tin độc giả, kết quả kiểm tra, bảng chọn sách và hộp Phiếu mượn (Mẫu 1,
+   Antigravity/loan-create-final-preview.html). Dùng chung cho trang Create (?cardNumber=, lập phiếu lỗi)
+   và LoansController.CheckReader (AJAX). Script điều khiển nằm ở Views/Loans/Create.cshtml. *@
 @model LibraryManagement.Web.ViewModels.Loans.CreateLoanVM
 @{
     var b = Model.Borrower;
+    var dueDefault = Model.DueDate ?? Model.BorrowDate.AddDays(Model.LoanDays);
 }
 @if (b == null && ViewData["Ajax"] is true)
 {
@@ -29,7 +31,9 @@
                 <div class="stat-icon accent"><i class="bi bi-book"></i></div>
                 <div>
                     <div class="stat-value">@b.BorrowingBooks<span class="fs-6 fw-normal text-muted">/@b.MaxBooks</span></div>
-                    <div class="stat-label">Đang mượn (còn được mượn @b.Remaining)</div>
+                    <div class="stat-label">
+                        Đang mượn @(b.HeldBookIds.Count > 0 ? $"(đang giữ {b.HeldBookIds.Count} cuốn)" : $"(còn được mượn {b.Remaining})")
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,9 +72,10 @@
     }
     else
     {
-        <form asp-action="Create" method="post" class="content-card" novalidate id="loanForm">
+        <form asp-action="Create" method="post" class="content-card" novalidate id="loanForm"
+              data-borrowing="@b.BorrowingBooks" data-max="@b.MaxBooks" data-borrow-iso="@Model.BorrowDate.ToString("yyyy-MM-dd")">
             <input type="hidden" asp-for="CardNumber" />
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
 
             <h2>Chọn sách mượn</h2>
             @if (b.HeldBookIds.Count > 0)
@@ -80,7 +85,6 @@
                     Thư viện đang giữ <strong>@b.HeldBookIds.Count</strong> cuốn cho độc giả này (đặt giữ online), đã được chọn sẵn bên dưới.
                 </div>
             }
-            <div class="mb-2"><span asp-validation-for="BookIds" class="text-danger"></span></div>
             <div class="toolbar">
                 <input type="search" id="bookFilter" class="form-control" placeholder="Lọc theo tên sách hoặc tác giả" />
                 <span class="align-self-center text-muted">Đã chọn <strong id="pickedCount">0</strong> / còn được mượn <strong>@b.Remaining</strong> cuốn</span>
@@ -96,6 +100,7 @@
                             <tr class="@(out0 ? "text-muted" : "")" data-search="@($"{book.Title} {book.Authors}".ToLowerInvariant())">
                                 <td>
                                     <input class="form-check-input" type="checkbox" name="BookIds" value="@book.Id" id="b_@book.Id"
+                                           data-title="@book.Title" data-authors="@book.Authors" data-held="@(isHeld ? "true" : "false")"
                                            @(out0 ? "disabled" : "") @(Model.BookIds.Contains(book.Id) ? "checked" : "") />
                                 </td>
                                 <td><label for="b_@book.Id" class="fw-semibold">@book.Title</label></td>
@@ -120,19 +125,84 @@
                 </table>
             </div>
 
-            <div class="row g-3 mt-2 align-items-end">
-                <div class="col-sm-4 col-lg-3">
-                    <label class="form-label">Ngày mượn</label>
-                    <input class="form-control" value="@Model.BorrowDate.ToString("dd/MM/yyyy")" disabled />
-                </div>
-                <div class="col-sm-4 col-lg-3">
-                    <label asp-for="DueDate" class="form-label"></label>
-                    <input asp-for="DueDate" class="form-control" min="@Model.BorrowDate.AddDays(1).ToString("yyyy-MM-dd")" />
-                    <div class="form-text">Đề xuất: ngày mượn + @Model.LoanDays ngày</div>
-                    <span asp-validation-for="DueDate" class="text-danger small"></span>
-                </div>
-                <div class="col-sm-4 col-lg-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-journal-plus"></i> Lập phiếu</button>
+            <div class="alert alert-warning py-2 small mt-3 mb-0 d-none" id="pickError" role="alert"></div>
+            <div class="lc-bottom-bar">
+                <span class="sub-txt">Chọn xong sách rồi bấm <strong>Lập phiếu</strong> để kiểm tra phiếu và chọn hạn trả.</span>
+                <button type="button" class="btn btn-primary" id="openSlipBtn"><i class="bi bi-journal-plus"></i> Lập phiếu</button>
+            </div>
+
+            @* ===== Hộp Phiếu mượn (Mẫu 1). Nằm trong form: ô Hạn trả là field DueDate gửi lên khi xác nhận ===== *@
+            <div class="slip-backdrop" id="slipModal" role="dialog" aria-modal="true" aria-labelledby="slipTitle">
+                <div class="slip-box">
+                    <div class="slip-header">
+                        <div class="slip-header-brand">
+                            <img src="~/images/huit-logo.jpg" alt="Logo HUIT" class="slip-header-logo" />
+                            <div>
+                                <div class="slip-header-title" id="slipTitle">PHIẾU MƯỢN SÁCH</div>
+                                <div class="slip-header-sub">Trung tâm Thông tin - Thư viện HUIT</div>
+                            </div>
+                        </div>
+                        <button type="button" class="slip-close" data-slip-close aria-label="Đóng">&times;</button>
+                    </div>
+
+                    <div class="slip-body">
+                        <div class="slip-label">Thông tin độc giả</div>
+                        <div class="slip-reader">
+                            <div>
+                                <div class="kv-k">Họ và tên</div>
+                                <div class="kv-v">@r.FullName</div>
+                            </div>
+                            <div>
+                                <div class="kv-k">Mã thẻ độc giả</div>
+                                <div class="kv-v">@r.CardNumber <span class="badge-soft badge-ok ms-1">Hoạt động</span></div>
+                            </div>
+                            <div>
+                                <div class="kv-k">Số điện thoại</div>
+                                <div class="kv-v">@(string.IsNullOrEmpty(r.Phone) ? "—" : r.Phone)</div>
+                            </div>
+                            <div>
+                                <div class="kv-k">Hạn mức sau khi lập</div>
+                                <div class="kv-v" id="sQuota"></div>
+                            </div>
+                        </div>
+
+                        <div class="slip-label">Sách mượn (<span id="sBookCount">0</span> cuốn)</div>
+                        <div class="slip-books" id="sBookList"></div>
+
+                        <div class="m1-zone">
+                            <div class="m1-grid">
+                                <div class="m1-cell">
+                                    <div class="m1-label">Ngày mượn</div>
+                                    <div class="m1-val"><span>@Model.BorrowDate.ToString("dd/MM/yyyy")</span></div>
+                                    <div class="m1-sub">Hôm nay</div>
+                                </div>
+
+                                <div class="m1-cell is-editable">
+                                    <label class="m1-label" for="DueDate">Hạn trả</label>
+                                    <div class="m1-val vn-date-picker" title="Bấm để đổi hạn trả">
+                                        <span id="dueText">@dueDefault.ToString("dd/MM/yyyy")</span>
+                                        <i class="bi bi-calendar3"></i>
+                                        <input type="date" name="DueDate" id="DueDate" value="@dueDefault.ToString("yyyy-MM-dd")"
+                                               min="@Model.BorrowDate.AddDays(1).ToString("yyyy-MM-dd")" />
+                                    </div>
+                                    <div class="m1-sub" id="dueDays">Thời hạn: @Model.LoanDays ngày</div>
+                                </div>
+
+                                <div class="m1-cell">
+                                    <div class="m1-label">Thủ thư lập</div>
+                                    <div class="m1-val"><span>@User.Identity?.Name</span></div>
+                                    <div class="m1-sub">Tại quầy</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slip-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-slip-close>Quay lại</button>
+                        <button type="submit" class="btn btn-primary btn-sm" id="confirmBtn">
+                            <i class="bi bi-check2-circle"></i> Xác nhận lập phiếu
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>

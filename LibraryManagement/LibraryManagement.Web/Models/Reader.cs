@@ -30,6 +30,14 @@ public class Reader
     public CardStatus CardStatus { get; set; } = CardStatus.Active;
     public string? LockReason { get; set; }
 
+    /// <summary>
+    /// Sách yêu thích (Id sách, cũ trước mới sau). Nhúng thẳng trong hồ sơ độc giả vì luôn đọc theo độc giả và
+    /// số lượng có giới hạn (FavoriteService.MaxFavorites). Thêm bằng $addToSet, bỏ bằng $pull.
+    /// Document cũ chưa có field này đọc ra danh sách rỗng.
+    /// </summary>
+    [BsonRepresentation(BsonType.ObjectId)]
+    public List<string> FavoriteBookIds { get; set; } = new();
+
     /// <summary>Thẻ hết hạn. Tính khi dùng, không lưu trong database.</summary>
     [BsonIgnore]
     public bool IsExpired => DateHelper.ToVnDate(ExpiryDate) < DateHelper.TodayVn();

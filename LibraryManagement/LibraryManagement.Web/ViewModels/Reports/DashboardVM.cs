@@ -28,5 +28,11 @@ public class DashboardVM
 
     /// <summary>Số yêu cầu đặt trước đã duyệt (Approved) mà sách hiện có trong kho (AvailableQuantity > 0).</summary>
     public long ReadyReservations { get; set; }
+
+    /// <summary>Số cuốn đang giữ cho độc giả (đặt giữ online, Held) chưa quá hạn nhận.</summary>
+    public long HeldReservations { get; set; }
+
+    /// <summary>Trong số đang giữ, số cuốn hôm nay là ngày cuối được đến nhận.</summary>
+    public long HeldExpiringToday { get; set; }
 }
 

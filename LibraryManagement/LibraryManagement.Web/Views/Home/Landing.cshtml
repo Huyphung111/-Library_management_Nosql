@@ -21,11 +21,7 @@
   <header class="pub-header">
     <div class="pub-container pub-header-inner">
       <a href="#" class="pub-brand" id="resetHome">
-        <img src="~/images/huit-logo.jpg" alt="Logo HUIT" class="pub-brand-logo" />
-        <div>
-          <div class="pub-brand-title">THƯ VIỆN HUIT</div>
-          <div class="pub-brand-sub">Hệ thống quản lý mượn trả sách</div>
-        </div>
+        <img src="~/images/huit-library-brand.jpg" alt="Đại học Công Thương TP. Hồ Chí Minh - Trung tâm Thông tin - Thư viện" class="pub-brand-img" />
       </a>
 
       <form class="pub-search" id="searchForm">
@@ -33,31 +29,41 @@
         <button type="submit" aria-label="Tìm" title="Tìm"><i class="bi bi-search"></i></button>
       </form>
 
+      <!-- Giờ mở cửa + Hotline: 2 dòng gọn giữa ô tìm kiếm và nút Đăng nhập (Antigravity/landing-header-preview.html, #opt-1) -->
+      <div class="hdr-info-stack">
+        <div class="hdr-info-line" title="Giờ mở cửa">
+          <i class="bi bi-clock-fill"></i>
+          <span>07:30 – 20:00 (T2 – T7)</span>
+        </div>
+        <div class="hdr-info-line" title="Hotline">
+          <i class="bi bi-telephone-fill"></i>
+          <strong>028 3816 1673 - 137</strong>
+        </div>
+      </div>
+
       <a asp-controller="Account" asp-action="Login" class="pub-login-btn">
         Đăng nhập
       </a>
     </div>
   </header>
 
-  <!-- 2. THANH DANH MỤC + HOTLINE -->
-  <div class="pub-subbar">
-    <div class="pub-container pub-subbar-inner">
-      <div class="pub-cat-heading"><i class="bi bi-list"></i> DANH MỤC SÁCH</div>
-      <div class="pub-hotline-group">
-        <div class="pub-hotline"><i class="bi bi-clock-fill"></i> Giờ mở cửa: <span>07:30 – 20:00 (T2 – T7)</span></div>
-        <div class="pub-hotline"><i class="bi bi-telephone-fill"></i> Hotline: <span>0243.3323.6714</span></div>
-      </div>
-    </div>
-  </div>
-
   <main class="pub-container">
     <partial name="_BookShowcase" model="Model" />
   </main>
 
   <footer class="pub-footer">
-    <div class="pub-container pub-footer-inner">
-      <div><strong>THƯ VIỆN TRUNG TÂM</strong> — Hệ thống quản lý mượn trả sách (ASP.NET Core MVC &amp; MongoDB)</div>
-      <div>Chưa có thẻ độc giả? Vui lòng mang CCCD đến quầy thủ thư để được cấp thẻ.</div>
+    <div class="pub-footer-main">
+      <div class="pub-container">
+        <h2 class="pub-footer-title">TRUNG TÂM THÔNG TIN - THƯ VIỆN ĐẠI HỌC CÔNG THƯƠNG TP.HCM</h2>
+        <div class="pub-footer-row"><strong>Địa chỉ liên hệ:</strong> 140 Lê Trọng Tấn, Tân Phú, TP. Hồ Chí Minh, Việt Nam</div>
+        <div class="pub-footer-row"><strong>Điện thoại:</strong> 028 3816 1673 - 137</div>
+        <div class="pub-footer-row"><strong>Email:</strong> thuvien@huit.edu.vn</div>
+        <div class="pub-footer-row">Hotline: 097 117 3837</div>
+        <div class="pub-footer-dev">Phát triển bởi Phùng Tuấn Huy - Huỳnh Bá Thịnh</div>
+      </div>
+    </div>
+    <div class="pub-footer-bottom">
+      <div class="pub-container">&copy; @DateTime.Now.Year Thư viện Trường Đại học Công Thương TP.HCM.</div>
     </div>
   </footer>
 

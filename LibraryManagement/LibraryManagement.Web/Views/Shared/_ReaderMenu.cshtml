@@ -1,4 +1,4 @@
-@* Menu Độc giả: Catalog, MyLoans, MyReservations. Mục đang mở khớp theo controller và action. *@
+@* Menu Độc giả: Catalog, MyLoans, MyFavorites, MyReservations. Mục đang mở khớp theo controller và action. *@
 @{
     var route = ViewContext.RouteData.Values;
     var currentController = route["controller"]?.ToString();
@@ -21,6 +21,9 @@
     </a>
     <a class="nav-link @(onHistory ? "" : Active("MyLoans"))" asp-controller="MyLoans" asp-action="Index">
         <i class="bi bi-journal-bookmark"></i> Sách đang mượn
+    </a>
+    <a class="nav-link @Active("MyFavorites")" asp-controller="MyFavorites" asp-action="Index">
+        <i class="bi bi-heart"></i> Sách yêu thích
     </a>
     <a class="nav-link @Active("MyLoans", "History")" asp-controller="MyLoans" asp-action="History">
         <i class="bi bi-clock-history"></i> Lịch sử mượn
