@@ -65,7 +65,7 @@
             </a>
             <form class="reader-header-search" id="searchForm" role="search" method="get" asp-controller="Catalog" asp-action="Index">
                 <input type="text" id="searchInput" name="search" placeholder="Tìm theo tên sách hoặc tác giả..." autocomplete="off" />
-                <button type="submit"><i class="bi bi-search"></i> Tìm</button>
+                <button type="submit" aria-label="Tìm" title="Tìm"><i class="bi bi-search"></i></button>
             </form>
             @{ await UserMenu("reader-user"); }
         </header>

@@ -5,7 +5,7 @@
 
 @section PageActions {
     <a asp-controller="Catalog" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Quay lại chi tiết sách
+        <i class="bi bi-arrow-left me-1"></i>Quay lại
     </a>
 }
 
@@ -61,10 +61,10 @@
                     <div style="font-size: 0.95rem;">
                         <div class="fw-bold mb-2">Chính sách đặt giữ sách:</div>
                         <ul class="mb-0 ps-3" style="line-height: 1.7;">
-                            <li>Thư viện <strong>giữ riêng 1 cuốn</strong> cho bạn đến hết ngày <strong>@Model.HoldUntilPreview.ToString("dd/MM/yyyy")</strong> (@Model.HoldDays ngày, tính cả hôm nay).</li>
+                            <li>Thư viện giữ riêng 1 cuốn cho bạn đến hết ngày @Model.HoldUntilPreview.ToString("dd/MM/yyyy").</li>
                             <li>Mang thẻ độc giả đến quầy trước hạn trên, Thủ thư sẽ lập phiếu mượn cho bạn.</li>
-                            <li>Quá hạn không đến nhận, yêu cầu <strong>tự động hủy</strong> và sách được trả lại kho.</li>
-                            <li>Mỗi độc giả được giữ tối đa <strong>@Model.MaxHolds cuốn</strong> cùng lúc. Bạn có thể tự hủy trong mục "Đặt trước của tôi".</li>
+                            <li>Quá hạn không đến nhận, yêu cầu tự động hủy và sách được trả lại kho.</li>
+                            <li>Mỗi độc giả được giữ tối đa @Model.MaxHolds cuốn cùng lúc. Bạn có thể tự hủy trong mục "Đặt trước của tôi".</li>
                         </ul>
                     </div>
                 </div>
@@ -96,10 +96,10 @@
                 <input type="hidden" name="confirmed" value="true" />
 
                 <a asp-controller="Catalog" asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-lg me-1"></i>Hủy bỏ
+                    Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-check-lg me-1"></i>@(Model.WillHold ? "Xác nhận đặt giữ" : "Xác nhận đặt trước")
+                    @(Model.WillHold ? "Xác nhận đặt giữ" : "Xác nhận đặt trước")
                 </button>
             </form>
         </div>

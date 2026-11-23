@@ -1,21 +1,28 @@
-@* UC01. Layout tự hiện khung trắng + logo khi chưa đăng nhập, view chỉ có phần form. *@
+@* UC01. Layout tự hiện khung trắng + logo khi chưa đăng nhập, view chỉ có phần form.
+   Lỗi hiện thành chữ đỏ ngay dưới ô nhập (dấu "*" thêm bằng CSS .auth-card .field-validation-error), không dùng khung đỏ. *@
 @model LibraryManagement.Web.ViewModels.Account.LoginVM
+@{
+    // Lỗi chung của form (sai tài khoản / mật khẩu, bước 4a): hiện dưới ô Mật khẩu
+    var formError = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+}
 
 <form asp-action="Login" method="post" novalidate>
     <input type="hidden" asp-for="ReturnUrl" />
 
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
-
     <div class="mb-3">
         <label asp-for="Username" class="form-label"></label>
-        <input asp-for="Username" class="form-control" placeholder="admin hoặc mã thẻ, ví dụ DG000001" autofocus autocomplete="username" />
+        <input asp-for="Username" class="form-control" placeholder="Tên đăng nhập" autofocus autocomplete="username" />
         <span asp-validation-for="Username" class="text-danger small"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+        <input asp-for="Password" class="form-control" placeholder="Mật khẩu" autocomplete="current-password" />
         <span asp-validation-for="Password" class="text-danger small"></span>
+        @if (!string.IsNullOrEmpty(formError))
+        {
+            <div><span class="text-danger small field-validation-error">@formError</span></div>
+        }
     </div>
 
     <button type="submit" class="btn btn-primary w-100">

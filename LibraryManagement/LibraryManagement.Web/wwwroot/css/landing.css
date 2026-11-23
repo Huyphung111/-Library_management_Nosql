@@ -108,21 +108,20 @@ body {
   color: var(--lib-text);
 }
 
+/* Icon kính lúp nằm trong thanh, sát bên phải */
 .pub-search button {
   border: none;
-  background: var(--lib-accent);
-  color: #fff;
-  font-weight: 600;
-  padding: 0 20px;
+  background: transparent;
+  color: var(--lib-text);
+  font-size: 1.15rem;
+  padding: 0 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: background 0.2s;
 }
 
 .pub-search button:hover {
-  background: var(--lib-accent-hover);
+  color: var(--lib-primary);
 }
 
 /* Nút đăng nhập bên phải */

@@ -357,6 +357,10 @@ body {
 .auth-brand-logo { width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; object-fit: contain; }
 .auth-brand-name { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; color: var(--lib-primary); }
 .auth-brand-sub { font-size: 0.85rem; color: var(--lib-muted); }
+/* Form trên khung trắng (đăng nhập): lỗi là chữ đỏ có dấu "*" ngay dưới ô nhập */
+.auth-card .field-validation-error { display: inline-block; margin-top: 4px; }
+.auth-card .field-validation-error::before { content: "* "; }
+.auth-card .input-validation-error { border-color: #dc3545; }
 
 /* ===== Màn hình nhỏ: sidebar trượt ra đè lên nội dung ===== */
 @media (max-width: 991.98px) {
@@ -481,28 +485,29 @@ body {
   outline: none;
   color: var(--lib-text);
 }
+/* Icon kính lúp nằm trong thanh, sát bên phải */
 .reader-header-search button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 20px;
+  padding: 0 14px;
   border: none;
-  background: var(--lib-accent);
+  background: transparent;
+  color: var(--lib-text);
+  font-size: 1.15rem;
+}
+.reader-header-search button:hover { color: var(--lib-primary); }
+
+/* Nút tên độc giả: không khung, chữ + icon trắng nằm thẳng trên nền header */
+.reader-user {
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
   color: #fff;
   font-weight: 600;
 }
-.reader-header-search button:hover { background: #b3822e; }
-
-/* Nút tên độc giả: nền trắng như nút "Đăng nhập" ở trang khách */
-.reader-user {
-  padding: 7px 14px;
-  border: none;
-  border-radius: 6px;
-  background: #fff;
-  color: var(--lib-primary);
-  font-weight: 600;
-}
-.reader-user:hover, .reader-user.show { background: #fdf8ef; color: var(--lib-primary-dark); }
+.reader-user:hover, .reader-user.show, .reader-user:focus-visible { color: #fff; opacity: 0.85; }
+.reader-user i { color: #fff; }
+.reader-user .topbar-role { padding: 0; background: none; color: #fff; font-weight: 400; }
 .reader-header .dropdown { margin-left: 0 !important; flex-shrink: 0; }
 
 @media (max-width: 991.98px) {

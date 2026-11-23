@@ -169,12 +169,12 @@
       : `<div class="pub-cover-empty"><i class="bi bi-book-half"></i></div>`;
 
     function renderCategories() {
-      const item = (value, label, count) => `
+      const item = (value, label) => `
         <button type="button" class="pub-cat-item ${activeCategory === value ? "active" : ""}" data-category="${esc(value)}">
-          <span>${esc(label)}</span><span class="pub-cat-count">${count}</span>
+          <span>${esc(label)}</span>
         </button>`;
-      document.getElementById("categoryList").innerHTML = item("", "Tất cả thể loại", BOOKS.length)
-        + CATEGORIES.map(c => item(c.name, c.name, c.count)).join("");
+      document.getElementById("categoryList").innerHTML = item("", "Tất cả thể loại")
+        + CATEGORIES.map(c => item(c.name, c.name)).join("");
     }
 
     function renderBooks() {
@@ -237,7 +237,7 @@
       renderPager(totalPages, filtered.length);
     }
 
-    // Thanh phân trang: Trước / số trang / Sau, dòng "Trang X / N", ô nhập số trang
+    // Thanh phân trang: « / số trang / », ô nhập số trang (gõ số rồi Enter)
     function renderPager(totalPages, count) {
       const pager = document.getElementById("pager");
       if (totalPages === 0) { pager.innerHTML = ""; return; }
@@ -268,9 +268,8 @@
           ${next <= totalPages ? btn(next, "&raquo;", { aria: "Trang sau" }) : ""}
         </div>
         <form class="pager-jump" id="pagerJump" novalidate>
-          <label for="pageInput">Đến trang</label>
-          <input type="number" id="pageInput" inputmode="numeric" step="1" placeholder="Số" value="${valid ? currentPage : ""}" />
-          <button type="submit">Đi</button>
+          <input type="number" id="pageInput" inputmode="numeric" step="1" placeholder="Trang"
+                 aria-label="Nhập số trang rồi nhấn Enter" title="Nhập số trang rồi nhấn Enter" value="${valid ? currentPage : ""}" />
         </form>`;
     }
 
