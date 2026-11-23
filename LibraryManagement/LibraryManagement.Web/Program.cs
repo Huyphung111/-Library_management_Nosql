@@ -32,6 +32,8 @@ builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<ReportService>();
 // LoanService và ReservationService gọi lẫn nhau: LoanService nhận Lazy<ReservationService> để tránh vòng phụ thuộc.
 builder.Services.AddScoped(sp => new Lazy<ReservationService>(() => sp.GetRequiredService<ReservationService>()));
+// Chạy nền: hủy đặt giữ quá hạn nhận, trả sách về kho
+builder.Services.AddHostedService<HoldExpiryService>();
 
 // Đăng nhập bằng cookie, phân quyền theo role Librarian / Reader
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

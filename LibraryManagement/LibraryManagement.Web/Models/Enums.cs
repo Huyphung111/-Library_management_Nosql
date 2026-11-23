@@ -15,7 +15,12 @@ public enum RenewalStatus { Pending, Approved, Rejected }
 /// <summary>Nguồn của yêu cầu gia hạn: độc giả gửi online hay Thủ thư gia hạn tại quầy.</summary>
 public enum RenewalSource { Online, Counter }
 
-public enum ReservationStatus { Pending, Approved, Rejected, Completed, Cancelled }
+/// <summary>
+/// Pending/Approved: hàng chờ khi sách đã hết (không giữ bản nào).
+/// Held: đặt giữ online khi sách còn, đã trừ 1 bản khỏi availableQuantity, chờ độc giả đến nhận trước holdUntil.
+/// Expired: đặt giữ quá hạn nhận, bản sách đã được cộng lại vào kho.
+/// </summary>
+public enum ReservationStatus { Pending, Approved, Rejected, Completed, Cancelled, Held, Expired }
 
 /// <summary>Tên hiển thị tiếng Việt của các enum (mục 5.3 thiết kế kỹ thuật).</summary>
 public static class EnumDisplay
@@ -71,6 +76,8 @@ public static class EnumDisplay
         ReservationStatus.Rejected => "Từ chối",
         ReservationStatus.Completed => "Hoàn tất",
         ReservationStatus.Cancelled => "Đã hủy",
+        ReservationStatus.Held => "Đang giữ sách",
+        ReservationStatus.Expired => "Hết hạn nhận",
         _ => value.ToString()
     };
 }

@@ -333,7 +333,7 @@ body {
 .badge[class*="status-"] { font-weight: 500; padding: 0.4em 0.7em; border-radius: 999px; }
 
 .status-active,   .status-returned, .status-approved, .status-normal  { background: #d7f0e1; color: #14532d; } /* xanh lá */
-.status-borrowing, .status-completed                                   { background: #dbe7f7; color: #1e3a5f; } /* xanh dương */
+.status-borrowing, .status-completed, .status-held                     { background: #dbe7f7; color: #1e3a5f; } /* xanh dương */
 .status-pending,  .status-damaged                                      { background: #fdf0d2; color: #7a4b00; } /* vàng */
 .status-locked,   .status-overdue,  .status-rejected, .status-lost    { background: #f9dcdc; color: #7f1d1d; } /* đỏ */
 .status-expired,  .status-cancelled                                    { background: #e5e7eb; color: #374151; } /* xám */
@@ -400,8 +400,11 @@ body {
 }
 
 /* ===== Ảnh bìa sách (GridFS, mục 7.5) ===== */
-.book-cover.has-img { height: 260px; padding: 0.6rem; background: #eef1f6; }
-.book-cover.has-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+/* Khung ảnh cao cố định, không co lại trong thẻ flex và cắt phần thừa, để ảnh không tràn đè lên chữ bên dưới.
+   Ảnh đặt tuyệt đối trong khung nên chiều cao 100% luôn tính theo khung (không theo kích thước gốc của ảnh). */
+.book-cover.has-img { position: relative; display: block; flex-shrink: 0; height: 260px; overflow: hidden; background: #eef1f6; }
+.book-cover.has-img img { position: absolute; inset: 0.6rem; width: calc(100% - 1.2rem); height: calc(100% - 1.2rem);
+  object-fit: contain; border-radius: 4px; }
 .cover-thumb { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 52px; overflow: hidden;
   border-radius: 3px; background: #eef1f6; color: var(--lib-muted); }
 .cover-thumb img { width: 100%; height: 100%; object-fit: cover; }

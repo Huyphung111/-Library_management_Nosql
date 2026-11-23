@@ -101,6 +101,8 @@ public class LoanService
 
         var overdue = (int)await _db.Loans.CountDocumentsAsync(OverdueFilter(reader.Id!));
         var borrowing = await CountBorrowingBooksAsync(reader.Id!);
+        await _reservations.Value.ExpireHoldsAsync();   // trả về kho các bản giữ đã quá hạn nhận trước khi đọc
+        var heldBookIds = await _reservations.Value.GetHeldBookIdsAsync(reader.Id!);
 
         var reasons = CardProblems(reader);   // bước 3a
         if (overdue > 0)
@@ -114,7 +116,8 @@ public class LoanService
             BorrowingBooks = borrowing,
             OverdueLoans = overdue,
             MaxBooks = _rules.MaxBooksPerReader,
-            Reasons = reasons
+            Reasons = reasons,
+            HeldBookIds = heldBookIds
         });
     }
 
@@ -164,8 +167,11 @@ public class LoanService
         if (books.Count != ids.Count)
             return ServiceResult<Loan>.Fail("Có sách không còn trong danh mục, vui lòng chọn lại.", nameof(CreateLoanVM.BookIds));
 
+        // Sách thư viện đang giữ cho độc giả này: bản sách đã trừ kho từ lúc đặt giữ
+        var heldSet = borrower.HeldBookIds.ToHashSet();
+
         // Bước 5a: báo trước những sách đã hết (transaction bên dưới vẫn chặn trường hợp vừa hết đúng lúc)
-        var outOfStock = books.Where(b => b.AvailableQuantity <= 0).ToList();
+        var outOfStock = books.Where(b => b.AvailableQuantity <= 0 && !heldSet.Contains(b.Id!)).ToList();
         if (outOfStock.Count > 0)
             return ServiceResult<Loan>.Fail(
                 $"Sách đã hết: {string.Join(", ", outOfStock.Select(b => $"\"{b.Title}\""))}. Đã bỏ khỏi danh sách, vui lòng chọn lại.",
@@ -192,8 +198,14 @@ public class LoanService
             using var session = await _db.Client.StartSessionAsync();
             await session.WithTransactionAsync(async (s, ct) =>
             {
+                loan.Id = ObjectId.GenerateNewId().ToString();   // cần Id trước để ghi vào yêu cầu đặt giữ; thử lại thì tạo Id mới
                 foreach (var item in loan.Items)
                 {
+                    // Sách đang giữ cho độc giả: chuyển yêu cầu Held → Completed, không trừ kho lần nữa
+                    if (heldSet.Contains(item.BookId)
+                        && await _reservations.Value.ConsumeHoldAsync(s, reader.Id!, item.BookId, loan.Id))
+                        continue;
+
                     // Mục 7.2: gộp điều kiện vào filter, không đọc rồi mới ghi
                     var dec = await _db.Books.UpdateOneAsync(s,
                         b => b.Id == item.BookId && b.AvailableQuantity > 0,
@@ -203,7 +215,6 @@ public class LoanService
                         throw new BusinessException($"Sách \"{item.Title}\" vừa hết, vui lòng bỏ khỏi danh sách.");
                 }
 
-                loan.Id = null;   // nếu driver thử lại transaction thì tạo Id mới
                 await _db.Loans.InsertOneAsync(s, loan, cancellationToken: ct);
 
                 // Bước 5c: yêu cầu đặt trước Pending / Approved của độc giả cho các sách này → Completed

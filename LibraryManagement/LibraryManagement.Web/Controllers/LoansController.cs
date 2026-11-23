@@ -51,7 +51,8 @@ public class LoansController : Controller
         ModelState.AddModelError(result.Field ?? string.Empty, result.Message!);
         await FillCreateAsync(model, checkReader: true);
         // Bước 5a: bỏ các sách đã hết khỏi danh sách đã chọn
-        var available = model.Books.Where(b => b.AvailableQuantity > 0).Select(b => b.Id).ToHashSet();
+        var held = model.Borrower?.HeldBookIds ?? new List<string>();
+        var available = model.Books.Where(b => b.AvailableQuantity > 0 || held.Contains(b.Id)).Select(b => b.Id).ToHashSet();
         model.BookIds = model.BookIds.Where(available.Contains).Distinct().ToList();
         return View(model);
     }
@@ -86,7 +87,12 @@ public class LoansController : Controller
         vm.CardNumber = check.Data!.Reader.CardNumber;
         vm.Borrower = check.Data;
         if (vm.Borrower.CanBorrow)
+        {
             vm.Books = await _loans.GetBookOptionsAsync();
+            // Độc giả đến nhận sách đã đặt giữ: chọn sẵn các cuốn đang giữ
+            if (vm.BookIds.Count == 0)
+                vm.BookIds = vm.Borrower.HeldBookIds.ToList();
+        }
     }
 
     // UC08 bước 1–3

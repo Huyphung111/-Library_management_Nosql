@@ -22,6 +22,9 @@ public class BorrowerCheckVM
     public List<string> Reasons { get; init; } = new();
 
     public bool CanBorrow => Reasons.Count == 0;
+
+    /// <summary>Các sách thư viện đang giữ cho độc giả này (đặt giữ online). Đã trừ kho sẵn nên vẫn chọn được dù "Còn lại" = 0.</summary>
+    public List<string> HeldBookIds { get; init; } = new();
 }
 
 /// <summary>Một đầu sách để chọn khi lập phiếu (bước 4).</summary>

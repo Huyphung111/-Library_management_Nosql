@@ -26,6 +26,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link @(Model.CurrentTab == "held" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="held">
+                Đang giữ sách
+                <span class="badge rounded-pill @(Model.CurrentTab == "held" ? "bg-white text-primary" : (Model.HeldCount > 0 ? "bg-info text-dark" : "bg-light text-secondary border")) ms-1">@Model.HeldCount</span>
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link @(Model.CurrentTab == "approved" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="approved">
                 Đã duyệt <span class="badge rounded-pill @(Model.CurrentTab == "approved" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.ApprovedCount</span>
             </a>
@@ -37,7 +43,7 @@
         </li>
         <li class="nav-item">
             <a class="nav-link @(Model.CurrentTab == "cancelled" ? "active" : "text-dark")" asp-action="Index" asp-route-tab="cancelled">
-                Từ chối / Đã hủy <span class="badge rounded-pill @(Model.CurrentTab == "cancelled" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.CancelledCount</span>
+                Từ chối / Đã hủy / Hết hạn <span class="badge rounded-pill @(Model.CurrentTab == "cancelled" ? "bg-white text-primary" : "bg-light text-secondary border") ms-1">@Model.CancelledCount</span>
             </a>
         </li>
     </ul>
@@ -62,7 +68,7 @@
                         <th style="width: 140px;">Ngày đăng ký</th>
                         <th style="width: 120px;">Trạng thái</th>
                         <th>Ghi chú</th>
-                        <th class="actions" style="width: 150px;">Thao tác</th>
+                        <th class="actions" style="width: 190px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -126,6 +132,12 @@
                                 </span>
                             </td>
                             <td>
+                                @if (item.Status == ReservationStatus.Held && item.HoldUntil.HasValue)
+                                {
+                                    <span class="badge status-held">
+                                        <i class="bi bi-bookmark-check me-1"></i>Giữ đến hết @item.HoldUntil.Value.ToVnDateText()
+                                    </span>
+                                }
                                 @if (item.IsReadyForPickup)
                                 {
                                     <span class="badge bg-success-subtle text-success border border-success-subtle">
@@ -158,6 +170,17 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="openRejectModal('@item.Id', '@item.ReaderName', '@item.BookTitle')" title="Từ chối">
                                         <i class="bi bi-x-lg me-1"></i>Từ chối
+                                    </button>
+                                }
+                                else if (item.Status == ReservationStatus.Held)
+                                {
+                                    <a asp-controller="Loans" asp-action="Create" asp-route-cardNumber="@item.CardNumber"
+                                       class="btn btn-sm btn-outline-primary me-1" title="Độc giả đến nhận: lập phiếu mượn">
+                                        <i class="bi bi-journal-plus me-1"></i>Lập phiếu
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            onclick="openCancelModal('@item.Id', '@item.ReaderName', '@item.BookTitle')" title="Hủy đặt giữ, trả sách về kho">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy
                                     </button>
                                 }
                                 else if (item.Status == ReservationStatus.Approved)

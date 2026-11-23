@@ -16,7 +16,8 @@
     <div class="alert alert-info d-flex align-items-center mb-3 p-3" role="alert">
         <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0 text-primary"></i>
         <div style="font-size: 0.95rem;">
-            <strong>Quy định thư viện (QĐ08):</strong> Hệ thống không giữ sách riêng. Khi có sách được trả về kho, thư viện sẽ liên hệ với độc giả đăng ký sớm nhất để đến mượn.
+            <strong>Đặt giữ</strong> (sách còn trên giá): thư viện giữ sẵn 1 cuốn, bạn mang thẻ đến quầy nhận trước hạn ghi bên dưới, quá hạn sẽ tự hủy.<br />
+            <strong>Đặt trước</strong> (sách đã hết): bạn vào hàng chờ, khi có sách về thư viện sẽ liên hệ độc giả đăng ký sớm nhất.
         </div>
     </div>
 
@@ -25,7 +26,7 @@
         <div class="empty-state">
             <i class="bi bi-bookmark-x text-muted" style="font-size: 3rem;"></i>
             <p class="fs-5 mt-2">Bạn chưa có yêu cầu đặt trước cuốn sách nào.</p>
-            <p class="small text-muted">Khi cuốn sách bạn thích đang hết trong kho, bạn có thể bấm "Đặt trước" để được ưu tiên liên hệ khi có sách về.</p>
+            <p class="small text-muted">Sách còn trên giá: bấm "Đặt giữ" để thư viện giữ sẵn cho bạn. Sách đã hết: bấm "Đặt trước" để được liên hệ khi có sách về.</p>
             <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary mt-2">
                 <i class="bi bi-search me-1"></i>Khám phá danh mục sách
             </a>
@@ -66,7 +67,13 @@
                                 </span>
                             </td>
                             <td>
-                                @if (!string.IsNullOrEmpty(item.Reason))
+                                @if (item.Status == ReservationStatus.Held && item.HoldUntil.HasValue)
+                                {
+                                    <span class="text-success small fw-medium">
+                                        Sách đã được giữ cho bạn. Mang thẻ đến quầy nhận trước hết ngày <strong>@item.HoldUntil.Value.ToVnDateText()</strong>.
+                                    </span>
+                                }
+                                else if (!string.IsNullOrEmpty(item.Reason))
                                 {
                                     <span class="text-muted small">@item.Reason</span>
                                 }
@@ -90,7 +97,7 @@
                             <td class="actions">
                                 @if (item.CanCancel)
                                 {
-                                    <form asp-action="Cancel" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy yêu cầu đặt trước cuốn sách này?');">
+                                    <form asp-action="Cancel" method="post" onsubmit="return confirm('@(item.Status == ReservationStatus.Held ? "Hủy đặt giữ? Cuốn sách sẽ được trả lại kho cho người khác mượn." : "Bạn có chắc chắn muốn hủy yêu cầu đặt trước cuốn sách này?")');">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy yêu cầu">

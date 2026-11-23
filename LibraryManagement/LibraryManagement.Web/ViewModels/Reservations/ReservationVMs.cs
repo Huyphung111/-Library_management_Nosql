@@ -15,10 +15,13 @@ public class MyReservationItemVM
     public ReservationStatus Status { get; set; }
     public string? Reason { get; set; }
 
+    /// <summary>Đặt giữ: ngày cuối được đến nhận sách.</summary>
+    public DateTime? HoldUntil { get; set; }
+
     /// <summary>
-    /// Độc giả được quyền tự hủy yêu cầu khi đang Chờ duyệt hoặc Đã duyệt (UC16 bước 1b).
+    /// Độc giả được quyền tự hủy yêu cầu khi đang Chờ duyệt, Đã duyệt hoặc Đang giữ sách (UC16 bước 1b).
     /// </summary>
-    public bool CanCancel => Status == ReservationStatus.Pending || Status == ReservationStatus.Approved;
+    public bool CanCancel => Status is ReservationStatus.Pending or ReservationStatus.Approved or ReservationStatus.Held;
 }
 
 /// <summary>
@@ -33,6 +36,20 @@ public class ReservationConfirmVM
     public int? PublishYear { get; set; }
     public List<string> CategoryNames { get; set; } = new();
     public int AvailableQuantity { get; set; }
+
+    /// <summary>
+    /// true: sách còn và không ai đang xếp hàng → xác nhận là ĐẶT GIỮ (giữ 1 bản).
+    /// false: sách hết hoặc đã có người chờ trước → xác nhận là ĐẶT TRƯỚC (vào hàng chờ).
+    /// </summary>
+    public bool WillHold { get; set; }
+
+    /// <summary>Có độc giả khác đang xếp hàng chờ cuốn này.</summary>
+    public bool HasQueue { get; set; }
+
+    /// <summary>Ngày cuối được đến nhận nếu đặt giữ hôm nay (giờ VN).</summary>
+    public DateTime HoldUntilPreview { get; set; }
+    public int HoldDays { get; set; }
+    public int MaxHolds { get; set; }
 }
 
 /// <summary>
@@ -57,6 +74,9 @@ public class LibrarianReservationVM
     public string? ProcessedBy { get; set; }
     public int AvailableQuantity { get; set; }
 
+    /// <summary>Đặt giữ: ngày cuối được đến nhận sách.</summary>
+    public DateTime? HoldUntil { get; set; }
+
     /// <summary>
     /// Đã duyệt và sách đã có trong kho (AvailableQuantity > 0) -> Cần liên hệ độc giả đến nhận (UC10 bước 3a).
     /// </summary>
@@ -75,6 +95,7 @@ public class LibrarianReservationListVM
     public int PendingCount { get; set; }
     public int ApprovedCount { get; set; }
     public int ReadyCount { get; set; }
+    public int HeldCount { get; set; }
     public int CompletedCount { get; set; }
     public int CancelledCount { get; set; }
 }

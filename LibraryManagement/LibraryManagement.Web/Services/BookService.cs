@@ -194,6 +194,10 @@ public class BookService
         if (hasOpenLoan)
             return ServiceResult.Fail("Không thể xóa sách này vì đang nằm trong phiếu mượn chưa trả.");
 
+        var isHeld = await _db.Reservations.Find(r => r.BookId == id && r.Status == ReservationStatus.Held).AnyAsync();
+        if (isHeld)
+            return ServiceResult.Fail("Không thể xóa sách này vì thư viện đang giữ sách cho độc giả đặt giữ. Hãy hủy yêu cầu đặt giữ trước.");
+
         var book = await GetByIdAsync(id);
         var result = await _db.Books.DeleteOneAsync(b => b.Id == id);
         if (result.DeletedCount == 0)

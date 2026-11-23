@@ -16,12 +16,9 @@
         && string.Equals(currentAction, "History", StringComparison.OrdinalIgnoreCase);
 }
 <nav class="sidebar-nav">
-    <div class="nav-heading">Thư viện</div>
     <a class="nav-link @Active("Catalog")" asp-controller="Catalog" asp-action="Index">
-        <i class="bi bi-search"></i> Tìm sách
+        <i class="bi bi-house-door"></i> Trang chủ
     </a>
-
-    <div class="nav-heading">Của tôi</div>
     <a class="nav-link @(onHistory ? "" : Active("MyLoans"))" asp-controller="MyLoans" asp-action="Index">
         <i class="bi bi-journal-bookmark"></i> Sách đang mượn
     </a>

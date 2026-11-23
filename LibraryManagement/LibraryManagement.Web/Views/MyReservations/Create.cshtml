@@ -1,6 +1,6 @@
 @model LibraryManagement.Web.ViewModels.Reservations.ReservationConfirmVM
 @{
-    ViewData["Title"] = "Xác nhận đặt trước sách";
+    ViewData["Title"] = Model.WillHold ? "Xác nhận đặt giữ sách" : "Xác nhận đặt trước sách";
 }
 
 @section PageActions {
@@ -19,9 +19,24 @@
                     {
                         <span class="badge bg-light text-dark border">@cat</span>
                     }
-                    <span class="badge status-overdue">
-                        <i class="bi bi-x-circle me-1"></i>Đang hết sách trong kho
-                    </span>
+                    @if (Model.WillHold)
+                    {
+                        <span class="badge status-active">
+                            <i class="bi bi-check-circle me-1"></i>Còn @Model.AvailableQuantity cuốn trên giá
+                        </span>
+                    }
+                    else if (Model.AvailableQuantity > 0)
+                    {
+                        <span class="badge status-pending">
+                            <i class="bi bi-people me-1"></i>Đang có độc giả xếp hàng chờ
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge status-overdue">
+                            <i class="bi bi-x-circle me-1"></i>Đang hết sách trong kho
+                        </span>
+                    }
                 </div>
 
                 <h3 class="fw-bold text-primary mb-2">
@@ -38,19 +53,41 @@
                 </div>
             </div>
 
-            @* Khung thông báo chính sách đặt trước: icon cân đối, chữ rõ ràng dễ đọc *@
-            <div class="alert alert-warning d-flex align-items-start gap-3 p-3 mb-4" role="alert">
-                <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0 mt-1"></i>
-                <div style="font-size: 0.95rem;">
-                    <div class="fw-bold mb-2">Chính sách đặt trước của thư viện (QĐ08):</div>
-                    <ul class="mb-0 ps-3" style="line-height: 1.7;">
-                        <li>Thư viện <strong>không giữ riêng cuốn sách</strong> cho bất kỳ độc giả nào.</li>
-                        <li>Khi có người trả sách về kho, thủ thư sẽ liên hệ qua điện thoại với độc giả đăng ký sớm nhất.</li>
-                        <li>Độc giả nào đến quầy làm thủ tục trước sẽ được mượn trước.</li>
-                        <li>Yêu cầu đặt trước sẽ tự động <strong>hoàn tất</strong> khi bạn đến quầy mượn cuốn sách này.</li>
-                    </ul>
+            @if (Model.WillHold)
+            {
+                @* Chính sách đặt giữ: sách còn trên giá, thư viện giữ 1 cuốn *@
+                <div class="alert alert-info d-flex align-items-start gap-3 p-3 mb-4" role="alert">
+                    <i class="bi bi-bookmark-check-fill fs-5 text-primary flex-shrink-0 mt-1"></i>
+                    <div style="font-size: 0.95rem;">
+                        <div class="fw-bold mb-2">Chính sách đặt giữ sách:</div>
+                        <ul class="mb-0 ps-3" style="line-height: 1.7;">
+                            <li>Thư viện <strong>giữ riêng 1 cuốn</strong> cho bạn đến hết ngày <strong>@Model.HoldUntilPreview.ToString("dd/MM/yyyy")</strong> (@Model.HoldDays ngày, tính cả hôm nay).</li>
+                            <li>Mang thẻ độc giả đến quầy trước hạn trên, Thủ thư sẽ lập phiếu mượn cho bạn.</li>
+                            <li>Quá hạn không đến nhận, yêu cầu <strong>tự động hủy</strong> và sách được trả lại kho.</li>
+                            <li>Mỗi độc giả được giữ tối đa <strong>@Model.MaxHolds cuốn</strong> cùng lúc. Bạn có thể tự hủy trong mục "Đặt trước của tôi".</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                @* Chính sách đặt trước: sách hết (hoặc đã có người chờ), vào hàng chờ *@
+                <div class="alert alert-warning d-flex align-items-start gap-3 p-3 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0 mt-1"></i>
+                    <div style="font-size: 0.95rem;">
+                        <div class="fw-bold mb-2">Chính sách đặt trước của thư viện (QĐ08):</div>
+                        <ul class="mb-0 ps-3" style="line-height: 1.7;">
+                            @if (Model.AvailableQuantity > 0)
+                            {
+                                <li>Cuốn sách này đang có độc giả khác <strong>xếp hàng chờ trước</strong>, yêu cầu của bạn sẽ được đưa vào hàng chờ.</li>
+                            }
+                            <li>Khi có sách cho bạn, thủ thư sẽ liên hệ qua điện thoại theo thứ tự đăng ký.</li>
+                            <li>Độc giả nào đến quầy làm thủ tục trước sẽ được mượn trước.</li>
+                            <li>Yêu cầu đặt trước sẽ tự động <strong>hoàn tất</strong> khi bạn đến quầy mượn cuốn sách này.</li>
+                        </ul>
+                    </div>
+                </div>
+            }
 
             @* Nút xác nhận *@
             <form asp-action="Create" method="post" class="d-flex justify-content-end gap-2">
@@ -62,7 +99,7 @@
                     <i class="bi bi-x-lg me-1"></i>Hủy bỏ
                 </a>
                 <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-check-lg me-1"></i>Xác nhận đặt trước
+                    <i class="bi bi-check-lg me-1"></i>@(Model.WillHold ? "Xác nhận đặt giữ" : "Xác nhận đặt trước")
                 </button>
             </form>
         </div>

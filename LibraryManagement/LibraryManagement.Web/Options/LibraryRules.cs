@@ -24,6 +24,12 @@ public class LibraryRules
     /// <summary>Tiền phạt cho mỗi ngày trả trễ (đồng).</summary>
     public long FinePerDay { get; set; } = 5000;
 
+    /// <summary>Số ngày thư viện giữ sách cho một yêu cầu đặt giữ (tính cả hôm đặt).</summary>
+    public int HoldDays { get; set; } = 3;
+
+    /// <summary>Số cuốn tối đa một độc giả được đặt giữ cùng lúc.</summary>
+    public int MaxHolds { get; set; } = 2;
+
     /// <summary>Độ dài tối thiểu của mật khẩu.</summary>
     public int MinPasswordLength { get; set; } = 6;
 
