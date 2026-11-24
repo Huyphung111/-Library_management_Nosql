@@ -1,0 +1,41 @@
+{
+  "passed": 5,
+  "total": 5,
+  "results": [
+    {
+      "code": "F01",
+      "bug": "BUG-01",
+      "name": "Bao cao qua han doc dong LibraryRules:FinePerDay=7000",
+      "passed": true,
+      "detail": "days=13, rendered=91000, expected(7000*days)=91000"
+    },
+    {
+      "code": "F02",
+      "bug": "BUG-06",
+      "name": "Chan duyet/tu choi lap lai khi trang thai da thay doi (ModifiedCount==1)",
+      "passed": true,
+      "detail": "finalStatus=Approved, a2_blocked=True, rj_blocked=True"
+    },
+    {
+      "code": "F03",
+      "bug": "BUG-08",
+      "name": "Trang Sach yeu thich KHONG hien nhan 'Dang giu cho ban' cho ban giu qua han",
+      "passed": true,
+      "detail": "HTTP 200, badgeShown=False"
+    },
+    {
+      "code": "F04",
+      "bug": "BUG-09",
+      "name": "Thong bao loi giam tong SL nhac ro 'dang cho muon hoac dang giu cho doc gia'",
+      "passed": true,
+      "detail": "HTTP 200, mentionsHeld=True"
+    },
+    {
+      "code": "F05",
+      "bug": "BUG-10",
+      "name": "CardNotice tu hien trong phien sau 1 phut (verified)",
+      "passed": true,
+      "detail": "Live-verified PASS (beforeLock=False, afterLockBanner=True)"
+    }
+  ]
+}

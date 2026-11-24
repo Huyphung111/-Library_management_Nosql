@@ -1,0 +1,445 @@
+{
+  "mongo": {
+    "counts": {
+      "users": 8,
+      "readers": 7,
+      "categories": 6,
+      "books": 60,
+      "loans": 12,
+      "reservations": 7,
+      "counters": 2,
+      "covers.files": 60,
+      "covers.chunks": 60
+    },
+    "indexes": {
+      "users": [
+        "_id_",
+        "ux_username"
+      ],
+      "readers": [
+        "_id_",
+        "ux_cardNumber",
+        "ux_idNumber"
+      ],
+      "categories": [
+        "_id_",
+        "ux_name"
+      ],
+      "books": [
+        "_id_",
+        "ix_categoryIds",
+        "tx_title_authors"
+      ],
+      "loans": [
+        "_id_",
+        "ux_loanCode",
+        "ix_reader_status",
+        "ix_status_dueDate",
+        "ix_itemsBookId_status"
+      ],
+      "reservations": [
+        "_id_",
+        "ix_book_status_reservedAt",
+        "ix_reader_status"
+      ]
+    },
+    "issues": [],
+    "warnings": [],
+    "sampleIds": {
+      "bookId": "6b00fa213f21f195f44ba156",
+      "coverId": "6b038ce78577f738907f9a20"
+    },
+    "stockMismatchCount": 0,
+    "missingCoverCount": 0
+  },
+  "http": [
+    {
+      "group": "Guest",
+      "name": "Trang chủ công khai GET /",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "Guest",
+      "name": "Ảnh bìa công khai /Covers/{id}",
+      "passed": true,
+      "detail": "HTTP 200, image/jpeg"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /Dashboard",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FDashboard"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /Books",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FBooks"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /Loans/Create",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FLoans%2FCreate"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /MyLoans",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FMyLoans"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /MyFavorites",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FMyFavorites"
+    },
+    {
+      "group": "RBAC",
+      "name": "Khách bị chặn /Catalog",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FCatalog"
+    },
+    {
+      "group": "Auth",
+      "name": "Đăng nhập Thủ thư (admin)",
+      "passed": true,
+      "detail": "HTTP 200 -> http://localhost:5101/Dashboard"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Dashboard",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Books",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Books/Create",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Books?search=(test[+",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Categories",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Readers",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Readers/Create",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Loans/Create",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Loans/CheckReader?cardNumber=DG000001",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Loans/CheckReader?cardNumber=KHONGTONTAI",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Loans/Return",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Loans/Return?keyword=DG000001",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Renewals",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reservations",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reservations?tab=held",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reservations?tab=ready",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Search?type=book&keyword=(test[+",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Search?type=reader&keyword=DG",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Search?type=loan&loanStatus=overdue",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reports/TopBooks",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reports/Overdue",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reports/ByMonth",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reports/ByCategory",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "LibrarianPages",
+      "name": "GET /Reports/Fines",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "RBAC",
+      "name": "Thủ thư bị chặn /Catalog",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/AccessDenied?ReturnUrl=%2FCatalog"
+    },
+    {
+      "group": "RBAC",
+      "name": "Thủ thư bị chặn /MyLoans",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/AccessDenied?ReturnUrl=%2FMyLoans"
+    },
+    {
+      "group": "RBAC",
+      "name": "Thủ thư bị chặn /MyReservations",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/AccessDenied?ReturnUrl=%2FMyReservations"
+    },
+    {
+      "group": "RBAC",
+      "name": "Thủ thư bị chặn /MyFavorites",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/AccessDenied?ReturnUrl=%2FMyFavorites"
+    },
+    {
+      "group": "Resilience",
+      "name": "ObjectId sai định dạng /Books/Edit/bad-id",
+      "passed": true,
+      "detail": "HTTP 200 -> http://localhost:5101/Books"
+    },
+    {
+      "group": "Resilience",
+      "name": "ObjectId sai định dạng /Categories/Edit/bad-id",
+      "passed": true,
+      "detail": "HTTP 200 -> http://localhost:5101/Categories"
+    },
+    {
+      "group": "Resilience",
+      "name": "ObjectId sai định dạng /Readers/Details/bad-id",
+      "passed": true,
+      "detail": "HTTP 200 -> http://localhost:5101/Readers"
+    },
+    {
+      "group": "Resilience",
+      "name": "ObjectId sai định dạng /Loans/Details/bad-id",
+      "passed": true,
+      "detail": "HTTP 200 -> http://localhost:5101/Loans/Create"
+    },
+    {
+      "group": "Resilience",
+      "name": "ObjectId sai định dạng /Covers/bad-id",
+      "passed": true,
+      "detail": "HTTP 404 -> http://localhost:5101/Covers/bad-id"
+    },
+    {
+      "group": "Auth",
+      "name": "Đăng nhập Độc giả hoạt động (DG000001)",
+      "passed": false,
+      "detail": "HTTP 200 -> http://localhost:5101/Account/Login"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /Catalog",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /Catalog/Details/6b00fa213f21f195f44ba156",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /Catalog/Details/bad-id",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /MyLoans",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /MyLoans/History",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /MyReservations",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /MyReservations/Create?bookId=6b00fa213f21f195f44ba156",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /MyFavorites",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "GET /Account/ChangePassword",
+      "passed": true,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "ReaderPages",
+      "name": "AJAX hộp xác nhận đặt giữ/đặt trước",
+      "passed": false,
+      "detail": "HTTP 401"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Dashboard",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FDashboard"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Books",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FBooks"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Readers",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FReaders"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Loans/Create",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FLoans%2FCreate"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Renewals",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FRenewals"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Reservations",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FReservations"
+    },
+    {
+      "group": "RBAC",
+      "name": "Độc giả bị chặn /Reports/TopBooks",
+      "passed": false,
+      "detail": "HTTP 302 -> http://localhost:5101/Account/Login?ReturnUrl=%2FReports%2FTopBooks"
+    },
+    {
+      "group": "Security",
+      "name": "Chặn POST /MyFavorites/Add thiếu CSRF token",
+      "passed": false,
+      "detail": "HTTP 302"
+    },
+    {
+      "group": "Auth",
+      "name": "Từ chối sai mật khẩu (thông báo chung)",
+      "passed": false,
+      "detail": "HTTP 200"
+    },
+    {
+      "group": "Auth",
+      "name": "Thẻ bị khóa (DG000009) vẫn vào được + có CardNotice",
+      "passed": false,
+      "detail": "HTTP 200 -> http://localhost:5101/Account/Login"
+    },
+    {
+      "group": "Auth",
+      "name": "Thẻ hết hạn (DG000010) vẫn vào được + có CardNotice",
+      "passed": false,
+      "detail": "HTTP 200 -> http://localhost:5101/Account/Login"
+    }
+  ],
+  "summary": {
+    "passed": 51,
+    "total": 64
+  }
+}

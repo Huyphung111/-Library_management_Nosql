@@ -1,0 +1,390 @@
+{
+  "passed": 48,
+  "total": 48,
+  "results": [
+    {
+      "code": "R01",
+      "group": "Auth",
+      "name": "Bỏ trống username/password bị chặn",
+      "passed": true,
+      "detail": "HTTP 200, url=http://localhost:5199/Account/Login",
+      "severity": "PASS"
+    },
+    {
+      "code": "R02",
+      "group": "Auth",
+      "name": "Sai mật khẩu báo thông báo chung",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R03",
+      "group": "Auth",
+      "name": "Đăng nhập DG000001 thành công -> /Catalog",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "R04",
+      "group": "Auth",
+      "name": "Đăng nhập username có khoảng trắng đầu/cuối",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "R05",
+      "group": "Auth",
+      "name": "Đăng nhập mã thẻ viết chữ thường (dg000001)",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog (nếu FAIL: username đang phân biệt hoa/thường)",
+      "severity": "PASS"
+    },
+    {
+      "code": "R06",
+      "group": "Auth",
+      "name": "Thẻ bị khóa (DG000009) vẫn đăng nhập + có CardNotice",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "R07",
+      "group": "Auth",
+      "name": "Thẻ hết hạn (DG000010) vẫn đăng nhập + có CardNotice",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "R08",
+      "group": "Auth",
+      "name": "Đổi MK: sai mật khẩu hiện tại bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R09",
+      "group": "Auth",
+      "name": "Đổi MK: mật khẩu mới < 6 ký tự bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R10",
+      "group": "Auth",
+      "name": "Đổi MK: trùng mật khẩu cũ bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R11",
+      "group": "Auth",
+      "name": "Đổi MK: xác nhận không khớp bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R12",
+      "group": "Auth",
+      "name": "Đổi MK thành công: MK cũ bị chặn, MK mới vào được",
+      "passed": true,
+      "detail": "old=http://localhost:5199/Account/Login, new=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "R13",
+      "group": "Auth",
+      "name": "Logout khi hết phiên (không token) không bị 400",
+      "passed": true,
+      "detail": "HTTP 302 -> /",
+      "severity": "PASS"
+    },
+    {
+      "code": "R14",
+      "group": "Security",
+      "name": "RBAC: Độc giả bị chặn toàn bộ 10 trang Thủ thư",
+      "passed": true,
+      "detail": "All 10 blocked",
+      "severity": "PASS"
+    },
+    {
+      "code": "R15",
+      "group": "Security",
+      "name": "RBAC: Độc giả bị chặn POST endpoint Thủ thư",
+      "passed": true,
+      "detail": "HTTP 302 -> http://localhost:5199/Account/AccessDenied?ReturnUrl=%2FRenewals%2FApprove",
+      "severity": "PASS"
+    },
+    {
+      "code": "R16",
+      "group": "Security",
+      "name": "Anti-IDOR: DG000001 không xem/gia hạn được phiếu của độc giả khác",
+      "passed": true,
+      "detail": "url=http://localhost:5199/MyLoans",
+      "severity": "PASS"
+    },
+    {
+      "code": "R17",
+      "group": "Security",
+      "name": "Anti-IDOR: DG000001 không hủy được đặt trước của DG000004",
+      "passed": true,
+      "detail": "status=Pending",
+      "severity": "PASS"
+    },
+    {
+      "code": "R18",
+      "group": "Security",
+      "name": "Anti-CSRF: Chặn POST /MyFavorites/Add thiếu token",
+      "passed": true,
+      "detail": "HTTP 400",
+      "severity": "PASS"
+    },
+    {
+      "code": "R19",
+      "group": "Catalog",
+      "name": "Tìm sách ký tự đặc biệt & lọc thể loại hợp lệ",
+      "passed": true,
+      "detail": "HTTP 200, 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R20",
+      "group": "Catalog",
+      "name": "Lọc categoryId sai định dạng không gây 500",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R21",
+      "group": "Catalog",
+      "name": "Chi tiết sách, bad-id và ảnh bìa GridFS",
+      "passed": true,
+      "detail": "det=200, bad=200->http://localhost:5199/Catalog, cov=200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R22",
+      "group": "Favorites",
+      "name": "Thêm sách yêu thích (AJAX JSON)",
+      "passed": true,
+      "detail": "HTTP 200, {'success': True, 'favorite': True, 'message': 'Đã thêm vào sách yêu thích.', 'count': 1}",
+      "severity": "PASS"
+    },
+    {
+      "code": "R23",
+      "group": "Favorites",
+      "name": "Thêm trùng cùng 1 sách không tạo bản sao ($addToSet)",
+      "passed": true,
+      "detail": "count=1",
+      "severity": "PASS"
+    },
+    {
+      "code": "R24",
+      "group": "Favorites",
+      "name": "Thêm yêu thích bookId sai định dạng bị chặn 400",
+      "passed": true,
+      "detail": "HTTP 400",
+      "severity": "PASS"
+    },
+    {
+      "code": "R25",
+      "group": "Favorites",
+      "name": "Trang /MyFavorites hiển thị đúng sách vừa thêm",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R26",
+      "group": "Favorites",
+      "name": "Xóa yêu thích (idempotent, count về 0)",
+      "passed": true,
+      "detail": "count=0, retry=200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R27",
+      "group": "Favorites",
+      "name": "Thẻ bị khóa (DG000009) gọi /MyFavorites/Add",
+      "passed": true,
+      "detail": "HTTP 200 -> CHO PHÉP (xem xét có đúng chủ ý CardNotice chỉ xem không)",
+      "severity": "PASS"
+    },
+    {
+      "code": "R28",
+      "group": "Reservations",
+      "name": "Đặt giữ online (sách còn): tạo Held + trừ kho đúng 1",
+      "passed": true,
+      "detail": "avail: 3 -> 2",
+      "severity": "PASS"
+    },
+    {
+      "code": "R29",
+      "group": "Reservations",
+      "name": "Chặn đặt trùng cuốn đang giữ (QĐ08)",
+      "passed": true,
+      "detail": "HTTP 400, avail=2",
+      "severity": "PASS"
+    },
+    {
+      "code": "R30",
+      "group": "Reservations",
+      "name": "Giới hạn tối đa 2 cuốn đặt giữ (MaxHolds=2)",
+      "passed": true,
+      "detail": "h2=200, h3=400",
+      "severity": "PASS"
+    },
+    {
+      "code": "R31",
+      "group": "Reservations",
+      "name": "Độc giả tự hủy đặt giữ (Held) -> hoàn trả đúng 1 cuốn vào kho",
+      "passed": true,
+      "detail": "avail: 2 -> 3",
+      "severity": "PASS"
+    },
+    {
+      "code": "R32",
+      "group": "Reservations",
+      "name": "Đặt trước sách hết hàng -> tạo Pending",
+      "passed": true,
+      "detail": "HTTP 200, status=Pending",
+      "severity": "PASS"
+    },
+    {
+      "code": "R33",
+      "group": "Reservations",
+      "name": "Chống chen hàng: sách còn nhưng có hàng chờ -> vào Pending (không trừ kho)",
+      "passed": true,
+      "detail": "status=Pending, avail=3",
+      "severity": "PASS"
+    },
+    {
+      "code": "R34",
+      "group": "Reservations",
+      "name": "Độc giả tự hủy đặt trước Pending -> Cancelled",
+      "passed": true,
+      "detail": "status=Cancelled",
+      "severity": "PASS"
+    },
+    {
+      "code": "R35",
+      "group": "Reservations",
+      "name": "Chặn đặt cuốn đang mượn (IsBorrowingAsync)",
+      "passed": true,
+      "detail": "HTTP 400, msg=Bạn đang mượn một cuốn sách này, không thể đặt thêm.",
+      "severity": "PASS"
+    },
+    {
+      "code": "R36",
+      "group": "Reservations",
+      "name": "Độc giả quá hạn (DG000002) bị chặn đặt giữ sách còn",
+      "passed": true,
+      "detail": "HTTP 400",
+      "severity": "PASS"
+    },
+    {
+      "code": "R36b",
+      "group": "Reservations",
+      "name": "Độc giả quá hạn (DG000002) bị chặn đặt trước sách hết hàng (fix R36b)",
+      "passed": true,
+      "detail": "HTTP 400 -> BỊ CHẶN OK",
+      "severity": "PASS"
+    },
+    {
+      "code": "R37",
+      "group": "Reservations",
+      "name": "Thẻ bị khóa (DG000009) & hết hạn (DG000010) bị chặn đặt sách",
+      "passed": true,
+      "detail": "locked=400, expired=400",
+      "severity": "PASS"
+    },
+    {
+      "code": "R38",
+      "group": "Reservations",
+      "name": "BUG-05: Hộp xác nhận có tự ExpireHoldsAsync bản giữ quá hạn không",
+      "passed": true,
+      "detail": "Tự trả kho OK",
+      "severity": "PASS"
+    },
+    {
+      "code": "R39",
+      "group": "MyLoans",
+      "name": "UC14: Tab Đang mượn hiển thị đúng phiếu PM999001",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R40",
+      "group": "MyLoans",
+      "name": "UC14 (mới sửa): Mục Lịch sử mượn hiện cả sách Đang mượn + Tổng phạt",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R41",
+      "group": "MyLoans",
+      "name": "UC14 (mới thêm): Tab Lịch sử gia hạn hiển thị dòng Bị từ chối + modal lý do",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R42",
+      "group": "Renewal",
+      "name": "UC15: Gửi yêu cầu gia hạn hợp lệ thành công",
+      "passed": true,
+      "detail": "preview=200, post=200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R43",
+      "group": "Renewal",
+      "name": "UC15: Chặn gửi trùng gia hạn khi đã có Pending",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R44",
+      "group": "Renewal",
+      "name": "UC15: Chặn gia hạn phiếu đã quá hạn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R45",
+      "group": "Renewal",
+      "name": "UC15: Chặn gia hạn phiếu đã đủ 2 lần (MaxRenewals=2)",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R46",
+      "group": "Renewal",
+      "name": "UC15: Chặn gia hạn khi thẻ bị khóa (dù đang mở phiên cũ)",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "R47",
+      "group": "Integrity",
+      "name": "Toàn vẹn tồn kho sau toàn bộ thao tác đặt giữ/hủy/mượn",
+      "passed": true,
+      "detail": "28 books checked, mismatches=[]",
+      "severity": "PASS"
+    }
+  ]
+}

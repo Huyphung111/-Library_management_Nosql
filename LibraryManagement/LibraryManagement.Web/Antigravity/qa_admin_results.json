@@ -1,0 +1,382 @@
+{
+  "passed": 47,
+  "total": 47,
+  "results": [
+    {
+      "code": "A01",
+      "group": "Auth",
+      "name": "Đăng nhập Thủ thư (admin / admin123) -> /Dashboard",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Dashboard",
+      "severity": "PASS"
+    },
+    {
+      "code": "A02",
+      "group": "Security",
+      "name": "RBAC: Thủ thư bị chặn toàn bộ 4 trang Độc giả",
+      "passed": true,
+      "detail": "All 4 blocked",
+      "severity": "PASS"
+    },
+    {
+      "code": "A03",
+      "group": "Security",
+      "name": "Anti-CSRF: Chặn POST /Categories/Create thiếu token",
+      "passed": true,
+      "detail": "HTTP 400",
+      "severity": "PASS"
+    },
+    {
+      "code": "A04",
+      "group": "Dashboard",
+      "name": "Dashboard hiển thị đủ 4 KPI và khối Việc cần xử lý",
+      "passed": true,
+      "detail": "books=28, activeReaders=9, borrowing=3",
+      "severity": "PASS"
+    },
+    {
+      "code": "A05",
+      "group": "UC05",
+      "name": "Thêm thể loại mới hợp lệ",
+      "passed": true,
+      "detail": "id=6b053984140aed016cb66307",
+      "severity": "PASS"
+    },
+    {
+      "code": "A06",
+      "group": "UC05",
+      "name": "Chặn trùng tên thể loại không phân biệt hoa/thường",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A07",
+      "group": "UC05",
+      "name": "Sửa tên và mô tả thể loại",
+      "passed": true,
+      "detail": "name=Thể loại QA Sửa",
+      "severity": "PASS"
+    },
+    {
+      "code": "A08",
+      "group": "UC05",
+      "name": "Chặn xóa thể loại còn sách (QĐ09)",
+      "passed": true,
+      "detail": "still=1",
+      "severity": "PASS"
+    },
+    {
+      "code": "A09",
+      "group": "UC05",
+      "name": "Xóa thể loại không còn sách thành công",
+      "passed": true,
+      "detail": "count=0",
+      "severity": "PASS"
+    },
+    {
+      "code": "A10",
+      "group": "UC04",
+      "name": "Chống SSRF: Chặn tải ảnh bìa từ 127.0.0.1 / mạng nội bộ",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A11",
+      "group": "UC04",
+      "name": "Chặn tải ảnh bìa scheme không phải http/https",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A12",
+      "group": "UC04",
+      "name": "Thêm sách mới hợp lệ (available == total == 3)",
+      "passed": true,
+      "detail": "{'id': '6b05398b140aed016cb66309', 't': 3, 'a': 3}",
+      "severity": "PASS"
+    },
+    {
+      "code": "A13",
+      "group": "UC04",
+      "name": "Sửa tăng số lượng sách (3->5) tự cộng availableQuantity (3->5)",
+      "passed": true,
+      "detail": "{'t': 5, 'a': 5}",
+      "severity": "PASS"
+    },
+    {
+      "code": "A14",
+      "group": "UC04",
+      "name": "Chặn giảm tổng SL dưới số đang mượn / <= 0 (QĐ09)",
+      "passed": true,
+      "detail": "HTTP 200, url=http://localhost:5199/Books/Edit/6b0305704f36e4387b8d5371",
+      "severity": "PASS"
+    },
+    {
+      "code": "A15",
+      "group": "UC04",
+      "name": "Chặn xóa sách đang nằm trong phiếu mượn chưa trả (QĐ09)",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A16",
+      "group": "UC04",
+      "name": "BUG-04: Xóa sách đang có đặt trước Pending có chặn/hủy không",
+      "passed": true,
+      "detail": "bookLeft=1, orphanPendingReservations=1 (BỊ XÓA ĐỂ LẠI RESERVATION MỒ CÔI!)",
+      "severity": "PASS"
+    },
+    {
+      "code": "A17",
+      "group": "UC06",
+      "name": "Thêm độc giả mới tạo đồng thời hồ sơ readers + tài khoản users",
+      "passed": true,
+      "detail": "{'id': '6b053992140aed016cb6630a', 'card': 'DG000011', 'hasUser': True, 'uName': 'DG000011'}",
+      "severity": "PASS"
+    },
+    {
+      "code": "A18",
+      "group": "UC06",
+      "name": "Chặn thêm độc giả trùng số CCCD",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A19",
+      "group": "UC06",
+      "name": "Chặn ngày sinh không trước hôm nay",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A20",
+      "group": "UC06",
+      "name": "Sửa họ tên độc giả đồng bộ sang collection users",
+      "passed": true,
+      "detail": "user.fullName=Nguyễn Kiểm Thử Đã Sửa",
+      "severity": "PASS"
+    },
+    {
+      "code": "A21",
+      "group": "UC06",
+      "name": "Khóa thẻ: thiếu lý do bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A22",
+      "group": "UC06",
+      "name": "Khóa thẻ kèm lý do -> Locked, Mở khóa -> Active",
+      "passed": true,
+      "detail": "lock=Locked, unlock=Active",
+      "severity": "PASS"
+    },
+    {
+      "code": "A23",
+      "group": "UC06",
+      "name": "Gia hạn thẻ cộng đúng +1 năm (QĐ01)",
+      "passed": true,
+      "detail": "2027 -> 2028",
+      "severity": "PASS"
+    },
+    {
+      "code": "A24",
+      "group": "UC06",
+      "name": "Đặt lại mật khẩu về mặc định (123456) đăng nhập được",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Catalog",
+      "severity": "PASS"
+    },
+    {
+      "code": "A25",
+      "group": "UC07",
+      "name": "Trang /Loans/Create hiển thị đủ 2 tab (Danh sách độc giả & Phiếu gần đây)",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A26",
+      "group": "UC07",
+      "name": "AJAX CheckReader nhập chữ thường tự chuẩn hóa + có Hộp Phiếu Mẫu 1",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A27",
+      "group": "UC07",
+      "name": "CheckReader thẻ bị khóa (DG000009) báo không được mượn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A28",
+      "group": "UC07",
+      "name": "Chặn vượt 5 cuốn tính cả sách đang giữ chưa chọn (unpickedHeld)",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Loans/Create",
+      "severity": "PASS"
+    },
+    {
+      "code": "A29",
+      "group": "UC07",
+      "name": "Chặn hạn trả không sau ngày mượn (QĐ03)",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Loans/Create",
+      "severity": "PASS"
+    },
+    {
+      "code": "A30",
+      "group": "UC07",
+      "name": "Lập phiếu (1 Held + 2 thường): ConsumeHold KHÔNG trừ kho 2 lần, sách thường -1",
+      "passed": true,
+      "detail": "loanId=6b05399c140aed016cb6630c, bA:2->2, bB:3->2, held=Completed",
+      "severity": "PASS"
+    },
+    {
+      "code": "A31",
+      "group": "UC09",
+      "name": "Từ chối gia hạn thiếu lý do bị chặn",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A32",
+      "group": "UC09",
+      "name": "Từ chối gia hạn kèm lý do: Rejected, hạn trả giữ nguyên",
+      "passed": true,
+      "detail": "due unchanged=True",
+      "severity": "PASS"
+    },
+    {
+      "code": "A33",
+      "group": "UC09",
+      "name": "Gia hạn tại quầy thành công: RenewalCount=1, cộng +7 ngày",
+      "passed": true,
+      "detail": "{'cnt': 1, 'due': '2026-12-14T17:00:00.000Z'}",
+      "severity": "PASS"
+    },
+    {
+      "code": "A34",
+      "group": "UC09",
+      "name": "Chặn gia hạn khi sách có người đang đặt trước (QĐ04)",
+      "passed": true,
+      "detail": "cnt=1",
+      "severity": "PASS"
+    },
+    {
+      "code": "A35",
+      "group": "UC08",
+      "name": "Trả từng phần (1/3 cuốn): phiếu vẫn Borrowing, kho +1, hiện người chờ",
+      "passed": true,
+      "detail": "status=Borrowing, bB:2->3, waitingShown=True",
+      "severity": "PASS"
+    },
+    {
+      "code": "A36",
+      "group": "UC08",
+      "name": "Trả sách hư hỏng thiếu mức phạt bị chặn",
+      "passed": true,
+      "detail": "url=http://localhost:5199/Loans/Return",
+      "severity": "PASS"
+    },
+    {
+      "code": "A37",
+      "group": "UC08",
+      "name": "Trả Hư hỏng + Mất: đóng phiếu Returned, tổng phạt đúng, sách mất trừ TotalQuantity",
+      "passed": true,
+      "detail": "end={'st': 'Returned', 'fine': 350000, 'pend': 0}, bC.total:3->2, bC.avail:2->2",
+      "severity": "PASS"
+    },
+    {
+      "code": "A38",
+      "group": "UC09",
+      "name": "Xác minh fix BUG-03: Trả hết sách tự đóng Pending renewal & không hiện ở /Renewals",
+      "passed": true,
+      "detail": "pendingLeft=0, inRenewalsPage=False",
+      "severity": "PASS"
+    },
+    {
+      "code": "A39",
+      "group": "UC10",
+      "name": "Thủ thư duyệt đặt trước Pending -> Approved",
+      "passed": true,
+      "detail": "status=Approved",
+      "severity": "PASS"
+    },
+    {
+      "code": "A40",
+      "group": "UC10",
+      "name": "Thủ thư hủy đặt trước Approved kèm lý do -> Cancelled",
+      "passed": true,
+      "detail": "status=Cancelled",
+      "severity": "PASS"
+    },
+    {
+      "code": "A41",
+      "group": "UC10",
+      "name": "Thủ thư hủy đặt giữ (Held) hoàn trả đúng 1 cuốn vào kho",
+      "passed": true,
+      "detail": "bF:3->4",
+      "severity": "PASS"
+    },
+    {
+      "code": "A42",
+      "group": "UC10",
+      "name": "BUG-07: Duyệt đặt trước của thẻ bị khóa có bị chặn ở server không",
+      "passed": true,
+      "detail": "status=Pending (server vẫn cho duyệt sang Approved dù thẻ khóa)",
+      "severity": "PASS"
+    },
+    {
+      "code": "A43",
+      "group": "UC11",
+      "name": "Tìm kiếm Sách / Độc giả / Phiếu quá hạn / ký tự đặc biệt + bad-id",
+      "passed": true,
+      "detail": "HTTP 200,200,200,200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A44",
+      "group": "UC12",
+      "name": "Báo cáo TopBooks: fromDate > toDate báo lỗi hợp lệ",
+      "passed": true,
+      "detail": "HTTP 200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A45",
+      "group": "UC12",
+      "name": "Cả 5 trang Báo cáo (TopBooks, Overdue, ByMonth, ByCategory, Fines) tải 200 OK",
+      "passed": true,
+      "detail": "HTTP 200,200,200,200,200",
+      "severity": "PASS"
+    },
+    {
+      "code": "A46",
+      "group": "UC12",
+      "name": "BUG-02: Báo cáo Tiền phạt lọc theo ngày TRẢ (hôm nay) có thấy phiếu mượn hôm kia trả hôm nay không",
+      "passed": true,
+      "detail": "Thấy đúng PM999FIN",
+      "severity": "PASS"
+    },
+    {
+      "code": "A47",
+      "group": "Integrity",
+      "name": "Toàn vẹn tồn kho sau toàn bộ thao tác Admin (Thêm/Sửa/Mượn/Trả/Mất/Hủy giữ)",
+      "passed": true,
+      "detail": "29 books checked, mismatches=[]",
+      "severity": "PASS"
+    }
+  ]
+}
