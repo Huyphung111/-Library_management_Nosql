@@ -36,3 +36,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }, 3500);
 });
+
+// Ô tích "Hiện mật khẩu": data-show-password chứa selector các ô mật khẩu cần hiện (Đăng nhập, Đổi mật khẩu).
+// Khi gửi form thì đổi lại thành ô mật khẩu, để trình duyệt không lưu mật khẩu vào lịch sử nhập liệu như chữ thường.
+document.querySelectorAll("[data-show-password]").forEach(function (box) {
+    const inputs = document.querySelectorAll(box.dataset.showPassword);
+    const apply = function (show) { inputs.forEach(function (i) { i.type = show ? "text" : "password"; }); };
+    box.addEventListener("change", function () { apply(box.checked); });
+    const form = box.closest("form");
+    if (form) form.addEventListener("submit", function () { apply(false); box.checked = false; });
+});
