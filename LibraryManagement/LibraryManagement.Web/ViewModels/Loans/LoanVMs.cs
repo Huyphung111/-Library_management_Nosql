@@ -198,9 +198,39 @@ public class HistoryLineVM
     public string LoanCode { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
     public DateTime BorrowDate { get; init; }
-    public DateTime ReturnDate { get; init; }
+    /// <summary>Hạn trả của phiếu, đã cộng các lần gia hạn được duyệt.</summary>
+    public DateTime DueDate { get; init; }
+    public int RenewalCount { get; init; }
+
+    /// <summary>Null nếu cuốn này còn đang mượn.</summary>
+    public DateTime? ReturnDate { get; init; }
+
     public BookCondition? Condition { get; init; }
     public long Fine { get; init; }
+
+    public bool IsReturned => ReturnDate.HasValue;
+
+    /// <summary>Số ngày trả trễ so với hạn trả (0 nếu chưa trả hoặc trả đúng hạn).</summary>
+    public int LateDays => ReturnDate.HasValue
+        ? Math.Max(0, (DateHelper.ToVnDate(ReturnDate.Value) - DateHelper.ToVnDate(DueDate)).Days)
+        : 0;
+
+    /// <summary>Chưa trả và hạn trả trước hôm nay. Tính khi hiển thị, không lưu.</summary>
+    public bool IsOverdue => !IsReturned && DateHelper.DaysOverdue(DueDate) > 0;
+}
+
+/// <summary>UC14 bước 4: một yêu cầu gia hạn trong tab "Lịch sử gia hạn" của độc giả.</summary>
+public class RenewalHistoryLineVM
+{
+    public string LoanCode { get; init; } = string.Empty;
+    public List<string> Titles { get; init; } = new();
+    public DateTime RequestedAt { get; init; }
+    public RenewalSource Source { get; init; }
+    public RenewalStatus Status { get; init; }
+    public DateTime? ProcessedAt { get; init; }
+
+    /// <summary>Chỉ có khi Status = Rejected (UC14 bước 4b).</summary>
+    public string? RejectReason { get; init; }
 }
 
 // ---------------------------------------------------------------- UC15, UC09 Gia hạn

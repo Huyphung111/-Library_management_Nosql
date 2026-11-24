@@ -452,6 +452,27 @@ public class LoanService
                     Builders<Loan>.Update.Set(l => l.Status, LoanStatus.Returned),
                     cancellationToken: ct);
                 closed = close.ModifiedCount == 1;
+
+                // Bước 8: phiếu vừa trả hết thì yêu cầu gia hạn còn Chờ duyệt không còn ý nghĩa, tự chuyển Từ chối
+                // (để tab "Lịch sử gia hạn" của độc giả và danh sách duyệt UC09 không treo yêu cầu này).
+                if (closed)
+                {
+                    await _db.Loans.UpdateOneAsync(s,
+                        Builders<Loan>.Filter.Eq(l => l.Id, loan.Id),
+                        Builders<Loan>.Update
+                            .Set(l => l.RenewalRequests.AllMatchingElements("rr").Status, RenewalStatus.Rejected)
+                            .Set(l => l.RenewalRequests.AllMatchingElements("rr").RejectReason, "Phiếu đã trả hết sách trước khi được duyệt.")
+                            .Set(l => l.RenewalRequests.AllMatchingElements("rr").ProcessedAt, (DateTime?)now),
+                        new UpdateOptions
+                        {
+                            ArrayFilters = new[]
+                            {
+                                new BsonDocumentArrayFilterDefinition<BsonDocument>(
+                                    new BsonDocument("rr.status", RenewalStatus.Pending.ToString()))
+                            }
+                        },
+                        ct);
+                }
                 return true;
             });
         }
@@ -496,25 +517,49 @@ public class LoanService
         _db.Loans.Find(l => l.Reader.ReaderId == readerId && l.Status == LoanStatus.Borrowing)
             .SortBy(l => l.DueDate).ToListAsync();
 
-    // UC14 bước 4: các cuốn đã trả (kể cả cuốn đã trả trong phiếu còn đang mượn), trả gần nhất lên đầu.
+    // UC14 bước 6: mọi cuốn độc giả đã mượn, cả cuốn đang mượn và cuốn đã trả, mới mượn nhất lên đầu.
     public async Task<List<HistoryLineVM>> GetHistoryAsync(string readerId)
     {
         var loans = await _db.Loans
-            .Find(Builders<Loan>.Filter.Eq(l => l.Reader.ReaderId, readerId)
-                  & Builders<Loan>.Filter.ElemMatch(l => l.Items, i => i.ReturnDate != null))
+            .Find(l => l.Reader.ReaderId == readerId)
+            .SortByDescending(l => l.BorrowDate).ThenByDescending(l => l.LoanCode)
             .ToListAsync();
 
         return loans
-            .SelectMany(l => l.Items.Where(i => i.ReturnDate != null).Select(i => new HistoryLineVM
+            .SelectMany(l => l.Items.Select(i => new HistoryLineVM
             {
                 LoanCode = l.LoanCode,
                 Title = i.Title,
                 BorrowDate = l.BorrowDate,
-                ReturnDate = i.ReturnDate!.Value,
+                DueDate = l.DueDate,
+                RenewalCount = l.RenewalCount,
+                ReturnDate = i.ReturnDate,
                 Condition = i.Condition,
                 Fine = i.Fine
             }))
-            .OrderByDescending(x => x.ReturnDate)
+            .ToList();
+    }
+
+    // UC14 bước 4: mọi yêu cầu gia hạn (online và tại quầy) của độc giả, gửi gần nhất lên đầu.
+    public async Task<List<RenewalHistoryLineVM>> GetRenewalHistoryAsync(string readerId)
+    {
+        var loans = await _db.Loans
+            .Find(Builders<Loan>.Filter.Eq(l => l.Reader.ReaderId, readerId)
+                  & Builders<Loan>.Filter.SizeGt(l => l.RenewalRequests, 0))
+            .ToListAsync();
+
+        return loans
+            .SelectMany(l => l.RenewalRequests.Select(r => new RenewalHistoryLineVM
+            {
+                LoanCode = l.LoanCode,
+                Titles = l.Items.Select(i => i.Title).ToList(),
+                RequestedAt = r.RequestedAt,
+                Source = r.Source,
+                Status = r.Status,
+                ProcessedAt = r.ProcessedAt,
+                RejectReason = r.RejectReason
+            }))
+            .OrderByDescending(x => x.RequestedAt)
             .ToList();
     }
 

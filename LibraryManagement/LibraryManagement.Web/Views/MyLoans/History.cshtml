@@ -1,9 +1,7 @@
-@* UC14 bước 3–4, 4a: tab "Lịch sử" *@
+@* UC14 bước 5–6, 6a: trang "Lịch sử mượn" (mục riêng ở menu): mọi cuốn đã mượn, cả cuốn đang mượn *@
 @model List<LibraryManagement.Web.ViewModels.Loans.HistoryLineVM>
 
 <div class="content-card">
-    <partial name="_Tabs" />
-
     @if (Model.Count == 0)
     {
         <div class="empty-state">
@@ -16,7 +14,7 @@
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead>
-                    <tr><th>Tên sách</th><th>Mã phiếu</th><th>Ngày mượn</th><th>Ngày trả</th><th>Tình trạng</th><th class="text-end">Tiền phạt</th></tr>
+                    <tr><th>Tên sách</th><th>Mã phiếu</th><th>Ngày mượn</th><th>Hạn trả</th><th>Ngày trả</th><th>Tình trạng</th><th class="text-end">Tiền phạt</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var h in Model)
@@ -25,9 +23,41 @@
                             <td>@h.Title</td>
                             <td>@h.LoanCode</td>
                             <td>@h.BorrowDate.ToVnDateText()</td>
-                            <td>@h.ReturnDate.ToVnDateText()</td>
                             <td>
-                                @if (h.Condition.HasValue)
+                                @* Hạn trả đã cộng các lần gia hạn được duyệt *@
+                                <span class="@(h.IsOverdue ? "text-danger fw-semibold" : "")">@h.DueDate.ToVnDateText()</span>
+                                @if (h.RenewalCount > 0)
+                                {
+                                    <div class="small text-muted">Đã gia hạn @h.RenewalCount lần</div>
+                                }
+                            </td>
+                            <td>
+                                @if (h.ReturnDate.HasValue)
+                                {
+                                    @h.ReturnDate.Value.ToVnDateText()
+                                    @if (h.LateDays > 0)
+                                    {
+                                        <div class="small text-danger">Trễ @h.LateDays ngày</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa trả</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!h.IsReturned)
+                                {
+                                    @if (h.IsOverdue)
+                                    {
+                                        <span class="badge status-overdue">Quá hạn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge status-borrowing">Đang mượn</span>
+                                    }
+                                }
+                                else if (h.Condition.HasValue)
                                 {
                                     <span class="badge status-@h.Condition.Value.ToString().ToLower()">@h.Condition.Value.ToVn()</span>
                                 }
@@ -37,7 +67,7 @@
                     }
                 </tbody>
                 <tfoot>
-                    <tr><td colspan="5" class="text-end fw-semibold">Tổng tiền phạt</td><td class="text-end fw-bold">@Model.Sum(h => h.Fine).ToMoney()</td></tr>
+                    <tr><td colspan="6" class="text-end fw-semibold">Tổng tiền phạt</td><td class="text-end fw-bold">@Model.Sum(h => h.Fine).ToMoney()</td></tr>
                 </tfoot>
             </table>
         </div>

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -53,6 +54,35 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.SlidingExpiration = true;
         o.Cookie.Name = ".LibraryManagement.Auth";
         o.Cookie.HttpOnly = true;
+
+        // Làm mới claim CardNotice của độc giả trong phiên (BUG-10, mục 6.3 thiết kế kỹ thuật):
+        // tối đa 1 lần mỗi phút đọc lại thẻ; Thủ thư vừa khóa / mở khóa / gia hạn thì thanh cảnh báo đổi theo.
+        o.Events = new CookieAuthenticationEvents
+        {
+            OnValidatePrincipal = async ctx =>
+            {
+                if (ctx.Principal?.Identity is not ClaimsIdentity identity) return;
+                var readerId = identity.FindFirst("ReaderId")?.Value;
+                if (readerId == null) return;   // chỉ áp dụng cho độc giả
+
+                var checkedAt = identity.FindFirst("CardCheckedAt")?.Value;
+                if (long.TryParse(checkedAt, out var ticks)
+                    && DateTime.UtcNow - new DateTime(ticks, DateTimeKind.Utc) < TimeSpan.FromMinutes(1))
+                    return;
+
+                var auth = ctx.HttpContext.RequestServices.GetRequiredService<AuthService>();
+                var notice = await auth.GetCardNoticeAsync(readerId);
+
+                foreach (var c in identity.FindAll(c => c.Type is "CardNotice" or "CardCheckedAt").ToList())
+                    identity.RemoveClaim(c);
+                if (!string.IsNullOrEmpty(notice))
+                    identity.AddClaim(new Claim("CardNotice", notice));
+                identity.AddClaim(new Claim("CardCheckedAt", DateTime.UtcNow.Ticks.ToString()));
+
+                ctx.ReplacePrincipal(new ClaimsPrincipal(identity));
+                ctx.ShouldRenew = true;   // cấp lại cookie chứa claim mới
+            }
+        };
     });
 
 var app = builder.Build();

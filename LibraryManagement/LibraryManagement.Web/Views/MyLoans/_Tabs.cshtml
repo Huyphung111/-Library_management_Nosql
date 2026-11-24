@@ -1,8 +1,8 @@
-@* Hai tab của UC14: "Đang mượn" và "Lịch sử" *@
+@* Hai tab của UC14: "Đang mượn" và "Lịch sử gia hạn". Lịch sử mượn là mục riêng ở menu. *@
 @{
-    var onHistory = string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "History", StringComparison.OrdinalIgnoreCase);
+    var onRenewals = string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "RenewalHistory", StringComparison.OrdinalIgnoreCase);
 }
 <ul class="nav nav-tabs mb-3">
-    <li class="nav-item"><a class="nav-link @(onHistory ? "" : "active")" asp-action="Index"><i class="bi bi-journal-bookmark"></i> Đang mượn</a></li>
-    <li class="nav-item"><a class="nav-link @(onHistory ? "active" : "")" asp-action="History"><i class="bi bi-clock-history"></i> Lịch sử</a></li>
+    <li class="nav-item"><a class="nav-link @(onRenewals ? "" : "active")" asp-action="Index"><i class="bi bi-journal-bookmark"></i> Đang mượn</a></li>
+    <li class="nav-item"><a class="nav-link @(onRenewals ? "active" : "")" asp-action="RenewalHistory"><i class="bi bi-calendar-check"></i> Lịch sử gia hạn</a></li>
 </ul>

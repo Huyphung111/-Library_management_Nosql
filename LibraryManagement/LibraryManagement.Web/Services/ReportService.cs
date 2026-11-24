@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using LibraryManagement.Web.Data;
 using LibraryManagement.Web.Models;
+using LibraryManagement.Web.Options;
 using LibraryManagement.Web.ViewModels.Reports;
 
 namespace LibraryManagement.Web.Services;
@@ -13,8 +15,13 @@ namespace LibraryManagement.Web.Services;
 public class ReportService
 {
     private readonly MongoDbContext _db;
+    private readonly LibraryRules _rules;
 
-    public ReportService(MongoDbContext db) => _db = db;
+    public ReportService(MongoDbContext db, IOptions<LibraryRules> rules)
+    {
+        _db = db;
+        _rules = rules.Value;
+    }
 
     private static string BsonIdToString(BsonValue val)
     {
@@ -124,7 +131,7 @@ public class ReportService
             if (fromDate.HasValue)
                 dateFilter.Add("$gte", BsonDateTime.Create(DateHelper.VnDateToUtc(fromDate.Value)));
             if (toDate.HasValue)
-                dateFilter.Add("$lte", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1).AddSeconds(-1))));
+                dateFilter.Add("$lt", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1))));   // trước 00:00 ngày hôm sau
             matchFilter.Add("borrowDate", dateFilter);
         }
 
@@ -205,8 +212,8 @@ public class ReportService
         {
             var overdueDays = DateHelper.DaysOverdue(loan.DueDate);
             var overdueBooksCount = loan.Items.Count(i => i.ReturnDate == null);
-            // Phạt theo QĐ05: 5.000đ / ngày / cuốn
-            var estimatedFine = 5000L * overdueDays * overdueBooksCount;
+            // Sửa (A, 24/11/2026) BUG-01. Phạt theo QĐ05: FinePerDay / ngày / cuốn, đọc từ LibraryRules (BUG-01: không viết cứng 5000)
+            var estimatedFine = _rules.FinePerDay * overdueDays * overdueBooksCount;
 
             readerMap.TryGetValue(loan.Reader.ReaderId, out var reader);
 
@@ -246,7 +253,7 @@ public class ReportService
         };
 
         var startOfYearUtc = DateHelper.VnDateToUtc(new DateTime(selectedYear, 1, 1));
-        var endOfYearUtc = DateHelper.VnDateToUtc(new DateTime(selectedYear, 12, 31, 23, 59, 59));
+        var startOfNextYearUtc = DateHelper.VnDateToUtc(new DateTime(selectedYear + 1, 1, 1));
 
         var pipeline = new List<BsonDocument>
         {
@@ -254,7 +261,7 @@ public class ReportService
             new BsonDocument("$match", new BsonDocument("borrowDate", new BsonDocument
             {
                 { "$gte", BsonDateTime.Create(startOfYearUtc) },
-                { "$lte", BsonDateTime.Create(endOfYearUtc) }
+                { "$lt", BsonDateTime.Create(startOfNextYearUtc) }
             })),
 
             // 2. $group theo tháng với timezone "Asia/Ho_Chi_Minh" để không lệch ngày
@@ -321,7 +328,7 @@ public class ReportService
             if (fromDate.HasValue)
                 dateFilter.Add("$gte", BsonDateTime.Create(DateHelper.VnDateToUtc(fromDate.Value)));
             if (toDate.HasValue)
-                dateFilter.Add("$lte", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1).AddSeconds(-1))));
+                dateFilter.Add("$lt", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1))));   // trước 00:00 ngày hôm sau
             pipeline.Add(new BsonDocument("$match", new BsonDocument("borrowDate", dateFilter)));
         }
 
@@ -366,7 +373,7 @@ public class ReportService
     }
 
     /// <summary>
-    /// Báo cáo 5: Thống kê thu tiền phạt (phạt trễ hạn, làm hư hỏng, làm mất sách).
+    /// Báo cáo 5: Thống kê thu tiền phạt (phạt trễ hạn, làm hư hỏng, làm mất sách), lọc theo ngày trả sách.
     /// </summary>
     public async Task<FinesReportVM> GetFinesAsync(DateTime? fromDate, DateTime? toDate)
     {
@@ -382,42 +389,62 @@ public class ReportService
             return vm;
         }
 
-        var filterBuilder = Builders<Loan>.Filter;
-        var filter = filterBuilder.Gt(l => l.TotalFine, 0);
-
-        if (fromDate.HasValue)
-            filter &= filterBuilder.Gte(l => l.BorrowDate, DateHelper.VnDateToUtc(fromDate.Value));
-
-        if (toDate.HasValue)
-            filter &= filterBuilder.Lte(l => l.BorrowDate, DateHelper.VnDateToUtc(toDate.Value.AddDays(1).AddSeconds(-1)));
-
-        var loans = await _db.Loans.Find(filter)
-            .SortByDescending(l => l.BorrowDate)
-            .ToListAsync();
-
-        foreach (var loan in loans)
+        // Sửa (A, 24/11/2026) BUG-02. UC12: tiền phạt tính theo NGÀY TRẢ của từng cuốn (lúc phát sinh phạt), không theo ngày mượn (BUG-02).
+        // returnDate là thời điểm (UtcNow), nên mốc cuối là "trước 00:00 giờ VN của ngày hôm sau".
+        var itemFilter = new BsonDocument("fine", new BsonDocument("$gt", 0));
+        if (fromDate.HasValue || toDate.HasValue)
         {
-            foreach (var item in loan.Items.Where(i => i.Fine > 0))
+            var range = new BsonDocument();
+            if (fromDate.HasValue)
+                range.Add("$gte", BsonDateTime.Create(DateHelper.VnDateToUtc(fromDate.Value)));
+            if (toDate.HasValue)
+                range.Add("$lt", BsonDateTime.Create(DateHelper.VnDateToUtc(toDate.Value.AddDays(1))));
+            itemFilter.Add("returnDate", range);
+        }
+
+        // Pipeline: $match phiếu có cuốn thỏa điều kiện -> $unwind items -> $match lại từng cuốn -> $sort ngày trả giảm dần -> $project
+        var itemMatch = new BsonDocument(itemFilter.Select(e => new BsonElement("items." + e.Name, e.Value)));
+        var pipeline = new[]
+        {
+            new BsonDocument("$match", new BsonDocument("items", new BsonDocument("$elemMatch", itemFilter))),
+            new BsonDocument("$unwind", "$items"),
+            new BsonDocument("$match", itemMatch),
+            new BsonDocument("$sort", new BsonDocument("items.returnDate", -1)),
+            new BsonDocument("$project", new BsonDocument
             {
-                var fineType = item.Condition switch
+                { "_id", 0 },
+                { "loanCode", 1 },
+                { "cardNumber", "$reader.cardNumber" },
+                { "readerName", "$reader.fullName" },
+                { "title", "$items.title" },
+                { "returnDate", "$items.returnDate" },
+                { "condition", "$items.condition" },
+                { "fine", "$items.fine" }
+            })
+        };
+
+        var rows = await _db.Loans.Aggregate<BsonDocument>(pipeline).ToListAsync();
+        foreach (var row in rows)
+        {
+            BookCondition? condition = row.GetValue("condition", BsonNull.Value) is { IsString: true } c
+                && Enum.TryParse<BookCondition>(c.AsString, out var parsed) ? parsed : null;
+
+            vm.Items.Add(new FineDetailVM
+            {
+                LoanCode = row["loanCode"].AsString,
+                CardNumber = row["cardNumber"].AsString,
+                ReaderName = row["readerName"].AsString,
+                BookTitle = row["title"].AsString,
+                ReturnDate = row["returnDate"].ToUniversalTime(),
+                Condition = condition,
+                FineAmount = row["fine"].ToInt64(),
+                FineType = condition switch
                 {
                     BookCondition.Damaged => "Hư hỏng sách",
                     BookCondition.Lost => "Làm mất sách",
                     _ => "Trễ hạn trả sách"
-                };
-
-                vm.Items.Add(new FineDetailVM
-                {
-                    LoanCode = loan.LoanCode,
-                    CardNumber = loan.Reader.CardNumber,
-                    ReaderName = loan.Reader.FullName,
-                    BookTitle = item.Title,
-                    ReturnDate = item.ReturnDate ?? loan.DueDate,
-                    Condition = item.Condition,
-                    FineAmount = item.Fine,
-                    FineType = fineType
-                });
-            }
+                }
+            });
         }
 
         return vm;

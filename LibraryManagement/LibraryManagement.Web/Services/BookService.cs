@@ -167,12 +167,12 @@ public class BookService
         if (authors.Count == 0)
             return ServiceResult.Fail("Vui lòng nhập ít nhất một tác giả.", nameof(BookFormVM.AuthorsString));
 
-        // Kiểm tra quy định số lượng đang mượn (QĐ09)
-        var currentlyBorrowed = existingBook.TotalQuantity - existingBook.AvailableQuantity;
-        if (vm.TotalQuantity < currentlyBorrowed)
+        // Sửa (A, 24/11/2026) BUG-09. Kiểm tra quy định số lượng (QĐ09). Tổng − còn lại gồm cả cuốn đang cho mượn lẫn cuốn đang giữ cho độc giả đặt giữ (BUG-09).
+        var outOfShelf = existingBook.TotalQuantity - existingBook.AvailableQuantity;
+        if (vm.TotalQuantity < outOfShelf)
         {
             return ServiceResult.Fail(
-                $"Số lượng tổng mới không thể nhỏ hơn số sách đang cho mượn ({currentlyBorrowed} cuốn).",
+                $"Số lượng tổng mới không thể nhỏ hơn số sách đang cho mượn hoặc đang giữ cho độc giả ({outOfShelf} cuốn).",
                 nameof(BookFormVM.TotalQuantity));
         }
 
@@ -194,7 +194,7 @@ public class BookService
         var minAvailable = Math.Max(0, -delta);
         var result = await _db.Books.UpdateOneAsync(b => b.Id == id && b.AvailableQuantity >= minAvailable, update);
         if (result.MatchedCount == 0)
-            return ServiceResult.Fail("Số sách đang cho mượn vừa thay đổi nên không giảm được số lượng tổng. Vui lòng tải lại và thử lại.",
+            return ServiceResult.Fail("Số sách đang cho mượn hoặc đang giữ vừa thay đổi nên không giảm được số lượng tổng. Vui lòng tải lại và thử lại.",
                 nameof(BookFormVM.TotalQuantity));
 
         // Ảnh bìa: có ảnh mới thì thay, tick "Xóa ảnh" thì bỏ; ảnh cũ xóa khỏi GridFS sau khi đã cập nhật sách
@@ -208,7 +208,8 @@ public class BookService
     }
 
     /// <summary>
-    /// Xóa sách. Tuân thủ QĐ09: Chỉ xóa khi không có phiếu mượn đang mở chứa sách này.
+    /// Xóa sách. Tuân thủ QĐ09: Chỉ xóa khi không có phiếu mượn đang mở chứa sách này
+    /// và không còn yêu cầu đặt trước còn hiệu lực (đang giữ, chờ duyệt, đã duyệt).
     /// </summary>
     public async Task<ServiceResult> DeleteAsync(string id)
     {
@@ -220,6 +221,12 @@ public class BookService
         var isHeld = await _db.Reservations.Find(r => r.BookId == id && r.Status == ReservationStatus.Held).AnyAsync();
         if (isHeld)
             return ServiceResult.Fail("Không thể xóa sách này vì thư viện đang giữ sách cho độc giả đặt giữ. Hãy hủy yêu cầu đặt giữ trước.");
+
+        // Sửa (A, 24/11/2026) BUG-04: còn người xếp hàng chờ thì không xóa, tránh để lại yêu cầu đặt trước trỏ tới sách không còn
+        var queued = await _db.Reservations.CountDocumentsAsync(r => r.BookId == id &&
+            (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Approved));
+        if (queued > 0)
+            return ServiceResult.Fail($"Không thể xóa sách này vì còn {queued} yêu cầu đặt trước đang chờ duyệt hoặc đã duyệt. Hãy từ chối hoặc hủy các yêu cầu đó trước.");
 
         var book = await GetByIdAsync(id);
         var result = await _db.Books.DeleteOneAsync(b => b.Id == id);

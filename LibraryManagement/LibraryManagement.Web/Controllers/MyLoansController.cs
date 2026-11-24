@@ -24,7 +24,15 @@ public class MyLoansController : Controller
         return View(await _loans.GetCurrentLoansAsync(ReaderId));
     }
 
-    // UC14 bước 3–4: tab "Lịch sử"
+    // UC14 bước 3–4, 4a, 4b: tab "Lịch sử gia hạn"
+    [HttpGet]
+    public async Task<IActionResult> RenewalHistory()
+    {
+        ViewData["Title"] = "Sách đang mượn";
+        return View(await _loans.GetRenewalHistoryAsync(ReaderId));
+    }
+
+    // UC14 bước 5–6: mục "Lịch sử mượn" ở menu (không nằm trong tab)
     [HttpGet]
     public async Task<IActionResult> History()
     {

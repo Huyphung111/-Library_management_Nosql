@@ -123,7 +123,7 @@ LibraryManagement/
 | UC11 | Tìm kiếm | `SearchController` | `Index` (tham số `type` = book / reader / loan) |
 | UC12 | Thống kê | `ReportsController` | `TopBooks`, `Overdue`, `ByMonth`, `ByCategory`, `Fines` |
 | UC13 | Tìm kiếm sách | `CatalogController` | `Index`, `Details` |
-| UC14 | Xem sách đang mượn, lịch sử | `MyLoansController` | `Index`, `History` |
+| UC14 | Xem sách đang mượn, lịch sử | `MyLoansController` | `Index`, `RenewalHistory` (tab Lịch sử gia hạn), `History` (mục Lịch sử mượn ở menu) |
 | UC15 | Yêu cầu gia hạn | `MyLoansController` | `RequestRenewal` (POST) |
 | UC16 | Đặt trước sách | `MyReservationsController` | `Index`, `Create` (POST), `Cancel` (POST) |
 
@@ -367,6 +367,8 @@ ConventionRegistry.Register("LibraryConventions", pack, _ => true);
 Khi đăng nhập thành công, lưu vào cookie các claim `NameIdentifier` (userId), `Name` (fullName), `Role`, và với độc giả thêm claim `ReaderId`. Các controller của độc giả (`Catalog`, `MyLoans`, `MyReservations`) lấy `ReaderId` từ claim, không nhận từ form, để độc giả không xem được dữ liệu của người khác.
 
 Nếu thẻ của độc giả đang bị khóa hoặc đã hết hạn lúc đăng nhập (UC01, bước 5a), thêm claim `CardNotice` chứa câu thông báo, ví dụ "Thẻ của bạn đã hết hạn ngày 01/10/2026...". `_Layout` hiện câu này thành thanh cảnh báo dưới thanh trên cùng. Claim chỉ để hiển thị; điều kiện mượn, gia hạn, đặt trước vẫn kiểm tra lại trong Service.
+
+Claim `CardNotice` được làm mới trong phiên: sự kiện `OnValidatePrincipal` của cookie (đăng ký trong `Program.cs`) đọc lại thẻ độc giả tối đa 1 lần mỗi phút (mốc lần kiểm tra cuối lưu ở claim `CardCheckedAt`). Nếu Thủ thư vừa khóa, mở khóa hoặc gia hạn thẻ, claim được thay và cookie được cấp lại, nên thanh cảnh báo đổi theo mà độc giả không cần đăng nhập lại.
 
 ### 6.4. Thời gian
 

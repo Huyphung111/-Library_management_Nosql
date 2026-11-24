@@ -12,7 +12,7 @@
 | QĐ06 | Sách hư hỏng: Thủ thư nhập mức phạt. Sách mất: bồi thường bằng giá sách. |
 | QĐ07 | Không được mượn khi thẻ bị khóa, thẻ hết hạn hoặc đang có phiếu quá hạn. |
 | QĐ08 | Chỉ đặt trước được sách đang hết. Mỗi độc giả chỉ có 1 yêu cầu còn hiệu lực (*Chờ duyệt* hoặc *Đã duyệt*) cho mỗi đầu sách. Hệ thống không giữ sách riêng: khi sách về, Thủ thư liên hệ người đặt sớm nhất, ai đến quầy trước thì mượn trước. |
-| QĐ09 | Chỉ xóa thể loại khi không còn sách thuộc thể loại đó. Chỉ xóa sách khi không có phiếu mượn đang mở chứa sách đó. Không giảm số lượng tổng xuống dưới số đang cho mượn. |
+| QĐ09 | Chỉ xóa thể loại khi không còn sách thuộc thể loại đó. Chỉ xóa sách khi không có phiếu mượn đang mở chứa sách đó và không còn yêu cầu đặt trước còn hiệu lực (*Chờ duyệt*, *Đã duyệt*, đang giữ). Không giảm số lượng tổng xuống dưới số đang cho mượn và đang giữ. |
 | QĐ10 | Tài khoản độc giả do Thủ thư cấp, không có tự đăng ký. Mật khẩu tối thiểu 6 ký tự. |
 
 **Trạng thái dùng trong hệ thống**
@@ -75,7 +75,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tóm tắt** | Thủ thư hoặc độc giả đăng nhập bằng tên đăng nhập và mật khẩu để dùng các chức năng theo vai trò của mình. |
 | **Tác nhân** | Thủ thư, Độc giả |
 | **Use case liên quan** | Không |
-| **Dòng sự kiện chính** | 1. Người dùng mở trang đăng nhập.<br>2. Hệ thống hiển thị form gồm tên đăng nhập và mật khẩu.<br>3. Người dùng nhập thông tin và nhấn "Đăng nhập".<br>4. Hệ thống kiểm tra tên đăng nhập có tồn tại và mật khẩu có khớp không.<br>5. Hệ thống xác định vai trò của tài khoản và chuyển đến trang chính của Thủ thư hoặc Độc giả. |
+| **Dòng sự kiện chính** | 1. Người dùng mở trang đăng nhập.<br>2. Hệ thống hiển thị form gồm tên đăng nhập và mật khẩu.<br>3. Người dùng nhập thông tin và nhấn "Đăng nhập".<br>4. Hệ thống kiểm tra tên đăng nhập có tồn tại và mật khẩu có khớp không. Tên đăng nhập của Độc giả là mã thẻ, không phân biệt chữ hoa/thường (gõ `dg000001` cũng như `DG000001`).<br>5. Hệ thống xác định vai trò của tài khoản và chuyển đến trang chính của Thủ thư hoặc Độc giả. |
 | **Dòng sự kiện phụ** | 3a. Người dùng bỏ trống tên đăng nhập hoặc mật khẩu: hệ thống báo lỗi tại trường tương ứng, quay lại bước 3.<br>4a. Sai tên đăng nhập hoặc mật khẩu: hệ thống báo "Tên đăng nhập hoặc mật khẩu không đúng", quay lại bước 3.<br>5a. Độc giả có thẻ bị khóa hoặc hết hạn: hệ thống vẫn cho đăng nhập, hiển thị thông báo tình trạng thẻ và chỉ cho xem thông tin. |
 | **Điều kiện tiên quyết** | Người dùng đã có tài khoản do Thủ thư cấp. |
 | **Hậu điều kiện** | Người dùng đăng nhập thành công, phiên làm việc được tạo theo đúng vai trò. |
@@ -112,7 +112,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tác nhân** | Thủ thư |
 | **Use case liên quan** | Đăng nhập (include) |
 | **Dòng sự kiện chính** | 1. Thủ thư chọn "Quản lý sách".<br>2. Hệ thống hiển thị danh sách đầu sách gồm tên, tác giả, thể loại, số lượng tổng và số còn lại.<br>3. Thủ thư chọn "Thêm sách".<br>4. Hệ thống hiển thị form nhập sách, thể loại được chọn từ danh mục có sẵn.<br>5. Thủ thư nhập thông tin và nhấn "Lưu".<br>6. Hệ thống kiểm tra: tên sách không trống, có ít nhất 1 tác giả và 1 thể loại, giá và số lượng tổng là số dương.<br>7. Hệ thống lưu sách với số còn lại bằng số lượng tổng và thông báo thêm thành công. |
-| **Dòng sự kiện phụ** | 3a. Thủ thư chọn sửa một sách: hệ thống hiển thị form với thông tin hiện tại. Thủ thư sửa và nhấn "Lưu". Hệ thống kiểm tra như bước 6 và kiểm tra số lượng tổng mới không nhỏ hơn số đang cho mượn, rồi cập nhật sách. Số còn lại thay đổi theo mức chênh lệch của số lượng tổng.<br>3b. Thủ thư chọn xóa một sách và xác nhận: nếu sách không nằm trong phiếu mượn đang mở, hệ thống xóa sách. Ngược lại, hệ thống báo không thể xóa.<br>6a. Dữ liệu không hợp lệ: hệ thống báo lỗi tại trường tương ứng, quay lại bước 5. |
+| **Dòng sự kiện phụ** | 3a. Thủ thư chọn sửa một sách: hệ thống hiển thị form với thông tin hiện tại. Thủ thư sửa và nhấn "Lưu". Hệ thống kiểm tra như bước 6 và kiểm tra số lượng tổng mới không nhỏ hơn số đang cho mượn và đang giữ, rồi cập nhật sách. Số còn lại thay đổi theo mức chênh lệch của số lượng tổng.<br>3b. Thủ thư chọn xóa một sách và xác nhận: nếu sách không nằm trong phiếu mượn đang mở và không còn yêu cầu đặt trước còn hiệu lực, hệ thống xóa sách. Ngược lại, hệ thống báo không thể xóa và nêu lý do.<br>6a. Dữ liệu không hợp lệ: hệ thống báo lỗi tại trường tương ứng, quay lại bước 5. |
 | **Điều kiện tiên quyết** | Thủ thư đã đăng nhập. Đã có ít nhất 1 thể loại trong danh mục. |
 | **Hậu điều kiện** | Danh mục sách được cập nhật. |
 
@@ -159,7 +159,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tóm tắt** | Thủ thư nhận sách độc giả trả, ghi tình trạng sách, tính tiền phạt và cộng sách lại vào kho. |
 | **Tác nhân** | Thủ thư |
 | **Use case liên quan** | Đăng nhập (include) |
-| **Dòng sự kiện chính** | 1. Thủ thư chọn "Nhận trả sách".<br>2. Thủ thư nhập mã thẻ độc giả hoặc mã phiếu mượn.<br>3. Hệ thống hiển thị các phiếu *Đang mượn* cùng danh sách sách chưa trả và hạn trả.<br>4. Thủ thư chọn các sách được trả và ghi tình trạng từng cuốn: *Bình thường*, *Hư hỏng* hoặc *Mất*.<br>5. Hệ thống tính tiền phạt cho từng cuốn: quá hạn tính 5.000đ cho mỗi ngày trễ, hư hỏng theo mức Thủ thư nhập, mất bằng giá sách. Hệ thống hiển thị tổng tiền phạt.<br>6. Thủ thư xác nhận sau khi độc giả đã nộp phạt (nếu có).<br>7. Hệ thống ghi ngày trả, tình trạng và tiền phạt của từng cuốn. Sách *Bình thường* và *Hư hỏng* được cộng lại vào số còn lại. Sách *Mất* bị trừ khỏi số lượng tổng.<br>8. Nếu mọi sách trong phiếu đã trả, hệ thống chuyển phiếu sang *Đã trả*. Hệ thống thông báo nhận trả thành công. |
+| **Dòng sự kiện chính** | 1. Thủ thư chọn "Nhận trả sách".<br>2. Thủ thư nhập mã thẻ độc giả hoặc mã phiếu mượn.<br>3. Hệ thống hiển thị các phiếu *Đang mượn* cùng danh sách sách chưa trả và hạn trả.<br>4. Thủ thư chọn các sách được trả và ghi tình trạng từng cuốn: *Bình thường*, *Hư hỏng* hoặc *Mất*.<br>5. Hệ thống tính tiền phạt cho từng cuốn: quá hạn tính 5.000đ cho mỗi ngày trễ, hư hỏng theo mức Thủ thư nhập, mất bằng giá sách. Hệ thống hiển thị tổng tiền phạt.<br>6. Thủ thư xác nhận sau khi độc giả đã nộp phạt (nếu có).<br>7. Hệ thống ghi ngày trả, tình trạng và tiền phạt của từng cuốn. Sách *Bình thường* và *Hư hỏng* được cộng lại vào số còn lại. Sách *Mất* bị trừ khỏi số lượng tổng.<br>8. Nếu mọi sách trong phiếu đã trả, hệ thống chuyển phiếu sang *Đã trả*; yêu cầu gia hạn đang *Chờ duyệt* của phiếu (nếu có) tự chuyển *Từ chối* với lý do "Phiếu đã trả hết sách trước khi được duyệt". Hệ thống thông báo nhận trả thành công. |
 | **Dòng sự kiện phụ** | 3a. Độc giả không có phiếu nào đang mượn: hệ thống báo không có sách cần trả, kết thúc use case.<br>5a. Sách trả đúng hạn và tình trạng bình thường: tiền phạt bằng 0.<br>7a. Sách vừa trả đang có yêu cầu đặt trước *Đã duyệt*: hệ thống hiển thị danh sách người chờ theo ngày đặt (họ tên, số điện thoại) để Thủ thư liên hệ người sớm nhất.<br>8a. Phiếu còn sách chưa trả: phiếu giữ trạng thái *Đang mượn*. |
 | **Điều kiện tiên quyết** | Thủ thư đã đăng nhập. Độc giả có phiếu mượn đang mở. |
 | **Hậu điều kiện** | Thông tin trả sách và tiền phạt được lưu vào phiếu mượn, số lượng sách trong kho được cập nhật. |
@@ -184,7 +184,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tác nhân** | Thủ thư |
 | **Use case liên quan** | Đăng nhập (include). Xử lý các yêu cầu được tạo từ use case Đặt trước sách. |
 | **Dòng sự kiện chính** | 1. Thủ thư chọn "Xử lý đặt trước".<br>2. Hệ thống hiển thị danh sách yêu cầu theo trạng thái, gồm độc giả, sách và ngày đặt. Với các yêu cầu *Đã duyệt*, hệ thống đánh dấu những sách hiện đã có cuốn trong kho.<br>3. Thủ thư chọn một yêu cầu *Chờ duyệt*.<br>4. Hệ thống hiển thị chi tiết: độc giả, số điện thoại, tình trạng thẻ, sách, ngày đặt và số còn lại của sách.<br>5. Thủ thư nhấn "Duyệt".<br>6. Hệ thống chuyển yêu cầu sang *Đã duyệt* và thông báo thành công. |
-| **Dòng sự kiện phụ** | 3a. Thủ thư chọn một yêu cầu *Đã duyệt* có sách đã về kho: hệ thống hiển thị số điện thoại và email của độc giả để Thủ thư liên hệ.<br>3b. Thủ thư chọn hủy một yêu cầu *Đã duyệt* (ví dụ không liên hệ được độc giả) và nhập lý do: hệ thống chuyển yêu cầu sang *Đã hủy*.<br>4a. Thẻ độc giả bị khóa hoặc hết hạn: hệ thống cảnh báo, Thủ thư nên từ chối.<br>5a. Thủ thư nhấn "Từ chối" và nhập lý do: hệ thống chuyển yêu cầu sang *Từ chối*. |
+| **Dòng sự kiện phụ** | 3a. Thủ thư chọn một yêu cầu *Đã duyệt* có sách đã về kho: hệ thống hiển thị số điện thoại và email của độc giả để Thủ thư liên hệ.<br>3b. Thủ thư chọn hủy một yêu cầu *Đã duyệt* (ví dụ không liên hệ được độc giả) và nhập lý do: hệ thống chuyển yêu cầu sang *Đã hủy*.<br>4a. Thẻ độc giả bị khóa hoặc hết hạn: hệ thống cảnh báo và không cho duyệt; Thủ thư từ chối kèm lý do (bước 5a).<br>5a. Thủ thư nhấn "Từ chối" và nhập lý do: hệ thống chuyển yêu cầu sang *Từ chối*.<br>5b. Yêu cầu vừa được xử lý ở nơi khác (độc giả tự hủy, Thủ thư khác đã xử lý): hệ thống báo yêu cầu đã thay đổi trạng thái, không ghi đè. |
 | **Điều kiện tiên quyết** | Thủ thư đã đăng nhập. |
 | **Hậu điều kiện** | Trạng thái các yêu cầu đặt trước được cập nhật. |
 
@@ -207,7 +207,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tóm tắt** | Thủ thư xem các báo cáo thống kê về hoạt động mượn trả và tiền phạt. |
 | **Tác nhân** | Thủ thư |
 | **Use case liên quan** | Đăng nhập (include) |
-| **Dòng sự kiện chính** | 1. Thủ thư chọn "Thống kê".<br>2. Thủ thư chọn loại thống kê: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, lượt mượn theo thể loại, tổng tiền phạt.<br>3. Thủ thư chọn khoảng thời gian và nhấn "Xem".<br>4. Hệ thống tổng hợp dữ liệu và hiển thị kết quả dạng bảng và biểu đồ. |
+| **Dòng sự kiện chính** | 1. Thủ thư chọn "Thống kê".<br>2. Thủ thư chọn loại thống kê: top sách mượn nhiều, phiếu quá hạn, lượt mượn theo tháng, lượt mượn theo thể loại, tổng tiền phạt.<br>3. Thủ thư chọn khoảng thời gian và nhấn "Xem". Thống kê tiền phạt tính theo ngày trả sách (ngày phát sinh tiền phạt); các thống kê lượt mượn tính theo ngày mượn.<br>4. Hệ thống tổng hợp dữ liệu và hiển thị kết quả dạng bảng và biểu đồ. |
 | **Dòng sự kiện phụ** | 3a. Ngày bắt đầu sau ngày kết thúc: hệ thống báo lỗi, quay lại bước 3.<br>4a. Không có dữ liệu trong khoảng thời gian đã chọn: hệ thống báo không có dữ liệu. |
 | **Điều kiện tiên quyết** | Thủ thư đã đăng nhập. |
 | **Hậu điều kiện** | Kết quả thống kê được hiển thị, dữ liệu không thay đổi. |
@@ -228,11 +228,11 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 
 | **Tên use case** | Xem sách đang mượn và lịch sử mượn |
 |---|---|
-| **Tóm tắt** | Độc giả xem các sách đang mượn cùng hạn trả, và lịch sử các lần mượn trước. |
+| **Tóm tắt** | Độc giả xem các sách đang mượn cùng hạn trả, kết quả các yêu cầu gia hạn, và lịch sử các lần mượn trước. |
 | **Tác nhân** | Độc giả |
 | **Use case liên quan** | Đăng nhập (include), được mở rộng (extend) bởi Yêu cầu gia hạn |
-| **Dòng sự kiện chính** | 1. Độc giả chọn "Sách của tôi".<br>2. Hệ thống hiển thị tab "Đang mượn" gồm tên sách, ngày mượn, hạn trả, số lần đã gia hạn. Phiếu quá hạn được đánh dấu nổi bật.<br>3. Độc giả chọn tab "Lịch sử".<br>4. Hệ thống hiển thị các lần mượn đã trả gồm tên sách, ngày mượn, ngày trả và tiền phạt (nếu có). |
-| **Dòng sự kiện phụ** | 2a. Độc giả không có sách đang mượn: hệ thống báo "Bạn chưa mượn sách nào".<br>2b. Độc giả chọn "Gia hạn" ở một phiếu: thực hiện use case Yêu cầu gia hạn.<br>4a. Chưa có lịch sử mượn: hệ thống báo "Chưa có lịch sử mượn". |
+| **Dòng sự kiện chính** | 1. Độc giả chọn "Sách đang mượn".<br>2. Hệ thống hiển thị tab "Đang mượn" gồm tên sách, ngày mượn, hạn trả, số lần đã gia hạn. Phiếu quá hạn được đánh dấu nổi bật.<br>3. Độc giả chọn tab "Lịch sử gia hạn".<br>4. Hệ thống hiển thị các yêu cầu gia hạn của độc giả gồm mã phiếu, tên sách, ngày gửi, hình thức (online / tại quầy) và kết quả (*Chờ duyệt*, *Đã duyệt*, *Từ chối*).<br>5. Độc giả chọn "Lịch sử mượn" ở menu.<br>6. Hệ thống hiển thị mọi cuốn sách độc giả đã mượn (cả cuốn đang mượn và cuốn đã trả), mới mượn nhất lên đầu, gồm tên sách, mã phiếu, ngày mượn, hạn trả (đã cộng các lần gia hạn được duyệt, ghi kèm số lần gia hạn), ngày trả (cuốn chưa trả ghi "Chưa trả"), tình trạng (*Đang mượn* / *Quá hạn* với cuốn chưa trả; tình trạng sách khi trả với cuốn đã trả) và tiền phạt (nếu có). |
+| **Dòng sự kiện phụ** | 2a. Độc giả không có sách đang mượn: hệ thống báo "Bạn chưa mượn sách nào".<br>2b. Độc giả chọn "Gia hạn" ở một phiếu: thực hiện use case Yêu cầu gia hạn.<br>4a. Chưa có yêu cầu gia hạn: hệ thống báo "Bạn chưa gửi yêu cầu gia hạn nào".<br>4b. Độc giả chọn một yêu cầu bị *Từ chối*: hệ thống hiển thị lý do từ chối do Thủ thư nhập và ngày xử lý.<br>6a. Chưa có lịch sử mượn: hệ thống báo "Chưa có lịch sử mượn". |
 | **Điều kiện tiên quyết** | Độc giả đã đăng nhập. |
 | **Hậu điều kiện** | Độc giả xem được tình hình mượn sách của mình, dữ liệu không thay đổi. |
 
@@ -255,7 +255,7 @@ Khi sách đang hết, độc giả gửi yêu cầu đặt trước. Thủ thư
 | **Tóm tắt** | Độc giả đặt trước một sách đang hết để được thư viện liên hệ khi có sách. |
 | **Tác nhân** | Độc giả |
 | **Use case liên quan** | Đăng nhập (include), mở rộng (extend) use case Tìm kiếm sách |
-| **Dòng sự kiện chính** | 1. Tại trang chi tiết của một sách đang hết, độc giả chọn "Đặt trước".<br>2. Hệ thống kiểm tra: thẻ đang *Hoạt động*, độc giả chưa có yêu cầu còn hiệu lực cho sách này, độc giả không đang mượn sách này.<br>3. Hệ thống hiển thị thông tin sách và lưu ý: thư viện sẽ liên hệ khi có sách, sách không được giữ riêng.<br>4. Độc giả nhấn "Xác nhận".<br>5. Hệ thống tạo yêu cầu đặt trước với ngày đặt là hôm nay, trạng thái *Chờ duyệt*, và thông báo đặt trước thành công. |
+| **Dòng sự kiện chính** | 1. Tại trang chi tiết của một sách đang hết, độc giả chọn "Đặt trước".<br>2. Hệ thống kiểm tra: thẻ đang *Hoạt động* và chưa hết hạn, độc giả không có phiếu mượn quá hạn, chưa có yêu cầu còn hiệu lực cho sách này, không đang mượn sách này.<br>3. Hệ thống hiển thị thông tin sách và lưu ý: thư viện sẽ liên hệ khi có sách, sách không được giữ riêng.<br>4. Độc giả nhấn "Xác nhận".<br>5. Hệ thống tạo yêu cầu đặt trước với ngày đặt là hôm nay, trạng thái *Chờ duyệt*, và thông báo đặt trước thành công. |
 | **Dòng sự kiện phụ** | 1a. Sách đang còn: hệ thống không hiển thị nút "Đặt trước" và hướng dẫn độc giả đến quầy mượn.<br>1b. Độc giả mở "Đặt trước của tôi" và chọn hủy một yêu cầu *Chờ duyệt* hoặc *Đã duyệt*: hệ thống chuyển yêu cầu sang *Đã hủy*.<br>2a. Không đủ điều kiện: hệ thống hiển thị lý do, kết thúc use case. |
 | **Điều kiện tiên quyết** | Độc giả đã đăng nhập. Sách đang hết. |
 | **Hậu điều kiện** | Yêu cầu đặt trước được lưu và chờ Thủ thư xử lý trong use case Xử lý đặt trước. |

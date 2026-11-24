@@ -36,6 +36,9 @@ public class AuthService
         const string wrongLogin = "Tên đăng nhập hoặc mật khẩu không đúng.";   // bước 4a: không nói rõ sai phần nào
 
         username = username.Trim();
+        // Bước 4: tên đăng nhập của độc giả là mã thẻ (luôn lưu dạng DG000001), cho phép gõ chữ thường
+        if (username.StartsWith("DG", StringComparison.OrdinalIgnoreCase))
+            username = username.ToUpperInvariant();
         var user = await _db.Users.Find(u => u.Username == username).FirstOrDefaultAsync();
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             return ServiceResult<LoginResult>.Fail(wrongLogin);
@@ -76,6 +79,16 @@ public class AuthService
             Builders<User>.Update.Set(u => u.PasswordHash, BCrypt.Net.BCrypt.HashPassword(newPassword)));
 
         return ServiceResult.Ok("Đổi mật khẩu thành công.");
+    }
+
+    /// <summary>
+    /// Câu cảnh báo thẻ hiện tại của độc giả (null nếu thẻ dùng được). Cookie gọi lại trong phiên
+    /// để thanh CardNotice đổi theo khi Thủ thư khóa / mở khóa / gia hạn thẻ (BUG-10, mục 6.3 thiết kế kỹ thuật).
+    /// </summary>
+    public async Task<string?> GetCardNoticeAsync(string readerId)
+    {
+        var reader = await _db.Readers.Find(r => r.Id == readerId).FirstOrDefaultAsync();
+        return reader == null ? null : BuildCardNotice(reader);
     }
 
     private static string? BuildCardNotice(Reader reader)

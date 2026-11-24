@@ -57,7 +57,11 @@ public class AccountController : Controller
             new(ClaimTypes.Role, user.Role.ToString())
         };
         if (!string.IsNullOrEmpty(user.ReaderId))
+        {
             claims.Add(new Claim("ReaderId", user.ReaderId));
+            // Mốc kiểm tra thẻ lần cuối, để cookie đọc lại thẻ tối đa 1 lần mỗi phút (Program.cs, OnValidatePrincipal)
+            claims.Add(new Claim("CardCheckedAt", DateTime.UtcNow.Ticks.ToString()));
+        }
         if (!string.IsNullOrEmpty(login.CardNotice))
             claims.Add(new Claim("CardNotice", login.CardNotice));
 

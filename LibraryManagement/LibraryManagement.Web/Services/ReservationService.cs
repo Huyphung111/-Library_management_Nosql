@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using LibraryManagement.Web.Data;
 using LibraryManagement.Web.Models;
 using LibraryManagement.Web.Options;
+using LibraryManagement.Web.ViewModels.Loans;
 using LibraryManagement.Web.ViewModels.Reservations;
 
 namespace LibraryManagement.Web.Services;
@@ -46,6 +47,9 @@ public class ReservationService
     // Sửa lỗi 500 khi id sai định dạng ObjectId trên URL (A, 22/11/2026)
     private static bool ValidId(string? id) => MongoDB.Bson.ObjectId.TryParse(id, out _);
 
+    /// <summary>Báo lỗi khi update có điều kiện trạng thái không khớp: phía bên kia vừa xử lý yêu cầu (BUG-06).</summary>
+    private const string ChangedMeanwhile = "Yêu cầu vừa thay đổi trạng thái (đã được xử lý ở nơi khác), vui lòng tải lại trang.";
+
     /// <summary>Ngày cuối được đến nhận nếu đặt giữ hôm nay: HoldDays ngày, tính cả hôm nay (giờ VN).</summary>
     private DateTime HoldUntilVn() => DateHelper.TodayVn().AddDays(Math.Max(1, _rules.HoldDays) - 1);
 
@@ -60,16 +64,10 @@ public class ReservationService
     /// Giữ 1 bản sách cho độc giả. Trong MỘT transaction: trừ availableQuantity bằng update có điều kiện "> 0"
     /// (hai người bấm cùng lúc cũng không giữ quá số bản có), rồi tạo yêu cầu trạng thái Held.
     /// </summary>
-    private async Task<ServiceResult> CreateHoldAsync(Reader reader, Book book)
+    private async Task<ServiceResult> CreateHoldAsync(Reader reader, Book book, BorrowerCheckVM borrower)
     {
-        // Điều kiện giống lúc mượn: không có phiếu quá hạn, chưa chạm giới hạn số cuốn (tính cả sách đang giữ)
-        var check = await _loans.CheckBorrowerAsync(reader.CardNumber);
-        if (!check.Success) return ServiceResult.Fail(check.Message!);
-        var borrower = check.Data!;
-
-        if (borrower.OverdueLoans > 0)
-            return ServiceResult.Fail($"Bạn đang có {borrower.OverdueLoans} phiếu mượn quá hạn. Vui lòng trả sách trước khi đặt giữ.");
-
+        // Điều kiện giống lúc mượn: chưa chạm giới hạn số cuốn (tính cả sách đang giữ).
+        // Phiếu quá hạn đã được chặn ở CreateAsync cho cả đặt giữ lẫn đặt trước.
         var held = borrower.HeldBookIds.Count;
         if (held >= _rules.MaxHolds)
             return ServiceResult.Fail($"Bạn đang được giữ {held} cuốn, tối đa {_rules.MaxHolds} cuốn. Hãy đến nhận hoặc hủy bớt trước khi đặt thêm.");
@@ -214,6 +212,8 @@ public class ReservationService
     public async Task<ReservationConfirmVM?> GetBookForReservationConfirmAsync(string bookId)
     {
         if (!ValidId(bookId)) return null;
+        // Sửa (A, 24/11/2026) BUG-05: trả về kho các bản giữ đã quá hạn nhận trước khi đọc số còn lại, để hộp xác nhận chọn đúng đặt giữ / đặt trước
+        await ExpireHoldsAsync();
         var book = await _db.Books.Find(b => b.Id == bookId).FirstOrDefaultAsync();
         if (book == null) return null;
 
@@ -242,7 +242,7 @@ public class ReservationService
 
     /// <summary>
     /// Độc giả gửi yêu cầu cho một cuốn sách (UC16). Tuân thủ QĐ08:
-    /// - Thẻ độc giả phải đang Hoạt động và chưa hết hạn.
+    /// - Thẻ độc giả phải đang Hoạt động và chưa hết hạn, độc giả không có phiếu mượn quá hạn.
     /// - Độc giả chưa có yêu cầu Chờ duyệt / Đã duyệt / Đang giữ cho cuốn sách này, và không đang mượn cuốn này.
     /// - Sách còn và không ai xếp hàng chờ → ĐẶT GIỮ: giữ 1 bản đến hết HoldDays ngày (CreateHoldAsync).
     /// - Sách hết, hoặc còn nhưng đã có người chờ trước → ĐẶT TRƯỚC: vào hàng chờ, Thủ thư duyệt và liên hệ.
@@ -250,6 +250,9 @@ public class ReservationService
     public async Task<ServiceResult> CreateAsync(string readerId, string bookId)
     {
         if (!ValidId(bookId)) return ServiceResult.Fail("Không tìm thấy thông tin cuốn sách trong hệ thống.");
+        // Sửa (A, 24/11/2026) BUG-05: trả về kho các bản giữ đã quá hạn nhận trước khi kiểm tra sách còn hay hết
+        await ExpireHoldsAsync();
+
         // 1. Kiểm tra thông tin thẻ độc giả (UC16 bước 2, dòng phụ 2a)
         var reader = await _db.Readers.Find(r => r.Id == readerId).FirstOrDefaultAsync();
         if (reader == null)
@@ -265,6 +268,13 @@ public class ReservationService
         {
             return ServiceResult.Fail($"Thẻ thư viện của bạn đã hết hạn ngày {DateHelper.ToVnDate(reader.ExpiryDate):dd/MM/yyyy}. Vui lòng liên hệ thủ thư để gia hạn thẻ.");
         }
+
+        // Sửa (A, 24/11/2026) R36b. Có phiếu quá hạn thì không được đặt giữ lẫn đặt trước (UC16 bước 2, R36b)
+        var check = await _loans.CheckBorrowerAsync(reader.CardNumber);
+        if (!check.Success) return ServiceResult.Fail(check.Message!);
+        var borrower = check.Data!;
+        if (borrower.OverdueLoans > 0)
+            return ServiceResult.Fail($"Bạn đang có {borrower.OverdueLoans} phiếu mượn quá hạn. Vui lòng trả sách trước khi đặt sách.");
 
         // 2. Kiểm tra sách và tình trạng kho (UC16 bước 1a, 2)
         var book = await _db.Books.Find(b => b.Id == bookId).FirstOrDefaultAsync();
@@ -292,7 +302,7 @@ public class ReservationService
         // 5. Sách còn và không ai xếp hàng trước → đặt giữ
         var hasQueue = await HasQueueAsync(bookId);
         if (book.AvailableQuantity > 0 && !hasQueue)
-            return await CreateHoldAsync(reader, book);
+            return await CreateHoldAsync(reader, book, borrower);
 
         // 6. Sách hết (hoặc còn nhưng đã có người chờ trước) → tạo yêu cầu đặt trước (UC16 bước 5)
         var reservation = new Reservation
@@ -334,8 +344,12 @@ public class ReservationService
             .Set(r => r.Status, ReservationStatus.Cancelled)
             .Set(r => r.Reason, "Độc giả tự hủy yêu cầu");
 
-        await _db.Reservations.UpdateOneAsync(r => r.Id == reservationId, update);
-        return ServiceResult.Ok("Đã hủy yêu cầu đặt trước sách thành công.");
+        // Sửa (A, 24/11/2026) BUG-06: filter kèm trạng thái cũ, Thủ thư vừa xử lý cùng lúc thì không ghi đè
+        var done = await _db.Reservations.UpdateOneAsync(
+            r => r.Id == reservationId && (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Approved), update);
+        return done.ModifiedCount == 1
+            ? ServiceResult.Ok("Đã hủy yêu cầu đặt trước sách thành công.")
+            : ServiceResult.Fail(ChangedMeanwhile);
     }
 
     #endregion
@@ -427,12 +441,24 @@ public class ReservationService
         if (res.Status != ReservationStatus.Pending)
             return ServiceResult.Fail("Chỉ có thể duyệt yêu cầu đang ở trạng thái Chờ duyệt.");
 
+        // Sửa (A, 24/11/2026) BUG-07 (UC10 bước 4a): thẻ bị khóa hoặc hết hạn thì không cho duyệt, Thủ thư từ chối kèm lý do
+        var reader = await _db.Readers.Find(r => r.Id == res.ReaderId).FirstOrDefaultAsync();
+        if (reader == null)
+            return ServiceResult.Fail("Không tìm thấy độc giả của yêu cầu này. Hãy từ chối yêu cầu.");
+        if (reader.CardStatus == CardStatus.Locked)
+            return ServiceResult.Fail($"Thẻ của độc giả {reader.CardNumber} đang bị khóa, không thể duyệt. Hãy từ chối kèm lý do.");
+        if (reader.IsExpired)
+            return ServiceResult.Fail($"Thẻ của độc giả {reader.CardNumber} đã hết hạn ngày {DateHelper.ToVnDate(reader.ExpiryDate):dd/MM/yyyy}, không thể duyệt. Hãy từ chối kèm lý do.");
+
         var update = Builders<Reservation>.Update
             .Set(r => r.Status, ReservationStatus.Approved)
             .Set(r => r.ProcessedBy, librarianId);
 
-        await _db.Reservations.UpdateOneAsync(r => r.Id == id, update);
-        return ServiceResult.Ok("Đã duyệt yêu cầu đặt trước thành công.");
+        // Sửa (A, 24/11/2026) BUG-06: chỉ duyệt khi yêu cầu còn Chờ duyệt (độc giả có thể vừa tự hủy)
+        var done = await _db.Reservations.UpdateOneAsync(r => r.Id == id && r.Status == ReservationStatus.Pending, update);
+        return done.ModifiedCount == 1
+            ? ServiceResult.Ok("Đã duyệt yêu cầu đặt trước thành công.")
+            : ServiceResult.Fail(ChangedMeanwhile);
     }
 
     /// <summary>
@@ -456,8 +482,11 @@ public class ReservationService
             .Set(r => r.Reason, reason.Trim())
             .Set(r => r.ProcessedBy, librarianId);
 
-        await _db.Reservations.UpdateOneAsync(r => r.Id == id, update);
-        return ServiceResult.Ok("Đã từ chối yêu cầu đặt trước.");
+        // Sửa (A, 24/11/2026) BUG-06: chỉ từ chối khi yêu cầu còn Chờ duyệt
+        var done = await _db.Reservations.UpdateOneAsync(r => r.Id == id && r.Status == ReservationStatus.Pending, update);
+        return done.ModifiedCount == 1
+            ? ServiceResult.Ok("Đã từ chối yêu cầu đặt trước.")
+            : ServiceResult.Fail(ChangedMeanwhile);
     }
 
     /// <summary>
@@ -488,8 +517,11 @@ public class ReservationService
             .Set(r => r.Reason, reason.Trim())
             .Set(r => r.ProcessedBy, librarianId);
 
-        await _db.Reservations.UpdateOneAsync(r => r.Id == id, update);
-        return ServiceResult.Ok("Đã hủy yêu cầu đặt trước.");
+        // Sửa (A, 24/11/2026) BUG-06: chỉ hủy khi yêu cầu còn Đã duyệt (có thể vừa được hoàn tất khi lập phiếu mượn)
+        var done = await _db.Reservations.UpdateOneAsync(r => r.Id == id && r.Status == ReservationStatus.Approved, update);
+        return done.ModifiedCount == 1
+            ? ServiceResult.Ok("Đã hủy yêu cầu đặt trước.")
+            : ServiceResult.Fail(ChangedMeanwhile);
     }
 
     #endregion

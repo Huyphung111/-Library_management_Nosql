@@ -4,14 +4,14 @@ Mỗi file là bộ test case thủ công của một use case, viết theo dòn
 
 | File | Use case | Tình trạng code | Đã thử |
 |---|---|---|---|
-| [UC01-dang-nhap.md](UC01-dang-nhap.md) | UC01 Đăng nhập | Xong | 10/10 (Đạt hết) |
+| [UC01-dang-nhap.md](UC01-dang-nhap.md) | UC01 Đăng nhập | Xong | 12/12 (Đạt hết) |
 | [UC02-dang-xuat.md](UC02-dang-xuat.md) | UC02 Đăng xuất | Xong | 3/3 (Đạt hết) |
 | [UC03-doi-mat-khau.md](UC03-doi-mat-khau.md) | UC03 Đổi mật khẩu | Xong | 7/7 (Đạt hết) |
 | [UC06-quan-ly-doc-gia.md](UC06-quan-ly-doc-gia.md) | UC06 Quản lý độc giả | Xong | 13/13 (Đạt hết) |
 | [UC07-lap-phieu-muon.md](UC07-lap-phieu-muon.md) | UC07 Lập phiếu mượn | Xong | 12/12 (Đạt hết) |
-| [UC08-nhan-tra-sach.md](UC08-nhan-tra-sach.md) | UC08 Nhận trả sách | Xong | 11/11 (Đạt hết) |
+| [UC08-nhan-tra-sach.md](UC08-nhan-tra-sach.md) | UC08 Nhận trả sách | Xong | 13/13 (Đạt hết) |
 | [UC09-gia-han-phieu-muon.md](UC09-gia-han-phieu-muon.md) | UC09 Gia hạn phiếu mượn | Xong | 9/9 (Đạt hết) |
-| [UC14-sach-dang-muon-lich-su.md](UC14-sach-dang-muon-lich-su.md) | UC14 Sách đang mượn, lịch sử | Xong | 6/6 (Đạt hết) |
+| [UC14-sach-dang-muon-lich-su.md](UC14-sach-dang-muon-lich-su.md) | UC14 Sách đang mượn, lịch sử | Đang thử | 11/14 Đạt, 3 chưa thử (TC14-08, TC14-10, TC14-14) |
 | [UC15-yeu-cau-gia-han.md](UC15-yeu-cau-gia-han.md) | UC15 Yêu cầu gia hạn | Xong | 8/8 (Đạt hết) |
 
 ## Cách ghi kết quả

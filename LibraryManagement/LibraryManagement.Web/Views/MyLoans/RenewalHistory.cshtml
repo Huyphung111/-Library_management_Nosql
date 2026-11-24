@@ -1,0 +1,101 @@
+@* UC14 bước 4, 4a, 4b: tab "Lịch sử gia hạn". Bấm vào dòng bị từ chối để mở hộp xem lý do. *@
+@model List<LibraryManagement.Web.ViewModels.Loans.RenewalHistoryLineVM>
+
+<div class="content-card">
+    <partial name="_Tabs" />
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-calendar-check"></i>
+            <p>Bạn chưa gửi yêu cầu gia hạn nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr><th>Mã phiếu</th><th>Tên sách</th><th>Ngày gửi</th><th>Hình thức</th><th>Ngày xử lý</th><th>Kết quả</th><th class="text-end"></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        var rejected = r.Status == RenewalStatus.Rejected;
+                        @* Thuộc tính có giá trị null thì Razor bỏ đi: chỉ dòng bị từ chối mới mở được hộp lý do *@
+                        <tr class="@(rejected ? "row-clickable" : null)"
+                            data-bs-toggle="@(rejected ? "modal" : null)"
+                            data-bs-target="@(rejected ? "#reasonModal" : null)"
+                            data-loan-code="@(rejected ? r.LoanCode : null)"
+                            data-processed="@(rejected ? r.ProcessedAt?.ToVnDateTimeText() : null)"
+                            data-reason="@(rejected ? (string.IsNullOrWhiteSpace(r.RejectReason) ? "Thủ thư không ghi lý do." : r.RejectReason) : null)">
+                            <td class="fw-semibold">@r.LoanCode</td>
+                            <td>
+                                @foreach (var t in r.Titles)
+                                {
+                                    <div>@t</div>
+                                }
+                            </td>
+                            <td>@r.RequestedAt.ToVnDateTimeText()</td>
+                            <td>@r.Source.ToVn()</td>
+                            <td>@(r.ProcessedAt?.ToVnDateTimeText() ?? "—")</td>
+                            <td>
+                                @switch (r.Status)
+                                {
+                                    case RenewalStatus.Approved:
+                                        <span class="badge status-approved"><i class="bi bi-check-circle me-1"></i>Thành công</span>
+                                        break;
+                                    case RenewalStatus.Rejected:
+                                        <span class="badge status-rejected"><i class="bi bi-x-circle me-1"></i>Bị từ chối</span>
+                                        break;
+                                    default:
+                                        <span class="badge status-pending"><i class="bi bi-hourglass-split me-1"></i>Chờ duyệt</span>
+                                        break;
+                                }
+                            </td>
+                            <td class="actions">
+                                @if (rejected)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-info-circle"></i> Xem lý do</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@* Hộp xem lý do từ chối (UC14 bước 4b), thông tin lấy từ data-* của dòng được bấm *@
+<div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reasonModalTitle">Lý do từ chối gia hạn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Phiếu <strong id="reasonLoanCode"></strong>, xử lý lúc <span id="reasonProcessed"></span>.</p>
+                <div class="alert alert-danger mb-0" id="reasonText"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modal = document.getElementById("reasonModal");
+            modal.addEventListener("show.bs.modal", e => {
+                const row = e.relatedTarget;
+                document.getElementById("reasonLoanCode").textContent = row.dataset.loanCode;
+                document.getElementById("reasonProcessed").textContent = row.dataset.processed || "—";
+                document.getElementById("reasonText").textContent = row.dataset.reason;
+            });
+        })();
+    </script>
+}

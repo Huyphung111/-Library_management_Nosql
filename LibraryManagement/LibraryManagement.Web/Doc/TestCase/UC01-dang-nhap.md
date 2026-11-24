@@ -14,6 +14,8 @@ Code: `AccountController.Login`, `AuthService.LoginAsync`, `Views/Account/Login.
 | TC01-08 | 5a | Thẻ hết hạn vẫn đăng nhập được | Seed đầy đủ có sẵn `DG000010` hết hạn. Đăng nhập `DG000010` | Thanh vàng "Thẻ của bạn đã hết hạn ngày ..." | Thanh cảnh báo "Thẻ của bạn đã hết hạn ngày 22/11/2025..." | Đạt | 22/11/2026 |
 | TC01-09 | Chính | Quay lại trang đang định mở | Chưa đăng nhập, mở `/Account/ChangePassword` → bị chuyển về đăng nhập → đăng nhập `admin` | Sau đăng nhập về thẳng `/Account/ChangePassword` | Bị chuyển về `/Account/Login?ReturnUrl=%2FAccount%2FChangePassword`; đăng nhập xong về `/Account/ChangePassword` | Đạt | 22/11/2026 |
 | TC01-10 | Chính | Đã đăng nhập mà mở lại trang đăng nhập | Đang đăng nhập, gõ `/Account/Login` | Chuyển về trang chính theo vai trò, không hiện form | Chuyển về `/` rồi tới trang chính | Đạt | 22/11/2026 |
+| TC01-11 | 4 | Mã thẻ gõ chữ thường / lẫn hoa thường (lỗi R05 báo cáo Antigravity) | `dg000001`; `  Dg000002 ` (có khoảng trắng) / mật khẩu đúng | Đăng nhập được như `DG000001` | Cả hai đăng nhập được (302 về trang chính). `ADMIN` vẫn bị từ chối (chỉ chuẩn hóa mã thẻ `DG`) | Đạt | 24/11/2026 |
+| TC01-12 | 5a | Thẻ bị khóa / mở khóa khi độc giả đang đăng nhập (BUG-10) | `DG000005` đang đăng nhập; Thủ thư khóa thẻ (lý do "Thử BUG-10"), sau đó mở khóa | Thanh cảnh báo hiện / mất theo trạng thái thẻ trong vòng 1 phút, không cần đăng nhập lại | Ngay sau khi khóa: chưa hiện (đọc lại tối đa 1 lần/phút); sau 1 phút: hiện kèm lý do; mở khóa, sau 1 phút: mất; vẫn đăng nhập; Thủ thư không ảnh hưởng | Đạt | 24/11/2026 |
 
 ## Ghi chú
 

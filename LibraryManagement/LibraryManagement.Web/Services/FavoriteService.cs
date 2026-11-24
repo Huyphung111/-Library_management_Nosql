@@ -99,11 +99,14 @@ public class FavoriteService
         var categoryMap = (await _db.Categories.Find(Builders<Category>.Filter.In(c => c.Id, categoryIds)).ToListAsync())
             .ToDictionary(c => c.Id!, c => c.Name);
 
-        // Yêu cầu còn hiệu lực theo QĐ08: Chờ duyệt / Đã duyệt / Đang giữ
+        // Yêu cầu còn hiệu lực theo QĐ08: Chờ duyệt / Đã duyệt / Đang giữ.
+        // Bản giữ đã quá ngày nhận (holdUntil trước hôm nay) không tính, dù tiến trình nền chưa kịp hủy (BUG-08).
         var bookIds = books.Keys.ToList();
+        var startOfToday = DateHelper.StartOfTodayVnUtc();
         var active = await _db.Reservations.Find(r =>
                 r.ReaderId == readerId && bookIds.Contains(r.BookId) &&
-                (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Approved || r.Status == ReservationStatus.Held))
+                (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Approved
+                 || (r.Status == ReservationStatus.Held && r.HoldUntil >= startOfToday)))
             .ToListAsync();
         var activeMap = active.GroupBy(r => r.BookId).ToDictionary(g => g.Key, g => g.First().Status);
 

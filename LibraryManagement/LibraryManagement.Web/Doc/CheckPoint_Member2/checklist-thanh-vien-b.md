@@ -162,3 +162,19 @@ Thiết kế ở mục 7.5 `thiet-ke-ky-thuat.md`. Các file của B có sửa: 
 
 Đã thử (Đạt): 28/28 sách mẫu có ảnh khi khởi động; ảnh hiện ở Quản lý sách, Tìm sách, Chi tiết sách; upload PNG và JPG; chặn file giả đuôi .jpg, file .txt, file trên 2 MB; sửa không chọn ảnh thì giữ ảnh cũ; đổi ảnh thì ảnh cũ bị xóa khỏi `covers.files` và `covers.chunks`; tick "Xóa ảnh bìa" và xóa sách đều xóa ảnh; `/Covers/abc` trả 404; chưa đăng nhập thì chuyển về trang đăng nhập; `coverImageId` trỏ tới file không còn thì khởi động lại tự nạp lại. Bộ kiểm thử phần B 88/88, phần A 74/74 vẫn Đạt.
 
+## Lỗi Antigravity tìm được khi kiểm thử và A đã sửa giúp (24/11/2026)
+
+Nhóm đồng ý cho A sửa. Mỗi chỗ trong file của B có ghi chú `Sửa (A, 24/11/2026)`. Danh sách lỗi gốc ở `Antigravity/bao-cao-loi.md`. Kiểm chứng 26/26 Đạt trên database riêng.
+
+| # | Lỗi | File | Cách sửa |
+|---|---|---|---|
+| 1 | BUG-01: báo cáo quá hạn viết cứng `5000L` | `ReportService` | Inject `IOptions<LibraryRules>`, dùng `FinePerDay` |
+| 2 | BUG-02: báo cáo tiền phạt lọc theo ngày mượn; mốc cuối `AddSeconds(-1)` gây hiểu nhầm | `ReportService`, `Views/Reports/Fines.cshtml` | Tiền phạt lọc theo `items.returnDate` bằng aggregation `$match → $unwind → $match → $sort → $project` (UC12 đã ghi); các báo cáo khác dùng `$lt` 00:00 ngày hôm sau; trang báo cáo ghi chú "tính theo ngày trả" |
+| 3 | BUG-04: xóa sách còn đặt trước Chờ duyệt / Đã duyệt để lại yêu cầu mồ côi | `BookService.DeleteAsync` | Chặn xóa, báo số yêu cầu còn lại (QĐ09, UC04 3b) |
+| 4 | BUG-05: bản giữ quá hạn chưa được thu hồi khi mở hộp xác nhận / tạo yêu cầu | `ReservationService` | Gọi `ExpireHoldsAsync()` đầu `GetBookForReservationConfirmAsync` và `CreateAsync` |
+| 5 | BUG-06: update trạng thái đặt trước không kèm trạng thái cũ (race condition) | `ReservationService` | Filter kèm trạng thái cũ ở Approve / Reject / Cancel (Thủ thư và độc giả); không cập nhật được thì báo "vừa thay đổi trạng thái" (UC10 5b) |
+| 6 | BUG-07: duyệt đặt trước cho thẻ khóa / hết hạn | `ReservationService.ApproveAsync` | Kiểm tra thẻ, không cho duyệt (UC10 4a) |
+| 7 | R36b: có phiếu quá hạn vẫn đặt trước được sách hết | `ReservationService.CreateAsync` | Kiểm tra phiếu quá hạn cho cả đặt giữ và đặt trước (UC16 bước 2) |
+| 8 | BUG-09: báo lỗi giảm số lượng chỉ nói "đang cho mượn" | `BookService.UpdateAsync` | "đang cho mượn hoặc đang giữ cho độc giả" |
+
+BUG-08 (`FavoriteService`) và BUG-10 (`Program.cs`, `AuthService`, `AccountController`) nằm trong file của A.

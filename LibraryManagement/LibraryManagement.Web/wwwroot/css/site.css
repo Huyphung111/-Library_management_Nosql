@@ -815,3 +815,7 @@ body.slip-open { overflow: hidden; }
   .m1-grid { grid-template-columns: 1fr; }
   .slip-reader { grid-template-columns: 1fr; }
 }
+
+/* Dòng bảng bấm được (vd. yêu cầu gia hạn bị từ chối ở MyLoans/RenewalHistory: bấm để xem lý do) */
+tr.row-clickable { cursor: pointer; }
+tr.row-clickable:hover > td { background: #fdf3f3; }
